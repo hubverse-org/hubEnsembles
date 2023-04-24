@@ -53,26 +53,32 @@ simple_ensemble <- function(predictions, task_id_vars = NULL, hub_con = NULL,
     predictions <- relocate(predictions, all_of(col_names))
   }
   
-  if (!all(predictions$output_type %in% c("mean", "median", "quantile", "cdf", "category"))) # throw warning or error
+  if (!all(predictions$output_type %in% c("mean", "median", "quantile", "cdf", "category"))) stop("Predictions contains unsupported output type") # throw warning or error
 
-  if (!all(names(weights) %in% c("team_abbr", "model_abbr", "weight"))) {
-    stop("weights did not have required columns", call. = FALSE)
-  }
-  
   if (is.null(weights)) {
-    weights <- predictions %>%
-      distinct(team_abbr, model_abbr) %>%
-      mutate(weight = 1/n())
-  }
-  
-  if (agg_fun == "mean") agg_fun = "weightedMean"
-  if (agg_fun == "median") agg_fun = "weightedMedian"
+    if (agg_fun == "mean") agg_fun = "mean"
+    if (agg_fun == "median") agg_fun = "median"
     
-  
-  predictions %>%
-      dplyr::left_join(weights) %>%
+    ensemble_predictions <- predictions %>%
       dplyr::group_by(across(all_of(c(task_id_vars, "output_type", "output_id")))) %>%
-      dplyr::summarize(value = do.call(agg_fun, args = c(agg_args, list(x=value, w=weight)))) %>%
+      dplyr::summarize(value = do.call(agg_fun, args = c(agg_args, list(x=value)))) %>%
       dplyr::mutate(team_abbr = team_abbr, model_abbr = model_abbr, .before = 1)
       # do we want to have the horizon column before target?
+  } else {
+    if (!all(names(weights) %in% c("team_abbr", "model_abbr", "weight"))) {
+      stop("weights did not have required columns", call. = FALSE)
+    }
+    
+    if (agg_fun == "mean") agg_fun = "weightedMean"
+    if (agg_fun == "median") agg_fun = "weightedMedian"
+    
+    ensemble_predictions <- predictions %>%
+      dplyr::left_join(weights) %>%
+      dplyr::group_by(across(all_of(c(task_id_vars, "output_type", "output_id")))) %>%
+      dplyr::summarize(value = do.call(agg_fun, args = c(agg_args, list(x=value, w=weights)))) %>%
+      dplyr::mutate(team_abbr = team_abbr, model_abbr = model_abbr, .before = 1)
+      # do we want to have the horizon column before target?
+  }  
+    
+  return (ensemble_predictions)
 }
