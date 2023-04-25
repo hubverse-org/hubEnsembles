@@ -34,7 +34,7 @@
 #'   each task id variable, `output_type`, `output_id`, and `value`.
 
 simple_ensemble <- function(predictions, task_id_vars = NULL, hub_con = NULL,
-                     weights = NULL, agg_fun = mean, agg_args = list(),
+                     weights = NULL, agg_fun = "mean", agg_args = list(),
                      team_abbr = "Hub", model_abbr = "ensemble") {
 
   # require(matrixStats)
@@ -62,7 +62,8 @@ simple_ensemble <- function(predictions, task_id_vars = NULL, hub_con = NULL,
     ensemble_predictions <- predictions %>%
       dplyr::group_by(across(all_of(c(task_id_vars, "output_type", "output_id")))) %>%
       dplyr::summarize(value = do.call(agg_fun, args = c(agg_args, list(x=value)))) %>%
-      dplyr::mutate(team_abbr = team_abbr, model_abbr = model_abbr, .before = 1)
+      dplyr::mutate(team_abbr = team_abbr, model_abbr = model_abbr, .before = 1) %>%
+      dplyr::ungroup()
       # do we want to have the horizon column before target?
   } else {
     if (!all(names(weights) %in% c("team_abbr", "model_abbr", "weight"))) {
@@ -76,7 +77,8 @@ simple_ensemble <- function(predictions, task_id_vars = NULL, hub_con = NULL,
       dplyr::left_join(weights) %>%
       dplyr::group_by(across(all_of(c(task_id_vars, "output_type", "output_id")))) %>%
       dplyr::summarize(value = do.call(agg_fun, args = c(agg_args, list(x=value, w=weights)))) %>%
-      dplyr::mutate(team_abbr = team_abbr, model_abbr = model_abbr, .before = 1)
+      dplyr::mutate(team_abbr = team_abbr, model_abbr = model_abbr, .before = 1) %>%
+      dplyr::ungroup()
       # do we want to have the horizon column before target?
   }  
     
