@@ -29,38 +29,41 @@
 #'   to `agg_fun`.
 #' @param team_abbr, model_abbr `character` strings with the name of the team
 #'   and model to use for the ensemble predictions.
+#' @param output_type_col, output_id_col, value_col `character` strings with the 
+#'   names of the columns in `predictions` for the output's type, additional 
+#'   identifying information, and value (of the prediction)
 #'
 #' @return a data.frame with columns `team_abbr`, `model_abbr`, one column for
 #'   each task id variable, `output_type`, `output_id`, and `value`.
 
 simple_ensemble <- function(predictions, task_id_vars = NULL, hub_con = NULL,
                      weights = NULL, agg_fun = "mean", agg_args = list(),
-                     team_abbr = "Hub", model_abbr = "ensemble") {
+                     team_abbr = "Hub", model_abbr = "ensemble", output_type_col = "output_type", output_id_col = "output_id", value_col = "value") {
 
   # require(matrixStats)
     
   if (is.null(task_id_vars) && is.null(hub_con)) {
     temp <- colnames(predictions)
-    task_id_vars <- temp[!temp %in% c("team_abbr", "model_abbr", "output_type", "output_id", "value")]
+    task_id_vars <- temp[!temp %in% c("team_abbr", "model_abbr", output_type_col, output_id_col, value_col)]
   } else if (is.null(task_id_vars)) {
     # task_id variables looked up from `hub_con`
   }
   
-  col_names <- c("team_abbr", "model_abbr", task_id_vars, "output_type", "output_id", "value")
+  col_names <- c("team_abbr", "model_abbr", task_id_vars, output_type_col, output_id_col, value_col)
   if ((length(predictions) == 0) || !all(names(predictions) %in% col_names)) {
     stop("predictions did not have required columns", call. = FALSE)
-  } else if (!all(names(predictions) == col_names) && names(predictions) %in% col_names) {
+  } else if (!all(names(predictions) == col_names) && all(names(predictions) %in% col_names)) {
     predictions <- relocate(predictions, all_of(col_names))
   }
   
-  if (!all(predictions$output_type %in% c("mean", "median", "quantile", "cdf", "category"))) stop("Predictions contains unsupported output type") # throw warning or error
+  if (!all(pull(predictions[temp == output_type_col], 1) %in% c("mean", "median", "quantile", "cdf", "category"))) stop("Predictions contains unsupported output type") # throw warning or error
 
   if (is.null(weights)) {
     if (agg_fun == "mean") agg_fun = "mean"
     if (agg_fun == "median") agg_fun = "median"
     
     ensemble_predictions <- predictions %>%
-      dplyr::group_by(across(all_of(c(task_id_vars, "output_type", "output_id")))) %>%
+      dplyr::group_by(across(all_of(c(task_id_vars, output_type_col, output_id_col)))) %>%
       dplyr::summarize(value = do.call(agg_fun, args = c(agg_args, list(x=value)))) %>%
       dplyr::mutate(team_abbr = team_abbr, model_abbr = model_abbr, .before = 1) %>%
       dplyr::ungroup()
@@ -75,8 +78,8 @@ simple_ensemble <- function(predictions, task_id_vars = NULL, hub_con = NULL,
     
     ensemble_predictions <- predictions %>%
       dplyr::left_join(weights) %>%
-      dplyr::group_by(across(all_of(c(task_id_vars, "output_type", "output_id")))) %>%
-      dplyr::summarize(value = do.call(agg_fun, args = c(agg_args, list(x=value, w=weights)))) %>%
+      dplyr::group_by(across(all_of(c(task_id_vars, output_type_col, output_id_col)))) %>%
+      dplyr::summarize(value = do.call(agg_fun, args = c(agg_args, list(x=value, w=weight)))) %>%
       dplyr::mutate(team_abbr = team_abbr, model_abbr = model_abbr, .before = 1) %>%
       dplyr::ungroup()
       # do we want to have the horizon column before target?
