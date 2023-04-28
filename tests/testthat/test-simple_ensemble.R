@@ -14,13 +14,38 @@ team1_1008 <- readr::read_csv("inst/test-data/2022-10-08-team1-goodmodel.csv") %
   mutate(team_abbr = "team_1", model_abbr = "goodmodel1", .before = origin_date) %>%
   mutate(value = value + 2)
 
+test_that("non-default column names are preserved in output data frame", {
+  output_names <- baseline_1008 %>%
+    simple_ensemble(
+      agg_fun="mean",
+      model_abbr = "example",
+      output_type_col = "type", 
+      output_id_col = "type_id" 
+    ) %>%
+    names()
+  expect_equal(names(baseline_1008), output_names)
+})
+
+test_that("invalid output type throws error", {
+  expect_error(
+    baseline_1008 %>%
+      rename(output_type = type, output_id=type_id) %>%
+      mutate(output_type="sample") %>%
+      simple_ensemble(
+        agg_fun="mean",
+        model_abbr = "example"
+      )
+  )
+})
+
 test_that("invalid method argument throws error", {
   expect_error(
-    simple_ensemble(
-      baseline_1008,
-      agg_fun="linear pool",
-      model_abbr = "example"
-    )
+    baseline_1008 %>%
+      rename(output_type = type, output_id=type_id) %>%
+      simple_ensemble(
+        agg_fun="linear pool",
+        model_abbr = "example"
+      )
   )
 })
 
