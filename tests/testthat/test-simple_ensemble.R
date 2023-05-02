@@ -1,21 +1,10 @@
 library(matrixStats)
 
-test_that("multiplication works", {
-  expect_equal(2 * 2, 4)
-})
-
-#tmp_dat <- readr::read_csv("test-data/minimal-forecast.csv")
-
-baseline_1001 <- readr::read_csv("inst/test-data/2022-10-01-simple_hub-baseline.csv") %>%
+pred <- readr::read_csv("inst/test-data/2022-10-08-simple_hub-baseline.csv") %>%
   mutate(team_abbr = "simple_hub", model_abbr = "baseline", .before = origin_date)
-baseline_1008 <- readr::read_csv("inst/test-data/2022-10-08-simple_hub-baseline.csv") %>%
-  mutate(team_abbr = "simple_hub", model_abbr = "baseline", .before = origin_date)
-team1_1008 <- readr::read_csv("inst/test-data/2022-10-08-team1-goodmodel.csv") %>%
-  mutate(team_abbr = "team_1", model_abbr = "goodmodel1", .before = origin_date) %>%
-  mutate(value = value + 2)
 
 test_that("non-default column names are preserved in output data frame", {
-  output_names <- baseline_1008 %>%
+  output_names <- pred %>%
     simple_ensemble(
       agg_fun="mean",
       model_abbr = "example",
@@ -23,12 +12,12 @@ test_that("non-default column names are preserved in output data frame", {
       output_id_col = "type_id" 
     ) %>%
     names()
-  expect_equal(names(baseline_1008), output_names)
+  expect_equal(names(pred), output_names)
 })
 
 test_that("invalid output type throws error", {
   expect_error(
-    baseline_1008 %>%
+    pred %>%
       rename(output_type = type, output_id=type_id) %>%
       mutate(output_type="sample") %>%
       simple_ensemble(
@@ -40,7 +29,7 @@ test_that("invalid output type throws error", {
 
 test_that("invalid method argument throws error", {
   expect_error(
-    baseline_1008 %>%
+    pred %>%
       rename(output_type = type, output_id=type_id) %>%
       simple_ensemble(
         agg_fun="linear pool",
