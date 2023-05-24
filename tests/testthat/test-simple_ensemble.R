@@ -1,6 +1,6 @@
 library(matrixStats)
 
-pred <- readr::read_csv("inst/test-data/2022-10-08-simple_hub-baseline.csv") %>%
+pred <- readr::read_csv("inst/example-data/2022-10-08-simple_hub-baseline.csv") %>%
   mutate(team_abbr = "simple_hub", model_abbr = "baseline", .before = origin_date)
 
 test_that("non-default column names are preserved in output data frame", {
