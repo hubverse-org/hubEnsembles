@@ -32,34 +32,37 @@
 #'
 #' @return a data.frame with columns `team_abbr`, `model_abbr`, one column for
 #'   each task id variable, `output_type`, `output_id`, and `value`.
-simple_ensemble <- function(predictions, task_id_cols = NULL,
-                            weights = NULL, agg_fun = "mean", agg_args = list(),
-                            team_abbr = "Hub", model_abbr = "ensemble",
+simple_ensemble <- function(predictions, weights = NULL,
+                            agg_fun = "mean", agg_args = list(),
+                            team_abbr = "hub", model_abbr = "ensemble",
+                            task_id_cols = NULL,
                             output_type_col = "output_type",
-                            output_id_col = "output_id",
-                            value_col = "value") {
+                            output_id_col = "output_type_id",
+                            hub_connection = NULL) {
   if (!is.data.frame(predictions)) {
     cli::cli_abort(c("x" = "{.arg predictions} must be a `data.frame`."))
-  }
-
-  if (nrow(predictions) == 0) {
-    cli::cli_warn(c("!" = "{.arg predictions} has zero rows."))
   }
 
   if (is.null(task_id_cols)) {
     cols <- colnames(predictions)
     non_task_cols <- c("team_abbr", "model_abbr", output_type_col,
-                       output_id_col, value_col)
+                       output_id_col, "value")
     task_id_cols <- cols[!cols %in% non_task_cols]
   }
 
   col_names <- c("team_abbr", "model_abbr", task_id_cols, output_type_col,
-                 output_id_col, value_col)
-  if (!all(names(predictions) %in% col_names)) {
+                 output_id_col, "value")
+  if (!all(colnames(predictions) %in% col_names)) {
     cli::cli_abort(c(
       "x" = "{.arg predictions} did not have all required columns
              {.val {col_names}}."
     ))
+  }
+  
+  ## Validations above this point to be relocated to hubUtils
+
+  if (nrow(predictions) == 0) {
+    cli::cli_warn(c("!" = "{.arg predictions} has zero rows."))
   }
 
   valid_types <- c("mean", "median", "quantile", "cdf", "pmf")
@@ -68,7 +71,7 @@ simple_ensemble <- function(predictions, task_id_cols = NULL,
   if (length(invalid_types) > 0) {
     cli::cli_abort(c(
       "x" = "{.arg predictions} contains unsupported output type.",
-      "i" = "Included type{?s}: {.val {invalid_types}}.",
+      "i" = "Included output type{?s}: {.val {invalid_types}}.",
       "i" = "Supported output types: {.val {valid_types}}."
     ))
   }
@@ -80,20 +83,45 @@ simple_ensemble <- function(predictions, task_id_cols = NULL,
     agg_args <- c(agg_args, list(x = "value"))
   } else {
     req_weight_cols <- c("model_abbr", "team_abbr", "weight")
-    if (!isTRUE(all.equal(sort(names(weights)), req_weight_cols))) {
+    if (!all(req_weight_cols %in% colnames(weights))) {
       cli::cli_abort(c(
-        "x" = "{.arg weights} did not have required columns
+        "x" = "{.arg weights} did not include required columns
                {.val {req_weight_cols}}."
       ))
     }
 
+    weight_by_cols <- colnames(weights)[colnames(weights) != "weight"]
+
+    if ("value" %in% weight_by_cols) {
+      cli::cli_abort(c(
+        "x" = "{.arg weights} included a column named {.val {\"value\"}},
+               which is not allowed."
+      ))
+    }
+
+    invalid_cols <- weight_by_cols[!weight_by_cols %in% colnames(predictions)]
+    if (!all(weight_by_cols %in% colnames(predictions))) {
+      cli::cli_abort(c(
+        "x" = "{.arg weights} included {length(invalid_cols)} column{?s} that
+               {?was/were} not present in {.arg predictions}:
+               {.val {invalid_cols}}"
+      ))
+    }
+
+    if ("weight" %in% colnames(predictions)) {
+      weight_col_name <- paste0("weight_", rlang::hash(colnames(predictions)))
+      weights <- weights %>% dplyr::rename(!!weight_col_name := "weight")
+    } else {
+      weight_col_name <- "weight"
+    }
+
     predictions <- predictions %>%
-      dplyr::left_join(weights, by = c("team_abbr", "model_abbr"))
+      dplyr::left_join(weights, by = weight_by_cols)
 
     if (agg_fun == "mean") agg_fun <- matrixStats::weightedMean
     if (agg_fun == "median") agg_fun <- matrixStats::weightedMedian
 
-    agg_args <- c(agg_args, list(x = "value", w = "weight"))
+    agg_args <- c(agg_args, list(x = "value", w = weight_col_name))
   }
 
   ensemble_predictions <- predictions %>%
