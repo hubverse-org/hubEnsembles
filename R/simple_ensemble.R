@@ -42,6 +42,10 @@ simple_ensemble <- function(predictions, task_id_cols = NULL,
     cli::cli_abort(c("x" = "{.arg predictions} must be a `data.frame`."))
   }
 
+  if (nrow(predictions) == 0) {
+    cli::cli_warn(c("!" = "{.arg predictions} has zero rows."))
+  }
+
   if (is.null(task_id_cols)) {
     cols <- colnames(predictions)
     non_task_cols <- c("team_abbr", "model_abbr", output_type_col,
