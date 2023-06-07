@@ -1,25 +1,61 @@
 library(matrixStats)
 library(dplyr)
 
-pred <- read.csv(system.file("example-data/2022-10-08-simple_hub-baseline.csv",
-                             package = "hubEnsembles")) %>%
-  dplyr::mutate(model_id = "simple_hub-baseline", .before = origin_date)
+# set up simple data for test cases
+model_outputs <- expand.grid(
+  stringsAsFactors = FALSE,
+  model_id = letters[1:4],
+  location = c("222", "888"),
+  horizon = 1, #week
+  target = "inc death",
+  target_date = as.Date("2021-12-25"),
+  output_type = "quantile",
+  output_type_id = c(.1, .5, .9),
+  value = NA_real_)
+
+v2.1 <- model_outputs$value[model_outputs$location == "222" &
+                            model_outputs$output_type_id == .1] <-
+  c(10, 30, 15, 20)
+v2.5 <- model_outputs$value[model_outputs$location == "222" &
+                            model_outputs$output_type_id == .5] <-
+  c(40, 40, 45, 50)
+v2.9 <- model_outputs$value[model_outputs$location == "222" &
+                            model_outputs$output_type_id == .9] <-
+  c(60, 70, 75, 80)
+v8.1 <- model_outputs$value[model_outputs$location == "888" &
+                            model_outputs$output_type_id == .1] <-
+  c(100, 300, 400, 250)
+v8.5 <- model_outputs$value[model_outputs$location == "888" &
+                            model_outputs$output_type_id == .5] <-
+  c(150, 325, 500, 300)
+v8.9 <- model_outputs$value[model_outputs$location == "888" &
+                            model_outputs$output_type_id == .9] <-
+  c(250, 350, 500, 350)
+
+fweight2 <- data.frame(model_id = letters[1:4],
+                       location = "222",
+                       weight = 0.1 * (1:4))
+fweight8 <- data.frame(model_id = letters[1:4],
+                       location = "888",
+                       weight = 0.1 * (4:1))
+fweight <- bind_rows(fweight2, fweight8)
+
 
 test_that("non-default columns are dropped from output", {
-  output_names <- pred %>%
+  output_names <- model_outputs %>%
     dplyr::mutate(extra_col_1 = "a", extra_col_2 = "a") %>%
     simple_ensemble(
-      task_id_cols = c("origin_date", "target", "horizon", "location")
+      task_id_cols = c("target_date", "target", "horizon", "location")
     ) %>%
     names()
 
-  expect_equal(sort(names(pred)), sort(output_names))
+  expect_equal(sort(names(model_outputs)), sort(output_names))
 })
 
 
 test_that("invalid output type throws error", {
   expect_error(
-    pred %>%
+    model_outputs %>%
       dplyr::mutate(output_type = "sample") %>%
       simple_ensemble()
   )
@@ -28,44 +64,12 @@ test_that("invalid output type throws error", {
 
 test_that("invalid method argument throws error", {
   expect_error(
-    simple_ensemble(pred, agg_fun="linear pool")
+    simple_ensemble(model_outputs, agg_fun="linear pool")
   )
 })
 
 
 test_that("(weighted) medians and means correctly calculated", {
-  fdat <- expand.grid(
-    stringsAsFactors = FALSE,
-    model_id = letters[1:4],
-    location = c("222", "888"),
-    horizon = 1, #week
-    target = "inc death",
-    target_date = as.Date("2021-12-25"),
-    output_type = "quantile",
-    output_type_id = c(.1, .5, .9),
-    value = NA_real_)
-
-  fdat$value[fdat$location == "222" & fdat$output_type_id == .1] <- v2.1 <-
-    c(10, 30, 15, 20)
-  fdat$value[fdat$location == "222" & fdat$output_type_id == .5] <- v2.5 <-
-    c(40, 40, 45, 50)
-  fdat$value[fdat$location == "222" & fdat$output_type_id == .9] <- v2.9 <-
-    c(60, 70, 75, 80)
-  fdat$value[fdat$location == "888" & fdat$output_type_id == .1] <- v8.1 <-
-    c(100, 300, 400, 250)
-  fdat$value[fdat$location == "888" & fdat$output_type_id == .5] <- v8.5 <-
-    c(150, 325, 500, 300)
-  fdat$value[fdat$location == "888" & fdat$output_type_id == .9] <- v8.9 <-
-    c(250, 350, 500, 350)
-
-  fweight2 <- data.frame(model_id = letters[1:4],
-                         location = "222",
-                         weight = 0.1 * (1:4))
-  fweight8 <- data.frame(model_id = letters[1:4],
-                         location = "888",
-                         weight = 0.1 * (4:1))
-  fweight <- bind_rows(fweight2, fweight8)
-
   median_expected <- mean_expected <-
     weighted_median_expected <- weighted_mean_expected <- data.frame(
       model_id = "hub-ensemble",
@@ -100,15 +104,15 @@ test_that("(weighted) medians and means correctly calculated", {
   weighted_mean_expected$value <- weighted_mean_vals
   weighted_median_expected$value <- weighted_median_vals
 
-  median_actual <- simple_ensemble(model_outputs = fdat, weights = NULL,
+  median_actual <- simple_ensemble(model_outputs = model_outputs, weights = NULL,
                                    agg_fun = "median")
-  mean_actual <- simple_ensemble(model_outputs = fdat, weights = NULL,
+  mean_actual <- simple_ensemble(model_outputs = model_outputs, weights = NULL,
                                  agg_fun = "mean")
 
-  weighted_median_actual <- simple_ensemble(model_outputs = fdat,
+  weighted_median_actual <- simple_ensemble(model_outputs = model_outputs,
                                             weights = fweight,
                                             agg_fun = "median")
-  weighted_mean_actual <- simple_ensemble(model_outputs = fdat,
+  weighted_mean_actual <- simple_ensemble(model_outputs = model_outputs,
                                           weights = fweight,
                                           agg_fun = "mean")
 
