@@ -1,4 +1,4 @@
-"origin_date","target","horizon","location","type","type_id","value"
+"origin_date","target","horizon","location","output_type","output_type_id","value"
 2022-10-08,"wk inc flu hosp",1,"US","quantile","0.01",135
 2022-10-08,"wk inc flu hosp",1,"US","quantile","0.025",137
 2022-10-08,"wk inc flu hosp",1,"US","quantile","0.05",139
