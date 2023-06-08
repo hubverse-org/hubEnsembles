@@ -64,7 +64,16 @@ test_that("invalid output type throws error", {
 
 test_that("invalid method argument throws error", {
   expect_error(
-    simple_ensemble(model_outputs, agg_fun="linear pool")
+    simple_ensemble(model_outputs, agg_fun = "linear pool")
+  )
+})
+
+
+test_that("weights column already in model_outputs generates error", {
+  expect_error(
+    model_outputs %>%
+      dplyr::mutate(weight = "a") %>%
+      simple_ensemble(weights = fweight)
   )
 })
 
@@ -76,9 +85,9 @@ test_that("(weighted) medians and means correctly calculated", {
       location = rep(c("222", "888"), each = 3),
       horizon = 1,
       target = "inc death",
-      target_date = as.Date("2021-12-25"), 
-      output_type = "quantile", 
-      output_type_id = rep(c(.1, .5, .9), 2), 
+      target_date = as.Date("2021-12-25"),
+      output_type = "quantile",
+      output_type_id = rep(c(.1, .5, .9), 2),
       value = NA_real_)
 
   median_vals <- sapply(list(v2.1, v2.5, v2.9, v8.1, v8.5, v8.9), median)
@@ -104,9 +113,11 @@ test_that("(weighted) medians and means correctly calculated", {
   weighted_mean_expected$value <- weighted_mean_vals
   weighted_median_expected$value <- weighted_median_vals
 
-  median_actual <- simple_ensemble(model_outputs = model_outputs, weights = NULL,
+  median_actual <- simple_ensemble(model_outputs = model_outputs,
+                                   weights = NULL,
                                    agg_fun = "median")
-  mean_actual <- simple_ensemble(model_outputs = model_outputs, weights = NULL,
+  mean_actual <- simple_ensemble(model_outputs = model_outputs,
+                                 weights = NULL,
                                  agg_fun = "mean")
 
   weighted_median_actual <- simple_ensemble(model_outputs = model_outputs,
@@ -121,4 +132,30 @@ test_that("(weighted) medians and means correctly calculated", {
 
   expect_equal(as.data.frame(weighted_median_actual), weighted_median_expected)
   expect_equal(as.data.frame(weighted_mean_actual), weighted_mean_expected)
+})
+
+
+test_that("(weighted) medians and means work with alternate name for weights columns", {
+  weighted_median_actual <- simple_ensemble(
+    model_outputs = model_outputs,
+    weights = fweight %>%
+      dplyr::rename(w = weight),
+    weights_col_name = "w",
+    agg_fun = "median")
+  weighted_mean_actual <- simple_ensemble(
+    model_outputs = model_outputs,
+    weights = fweight %>%
+      dplyr::rename(w = weight),
+    weights_col_name = "w",
+    agg_fun = "mean")
+
+  weighted_median_expected <- simple_ensemble(model_outputs = model_outputs,
+                                              weights = fweight,
+                                              agg_fun = "median")
+  weighted_mean_expected <- simple_ensemble(model_outputs = model_outputs,
+                                            weights = fweight,
+                                            agg_fun = "mean")
+
+  expect_equal(weighted_mean_actual, weighted_mean_expected)
+  expect_equal(weighted_median_actual, weighted_median_expected)
 })
