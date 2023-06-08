@@ -18,7 +18,7 @@ jobs:
         git fetch --all
         git branch update_example_simple_forecast_hub
         git checkout update_example_simple_forecast_hub
-        git rm -R inst/example-data/example-simple-forecast-hub/
+        git rm -r inst/example-data/example-simple-forecast-hub/
       working-directory: ./hubEnsembles
 
     - name: Checkout example-simple-forecast-hub
