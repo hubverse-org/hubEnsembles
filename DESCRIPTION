@@ -1,7 +1,7 @@
 Package: hubEnsembles
 Title: Ensemble methods for combining hub model outputs.
 Version: 0.0.0.9000
-Authors@R: 
+Authors@R: c(
     person("Anna", "Krystalli", , "annakrystalli@googlemail.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-2378-4915")),
     person(given = "Evan L",
@@ -9,7 +9,7 @@ Authors@R:
            role = c("aut")),
     person(given = "Li",
            family = "Shandross",
-           role = c("aut"))
+           role = c("aut")))
 Description: Functions for combining model outputs (e.g. predictions or
     estimates) from multiple models into an aggregated ensemble model output.
 License: MIT + file LICENSE
