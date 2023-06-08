@@ -24,7 +24,7 @@ jobs:
       with:
         repository: 'Infectious-Disease-Modeling-Hubs/example-simple-forecast-hub'
         ref: 'main'
-        path: './hubEnsembles/inst/example-data/example-simple-forecast-hub'
+        path: './inst/example-data/example-simple-forecast-hub'
 
     - name: Push files to GitHub
       run: |
