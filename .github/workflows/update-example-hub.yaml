@@ -28,9 +28,11 @@ jobs:
         git checkout -b update_example_simple_forecast_hub
         rm -R inst/example-data/example-simple-forecast-hub/.git
         git add inst/example-data/example-simple-forecast-hub
-        git commit -m "Github Actions build: $GITHUB_RUN_NUMBER"
+        git commit -m "Github Actions build update example-simple-forecast-hub: $GITHUB_RUN_NUMBER"
         echo "Pushing files..."
         git push https://${GITHUB_PAT}@github.com/Infectious-Disease-Modeling-Hubs/hubEnsembles.git HEAD:update_example_simple_forecast_hub
         echo "Submitting pull request..."
-        git request-pull https://github.com/Infectious-Disease-Modeling-Hubs/hubEnsembles.git update_example_simple_forecast_hub
+        gh pr create --fill
       working-directory: ./hubEnsembles
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
