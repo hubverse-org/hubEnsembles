@@ -25,8 +25,6 @@
 #'   `model_outputs` that contains the output type.
 #' @param output_type_id_col `character` string with the name of the column in
 #'   `model_outputs` that contains the output type id.
-#' @param value_col `character` string with the name of the column in
-#'   `model_outputs` that contains model output values.
 #'
 #' @details The default for `agg_fun` is `"mean"`, in which case the ensemble's
 #'   output is the average of the component model outputs within each group

@@ -50,9 +50,6 @@ ensemble model.}
 
 \item{output_type_id_col}{\code{character} string with the name of the column in
 \code{model_outputs} that contains the output type id.}
-
-\item{value_col}{\code{character} string with the name of the column in
-\code{model_outputs} that contains model output values.}
 }
 \value{
 a data.frame with columns \code{model_id}, one column for
