@@ -18,7 +18,6 @@ jobs:
         git fetch --all
         git switch update_example_simple_forecast_hub || git switch -c update_example_simple_forecast_hub
         git rm -r inst/example-data/example-simple-forecast-hub/ --ignore-unmatch
-      working-directory: ./hubEnsembles
 
     - name: Checkout example-simple-forecast-hub
       uses: actions/checkout@v3
@@ -39,4 +38,3 @@ jobs:
         git push https://${GITHUB_TOKEN}@github.com/Infectious-Disease-Modeling-Hubs/hubEnsembles.git HEAD:update_example_simple_forecast_hub
         echo "Submitting pull request..."
         gh pr create --fill --base main --head update_example_simple_forecast_hub
-      working-directory: ./hubEnsembles
