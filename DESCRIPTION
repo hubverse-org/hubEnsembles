@@ -1,10 +1,17 @@
 Package: hubEnsembles
-Title: What the Package Does (One Line, Title Case)
+Title: Ensemble methods for combining hub model outputs.
 Version: 0.0.0.9000
 Authors@R: 
     person("Anna", "Krystalli", , "annakrystalli@googlemail.com", role = c("aut", "cre"),
-           comment = c(ORCID = "0000-0002-2378-4915"))
-Description: What the package does (one paragraph).
+           comment = c(ORCID = "0000-0002-2378-4915")),
+    person(given = "Evan L",
+           family = "Ray",
+           role = c("aut")),
+    person(given = "Li",
+           family = "Shandross",
+           role = c("aut"))
+Description: Functions for combining model outputs (e.g. predictions or
+    estimates) from multiple models into an aggregated ensemble model output.
 License: MIT + file LICENSE
 Suggests: 
     testthat (>= 3.0.0)
@@ -17,5 +24,8 @@ BugReports: https://github.com/Infectious-Disease-Modeling-Hubs/hubEnsembles/iss
 Imports: 
     cli,
     dplyr,
+    hubUtils,
     matrixStats,
     rlang
+Remotes:
+    Infectious-Disease-Modeling-Hubs/hubUtils
