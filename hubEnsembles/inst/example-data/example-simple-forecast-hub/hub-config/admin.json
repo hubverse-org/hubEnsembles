@@ -1,0 +1,15 @@
+{
+    "name": "Simple Forecast Hub",
+    "maintainer": "Consortium of Infectious Disease Modeling Hubs",
+    "contact": {
+        "name": "Joe Bloggs",
+        "email": "j.bloggs@cidmh.com"
+    },
+    "repository_url": "https://github.com/Infectious-Disease-Modeling-Hubs/example-simple-forecast-hub",
+    "hub_models": [{
+        "team_abbr": "simple_hub",
+        "model_abbr": "baseline",
+        "model_type": "baseline"
+    }],
+    "timezone": ["UTC-5"]
+}
