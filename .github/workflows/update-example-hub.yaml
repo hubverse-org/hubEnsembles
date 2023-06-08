@@ -26,6 +26,7 @@ jobs:
         git config --global user.name "Github Actions CI"
         echo "Commiting files..."
         git checkout -b update_example_simple_forecast_hub
+        rm -R inst/example-data/example-simple-forecast-hub/.git
         git add inst/example-data/example-simple-forecast-hub
         git commit -m "Github Actions build: $GITHUB_RUN_NUMBER"
         echo "Pushing files..."
