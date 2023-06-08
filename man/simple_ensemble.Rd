@@ -15,8 +15,7 @@ simple_ensemble(
   model_id = "hub-ensemble",
   task_id_cols = NULL,
   output_type_col = "output_type",
-  output_type_id_col = "output_type_id",
-  hub_connection = NULL
+  output_type_id_col = "output_type_id"
 )
 }
 \arguments{

@@ -48,8 +48,7 @@ simple_ensemble <- function(model_outputs, weights = NULL,
                             model_id = "hub-ensemble",
                             task_id_cols = NULL,
                             output_type_col = "output_type",
-                            output_type_id_col = "output_type_id",
-                            hub_connection = NULL) {
+                            output_type_id_col = "output_type_id") {
   if (!is.data.frame(model_outputs)) {
     cli::cli_abort(c("x" = "{.arg model_outputs} must be a `data.frame`."))
   }
