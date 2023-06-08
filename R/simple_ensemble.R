@@ -71,7 +71,7 @@ simple_ensemble <- function(model_outputs, weights = NULL,
   if (length(invalid_types) > 0) {
     cli::cli_abort(c(
       "x" = "{.arg model_outputs} contains unsupported output type.",
-      "i" = "Included output type{?s}: {.val {invalid_types}}.",
+      "!" = "Included invalid output type{?s}: {.val {invalid_types}}.",
       "i" = "Supported output types: {.val {valid_types}}."
     ))
   }
