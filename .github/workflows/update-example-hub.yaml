@@ -7,12 +7,20 @@ jobs:
     runs-on: ubuntu-latest
     
     env:
-      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
     - name: Checkout hubEnsembles
       uses: actions/checkout@v3
-      
+    
+    - name: Checkout update_example_simple_forecast_hub branch, remove existing
+      run: |
+        git fetch --all
+        git branch update_example_simple_forecast_hub
+        git checkout update_example_simple_forecast_hub
+        git rm -R inst/example-data/example-simple-forecast-hub/
+      working-directory: ./hubEnsembles
+
     - name: Checkout example-simple-forecast-hub
       uses: actions/checkout@v3
       with:
@@ -24,15 +32,12 @@ jobs:
       run: |
         git config --global user.email "git@github.com"
         git config --global user.name "Github Actions CI"
-        echo "Commiting files..."
-        git checkout -b update_example_simple_forecast_hub
+        echo "Committing files..."
         rm -R inst/example-data/example-simple-forecast-hub/.git
         git add inst/example-data/example-simple-forecast-hub
         git commit -m "Github Actions build update example-simple-forecast-hub: $GITHUB_RUN_NUMBER"
         echo "Pushing files..."
-        git push https://${GITHUB_PAT}@github.com/Infectious-Disease-Modeling-Hubs/hubEnsembles.git HEAD:update_example_simple_forecast_hub
+        git push https://${GITHUB_TOKEN}@github.com/Infectious-Disease-Modeling-Hubs/hubEnsembles.git HEAD:update_example_simple_forecast_hub
         echo "Submitting pull request..."
         gh pr create --fill --base main --head update_example_simple_forecast_hub
       working-directory: ./hubEnsembles
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
