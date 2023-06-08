@@ -1,5 +1,5 @@
 {
-    "schema_version": "https://github.com/Infectious-Disease-Modeling-Hubs/schemas/blob/version-schema/v0.0.0.9/tasks-schema.json",
+    "schema_version": "https://raw.githubusercontent.com/Infectious-Disease-Modeling-Hubs/schemas/main/v1.0.0/tasks-schema.json",
     "rounds": [{
             "round_id_from_variable": true,
             "round_id": "origin_date",
@@ -7,15 +7,15 @@
                 "task_ids": {
                     "origin_date": {
                         "required": null,
-                        "optional": ["2022-10-01", "2022-10-08", "2022-10-15", "2022-10-15", "2022-10-22", "2022-10-29"]
+                        "optional": ["2023-06-05", "2023-06-06", "2023-06-07", "2023-06-08", "2023-06-09", "2023-06-10"]
                     },
                     "target": {
-                        "required": "wk inc flu hosp",
+                        "required": ["inc flu hosp"],
                         "optional": null
                     },
                     "horizon": {
-                        "required": [1],
-                        "optional": [2, 3, 4]
+                        "required": null,
+                        "optional": [-3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7]
                     },
                     "location": {
                         "required": null,
@@ -124,18 +124,32 @@
                     },
                     "target_metadata": [
                         {
-                            "target_id": "wk inc flu hosp",
-                            "target_name": "weekly incident influenza hospitalizations",
+                            "target_id": "inc flu hosp",
+                            "target_name": "daily incident influenza hospitalizations",
                             "target_units": "count",
                             "target_keys": {
-                                "target": ["wk inc flu hosp"]
+                                "target": ["inc flu hosp"]
                             },
-                            "description": "This target represents a count of the number of new hospitalizations per week in a given location.",
+                            "description": "This target represents a count of the number of new hospitalizations per day in a given location.",
                             "is_step_ahead": true,
-                            "time_unit": "week"
+                            "time_unit": "day"
                         }
                     ]
-                }
+                },
+                "target_metadata": [
+                    {
+                       "target_id": "inc flu hosp",
+                       "target_name": "Incident influenza hospitalizations",
+                       "target_units": "count",
+                       "target_keys": {
+                           "target": "inc flu hosp"
+                       },
+                       "description": "Weekly newly reported hospitalizations where the patient has influenza, as reported by hospital facilities and aggregated in the HHS Protect data collection system.",
+                       "target_type": "discrete",
+                       "is_step_ahead": true,
+                       "time_unit": "week"
+                    }
+                ]
             }],
             "submissions_due": {
                 "relative_to": "origin_date",
