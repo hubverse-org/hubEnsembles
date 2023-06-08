@@ -30,7 +30,7 @@ specific to values of those variables. The default is \code{NULL}, in which case
 an equally-weighted ensemble is calculated.}
 
 \item{weights_col_name}{\code{character} string naming the column in \code{weights}
-with model weights. Defaults to \code{"weights"}}
+with model weights. Defaults to \code{"weight"}}
 
 \item{agg_fun}{a function or character string name of a function to use for
 aggregating component model outputs into the ensemble outputs. See the

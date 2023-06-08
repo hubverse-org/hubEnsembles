@@ -11,7 +11,7 @@
 #'   specific to values of those variables. The default is `NULL`, in which case
 #'   an equally-weighted ensemble is calculated.
 #' @param weights_col_name `character` string naming the column in `weights`
-#'   with model weights. Defaults to `"weights"`
+#'   with model weights. Defaults to `"weight"`
 #' @param agg_fun a function or character string name of a function to use for
 #'   aggregating component model outputs into the ensemble outputs. See the
 #'   details for more information.
