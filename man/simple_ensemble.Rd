@@ -9,6 +9,7 @@ output types include \code{mean}, \code{median}, \code{quantile}, \code{cdf}, an
 simple_ensemble(
   model_outputs,
   weights = NULL,
+  weights_col_name = "weight",
   agg_fun = "mean",
   agg_args = list(),
   model_id = "hub-ensemble",
@@ -23,10 +24,14 @@ simple_ensemble(
 model outputs (e.g., predictions).}
 
 \item{weights}{an optional \code{data.frame} with component model weights. If
-provided, it should have columns \code{model_id}, \code{weight}, and optionally,
-additional columns corresponding to task id variables, \code{output_type}, or
-\code{output_type_id}, if weights are specific to values of those variables. The
-default is \code{NULL}, in which case an equally-weighted ensemble is calculated.}
+provided, it should have a column named \code{model_id} and a column containing
+model weights. Optionally, it may contain additional columns corresponding
+to task id variables, \code{output_type}, or \code{output_type_id}, if weights are
+specific to values of those variables. The default is \code{NULL}, in which case
+an equally-weighted ensemble is calculated.}
+
+\item{weights_col_name}{\code{character} string naming the column in \code{weights}
+with model weights. Defaults to \code{"weights"}}
 
 \item{agg_fun}{a function or character string name of a function to use for
 aggregating component model outputs into the ensemble outputs. See the
@@ -38,13 +43,20 @@ to \code{agg_fun}.}
 \item{model_id}{\code{character} string with the identifier to use for the
 ensemble model.}
 
-\item{task_id_cols, }{output_type_col, output_type_id_col, value_col
-\code{character} vectors with the names of the columns in \code{model_outputs} for
-the output's type, additional identifying information, and value of the
-model output.}
+\item{task_id_cols}{\code{character} vector with names of columns in
+\code{model_outputs} that specify modeling tasks.}
+
+\item{output_type_col}{\code{character} string with the name of the column in
+\code{model_outputs} that contains the output type.}
+
+\item{output_type_id_col}{\code{character} string with the name of the column in
+\code{model_outputs} that contains the output type id.}
+
+\item{value_col}{\code{character} string with the name of the column in
+\code{model_outputs} that contains model output values.}
 }
 \value{
-a data.frame with columns \code{team_abbr}, \code{model_abbr}, one column for
+a data.frame with columns \code{model_id}, one column for
 each task id variable, \code{output_type}, \code{output_id}, and \code{value}. Note that
 any additional columns in the input \code{model_outputs} are dropped.
 }
@@ -54,12 +66,14 @@ each combination of model task, output type, and output type id. Supported
 output types include \code{mean}, \code{median}, \code{quantile}, \code{cdf}, and \code{pmf}.
 }
 \details{
-The default for \code{agg_fun} is \code{mean}, in which case the ensemble's
+The default for \code{agg_fun} is \code{"mean"}, in which case the ensemble's
 output is the average of the component model outputs within each group
 defined by a combination of values in the task id columns, output type, and
 output type id. The provided \code{agg_fun} should have an argument \code{x} for the
 vector of numeric values to summarize, and for weighted methods, an
-argument \code{w} with a numeric vector of weights. For weighted methods,
-\code{agg_fun = "mean"} and \code{agg_fun = "median"} are translated to use
-\code{matrixStats::weightedMean} and \code{matrixStats::weightedMedian} respectively.
+argument \code{w} with a numeric vector of weights. If it desired to use an
+aggregation function that does not accept these arguments, a wrapper
+would need to be written. For weighted methods, \code{agg_fun = "mean"} and
+\code{agg_fun = "median"} are translated to use \code{matrixStats::weightedMean} and
+\code{matrixStats::weightedMedian} respectively.
 }
