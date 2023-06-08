@@ -32,7 +32,7 @@ jobs:
         echo "Pushing files..."
         git push https://${GITHUB_PAT}@github.com/Infectious-Disease-Modeling-Hubs/hubEnsembles.git HEAD:update_example_simple_forecast_hub
         echo "Submitting pull request..."
-        gh pr create --fill
+        gh pr create --fill --base main --head update_example_simple_forecast_hub
       working-directory: ./hubEnsembles
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
