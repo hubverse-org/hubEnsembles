@@ -30,7 +30,7 @@ specific to values of those variables. The default is \code{NULL}, in which case
 an equally-weighted ensemble is calculated.}
 
 \item{weights_col_name}{\code{character} string naming the column in \code{weights}
-with model weights. Defaults to \code{"weights"}}
+with model weights. Defaults to \code{"weight"}}
 
 \item{agg_fun}{a function or character string name of a function to use for
 aggregating component model outputs into the ensemble outputs. See the
@@ -43,7 +43,10 @@ to \code{agg_fun}.}
 ensemble model.}
 
 \item{task_id_cols}{\code{character} vector with names of columns in
-\code{model_outputs} that specify modeling tasks.}
+\code{model_outputs} that specify modeling tasks. Defaults to \code{NULL}, in which
+case all columns in \code{model_outputs} other than \code{"model_id"}, the specified
+\code{output_type_col} and \code{output_type_id_col}, and \code{"value"} are used as task
+ids.}
 
 \item{output_type_col}{\code{character} string with the name of the column in
 \code{model_outputs} that contains the output type.}
