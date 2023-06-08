@@ -1,0 +1,33 @@
+on: workflow_dispatch
+
+name: update-example-hub
+
+jobs:
+  update-example-simple-forecast-hub:
+    runs-on: ubuntu-latest
+    
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+    - name: Checkout hubEnsembles
+      uses: actions/checkout@v3
+      
+    - name: Checkout example-simple-forecast-hub
+      uses: actions/checkout@v3
+      with:
+        repository: 'Infectious-Disease-Modeling-Hubs/example-simple-forecast-hub'
+        ref: 'main'
+        path: './hubEnsembles/inst/example-data/example-simple-forecast-hub'
+
+    - name: Push files to GitHub
+      run: |
+        git config --global user.email "git@github.com"
+        git config --global user.name "Github Actions CI"
+        echo "Commiting files..."
+        git checkout -b update_example_simple_forecast_hub
+        git add inst/example-data/example-simple-forecast-hub
+        git commit -m "Github Actions build: $GITHUB_RUN_NUMBER"
+        echo "Pushing files..."
+        git push https://${GITHUB_PAT}@github.com/Infectious-Disease-Modeling-Hubs/hubEnsembles.git HEAD:update_example_simple_forecast_hub
+      working-directory: ./hubEnsembles
