@@ -32,5 +32,5 @@ jobs:
         echo "Pushing files..."
         git push https://${GITHUB_PAT}@github.com/Infectious-Disease-Modeling-Hubs/hubEnsembles.git HEAD:update_example_simple_forecast_hub
         echo "Submitting pull request..."
-        git request-pull https://${GITHUB_PAT}@github.com/Infectious-Disease-Modeling-Hubs/hubEnsembles.git update_example_simple_forecast_hub
+        git request-pull https://github.com/Infectious-Disease-Modeling-Hubs/hubEnsembles.git update_example_simple_forecast_hub
       working-directory: ./hubEnsembles
