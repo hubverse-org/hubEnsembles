@@ -25,6 +25,7 @@ Imports:
     cli,
     dplyr,
     hubUtils,
+    magrittr,
     matrixStats,
     rlang
 Remotes:
