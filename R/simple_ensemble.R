@@ -20,7 +20,10 @@
 #' @param model_id `character` string with the identifier to use for the
 #'   ensemble model.
 #' @param task_id_cols `character` vector with names of columns in
-#'   `model_outputs` that specify modeling tasks.
+#'   `model_outputs` that specify modeling tasks. Defaults to `NULL`, in which
+#'   case all columns in `model_outputs` other than `"model_id"`, the specified
+#'   `output_type_col` and `output_type_id_col`, and `"value"` are used as task
+#'   ids.
 #' @param output_type_col `character` string with the name of the column in
 #'   `model_outputs` that contains the output type.
 #' @param output_type_id_col `character` string with the name of the column in
@@ -40,6 +43,8 @@
 #' @return a data.frame with columns `model_id`, one column for
 #'   each task id variable, `output_type`, `output_id`, and `value`. Note that
 #'   any additional columns in the input `model_outputs` are dropped.
+#'
+#' @export
 simple_ensemble <- function(model_outputs, weights = NULL,
                             weights_col_name = "weight",
                             agg_fun = "mean", agg_args = list(),

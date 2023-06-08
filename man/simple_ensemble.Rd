@@ -43,7 +43,10 @@ to \code{agg_fun}.}
 ensemble model.}
 
 \item{task_id_cols}{\code{character} vector with names of columns in
-\code{model_outputs} that specify modeling tasks.}
+\code{model_outputs} that specify modeling tasks. Defaults to \code{NULL}, in which
+case all columns in \code{model_outputs} other than \code{"model_id"}, the specified
+\code{output_type_col} and \code{output_type_id_col}, and \code{"value"} are used as task
+ids.}
 
 \item{output_type_col}{\code{character} string with the name of the column in
 \code{model_outputs} that contains the output type.}
