@@ -1,0 +1,38 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# Example Simple Forecast Hub
+
+**This repository is under construction.**
+
+This repository is designed as an example modeling Hub that follows the infrastructure guidelines laid out by the [Consortium of Infectious Disease Modeling Hubs](https://github.com/Infectious-Disease-Modeling-Hubs/). The example is documented in more detail [here](https://hubdocs.readthedocs.io/en/latest/format/intro-data-formats.html#running-examples).
+
+The example model outputs that are provided here are adapted from forecasts submitted to the US COVID-19 Forecast Hub, but have been modified to provide examples of nowcasts. They should be viewed only as illustrations of the data formats, not as realistic examples of nowcasts and forecasts. In particular, scores calculated by comparing the model outputs to the target data will not give a meaningul measure of predictive skill.
+
+## Working with the data
+
+To work with the data in R, you can use code like the following:
+
+```{r}
+library(hubUtils)
+library(dplyr)
+
+model_outputs <- hubUtils::connect_hub(hub_path = ".") %>%
+    dplyr::collect()
+head(model_outputs)
+
+target_data <- read.csv("target-data/covid-hospitalizations.csv")
+head(target_data)
+```
