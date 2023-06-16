@@ -10,9 +10,17 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 4
 )
 ```
+
+# Introduction
+
+The `hubEnsembles` package includes functionality for aggregating model outputs, such as forecasts or projections, that are submitted to a hub by multiple models into combined ensemble model outputs. Currently the package includes just one function: `simple_ensemble`. We illustrate that function in this vignette.
+
+This vignette uses the following R packages:
 
 ```{r setup}
 library(dplyr)
@@ -20,10 +28,6 @@ library(plotly)
 library(hubUtils)
 library(hubEnsembles)
 ```
-
-# Introduction
-
-The `hubEnsembles` package includes functionality for aggregating model outputs, such as forecasts or projections, that are submitted to a hub by multiple models into combined ensemble model outputs. Currently the package includes just one function: `simple_ensemble`. We illustrate that function in this vignette.
 
 # Example data: a simple forecast hub
 
@@ -35,8 +39,12 @@ hub_path <- system.file("example-data/example-simple-forecast-hub",
 
 model_outputs <- hubUtils::connect_hub(hub_path) %>%
   dplyr::collect()
-
 head(model_outputs)
+
+target_data_path <- file.path(hub_path, "target-data",
+                              "covid-hospitalizations.csv")
+target_data <- read.csv(target_data_path)
+head(target_data)
 ```
 
 # Creating ensembles with `simple_ensemble`
@@ -49,17 +57,18 @@ head(mean_ens)
 # Plots
 
 ```{r}
-basic_plot_function <- function(plot_df, truth_df, plain_line = 0.5, ribbon = c(0.975, 0.025)) {
-  
-  plain_df <- dplyr::filter(plot_df, output_type_id == plain_line) 
-  
+basic_plot_function <- function(plot_df, truth_df, plain_line = 0.5, ribbon = c(0.975, 0.025),
+                                forecast_date) {
+
+  plain_df <- dplyr::filter(plot_df, output_type_id == plain_line)
+
   ribbon_df <- dplyr::filter(plot_df, output_type_id %in% ribbon) %>%
-    dplyr::mutate(output_type_id = ifelse(output_type_id == min(ribbon), 
+    dplyr::mutate(output_type_id = ifelse(output_type_id == min(ribbon),
                                           "min", "max")) %>% 
     tidyr::pivot_wider(names_from = output_type_id, values_from = value)
-  
-  plot_model <- plot_ly(height = 1050, colors = scales::hue_pal()(50)) 
-  
+
+  plot_model <- plot_ly(height = 600, colors = scales::hue_pal()(50)) 
+
   if (!is.null(truth_df)) {
     plot_model <- plot_model %>% 
       add_trace(data = truth_df, x = ~time_idx, y = ~value, type = "scatter",
@@ -76,15 +85,24 @@ basic_plot_function <- function(plot_df, truth_df, plain_line = 0.5, ribbon = c(
               color = ~model_id) %>% 
     add_ribbons(data = ribbon_df, x = ~target_date, ymin = ~min, 
                 ymax = ~max, color = ~model_id, opacity = 0.25, 
-                line = list(width = 0), showlegend = FALSE)
+                line = list(width = 0), showlegend = FALSE) %>%
+    plotly::layout(shapes = list(type = "line", y0 = 0, y1 = 1, yref = "paper",
+                                x0 = forecast_date, x1 = forecast_date,
+                                line = list(color = "gray")))
 }
 ```
 
 ```{r}
 plot_df <- dplyr::bind_rows(model_outputs, mean_ens) %>%
-  dplyr::filter(location == "US") %>%
+  dplyr::filter(location == "US", origin_date == "2022-12-12") %>%
   dplyr::mutate(target_date = origin_date + horizon)
 
-plot <- basic_plot_function(plot_df, truth_df = NULL)
+plot <- basic_plot_function(
+    plot_df,
+    truth_df = target_data %>%
+        dplyr::filter(location == "US",
+                      time_idx >= "2022-10-01",
+                      time_idx <= "2023-03-01"),
+    forecast_date = "2022-12-12")
 plot
 ```
