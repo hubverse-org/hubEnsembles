@@ -57,7 +57,7 @@ simple_ensemble <- function(model_outputs, weights = NULL,
   }
 
   if (isFALSE("model_out_tbl" %in% class(model_outputs))) {
-    hubUtils::as_model_out_tbl(model_outputs)
+    model_outputs <- hubUtils::as_model_out_tbl(model_outputs)
   }
 
   model_out_cols <- colnames(model_outputs)
