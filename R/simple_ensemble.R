@@ -40,8 +40,7 @@
 #'   `agg_fun = "median"` are translated to use `matrixStats::weightedMean` and
 #'   `matrixStats::weightedMedian` respectively.
 #'
-#' @return a data.frame with columns `model_id`, one column for
-#'   each task id variable, `output_type`, `output_id`, and `value`. Note that
+#' @return a `model_out_tbl` object of ensemble predictions. Note that
 #'   any additional columns in the input `model_outputs` are dropped.
 #'
 #' @export
