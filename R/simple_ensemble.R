@@ -56,6 +56,10 @@ simple_ensemble <- function(model_outputs, weights = NULL,
     cli::cli_abort(c("x" = "{.arg model_outputs} must be a `data.frame`."))
   }
 
+  if (isFALSE("model_out_tbl" %in% class(model_outputs))) {
+    hubUtils::as_model_out_tbl(model_outputs)
+  }
+
   model_out_cols <- colnames(model_outputs)
 
   non_task_cols <- c("model_id", output_type_col, output_type_id_col, "value")
@@ -145,9 +149,8 @@ simple_ensemble <- function(model_outputs, weights = NULL,
     dplyr::group_by(dplyr::across(dplyr::all_of(group_by_cols))) %>%
     dplyr::summarize(value = do.call(agg_fun, args = agg_args)) %>%
     dplyr::mutate(model_id = model_id, .before = 1) %>%
-    dplyr::ungroup()
-
-  # hubUtils::as_model_output_df(ensemble_model_outputs)
+    dplyr::ungroup() %>%
+    hubUtils::as_model_output_df(ensemble_model_outputs)
 
   return(ensemble_model_outputs)
 }
