@@ -1,5 +1,5 @@
 {
-    "schema_version": "https://raw.githubusercontent.com/Infectious-Disease-Modeling-Hubs/schemas/main/v1.0.0/tasks-schema.json",
+    "schema_version": "https://raw.githubusercontent.com/Infectious-Disease-Modeling-Hubs/schemas/main/v2.0.0/tasks-schema.json",
     "rounds": [{
             "round_id_from_variable": true,
             "round_id": "origin_date",
@@ -79,7 +79,7 @@
                 },
                 "output_type": {
                     "mean": {
-                        "type_id": {
+                        "output_type_id": {
                             "required": null,
                             "optional": ["NA"]
                         },
@@ -89,7 +89,7 @@
                         }
                     },
                     "quantile": {
-                        "type_id": {
+                        "output_type_id": {
                             "required": [
                                 0.010,
                                 0.025,
