@@ -70,9 +70,12 @@ linear_pool <- function(model_outputs, weights = NULL,
     ))
   }
 
-  # calculate linear opinion pool for different type
+  # calculate linear opinion pool for different types
+  group_by_cols <- c(task_id_cols, "output_type", "output_type_id")
+  
   ensemble_outputs1 <- ensemble_outputs2 <- ensemble_outputs3 <- NULL
   if (any(unique_types %in% c("mean", "cdf", "pmf"))) {
+    # linear pool calculation for mean, cdf, pmf output types
     ensemble_outputs1 <- model_outputs %>%
       dplyr::filter(output_type %in% c("mean", "cdf", "pmf")) %>%
       hubEnsembles::simple_ensemble(weights = weights,
@@ -85,14 +88,34 @@ linear_pool <- function(model_outputs, weights = NULL,
   
   if (any(unique_types == "sample")) {
     # linear pool calculation for sample output type
-    outputs2 = TRUE
     print("sample")
   } 
   
   if (any(unique_types == "quantile")) {
     # linear pool calculation for quantile output type
-    outputs3 = TRUE
-    print("quantile")
+    n_samples <- 1e4
+    quantile_levels <- unique(model_outputs$output_type_id)
+    
+    ensemble_outputs3 <- model_outputs %>%
+      dplyr::filter(output_type == "quantile")
+      dplyr::group_by(model_id, dplyr::across(dplyr::all_of(group_by_cols))) %>%
+      dplyr::summarize(
+        pred_qs = list(distfromq::make_q_fn(
+          ps = output_type_id,
+          qs = value)(seq(from = 0, to = 1, length.out = n_samples + 2)[2:n_samples])),
+        .groups = "drop"
+      ) %>%
+      tidyr::unnest(pred_qs) %>%
+      dplyr::group_by(dplyr::across(dplyr::all_of(group_by_cols))) %>%
+      dplyr::summarize(
+        output_type_id= list(quantile_levels),
+        value = list(quantile(pred_qs, probs = quantile_levels)),
+        .groups = "drop"
+      ) |>
+      tidyr::unnest(cols = tidyselect::all_of(c("output_type_id", "value"))) |>
+      dplyr::mutate(
+        model = "ensemble_q"
+      )
   }
   
   ensemble_model_outputs <- ensemble_outputs1 %>%
