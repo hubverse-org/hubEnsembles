@@ -74,6 +74,7 @@ linear_pool <- function(model_outputs, weights = NULL,
   group_by_cols <- c(task_id_cols, "output_type", "output_type_id")
   
   ensemble_outputs1 <- ensemble_outputs2 <- ensemble_outputs3 <- NULL
+  
   if (any(unique_types %in% c("mean", "cdf", "pmf"))) {
     # linear pool calculation for mean, cdf, pmf output types
     ensemble_outputs1 <- model_outputs %>%
@@ -83,7 +84,6 @@ linear_pool <- function(model_outputs, weights = NULL,
                                     agg_fun = "mean", agg_args = list(),
                                     model_id = model_id,
                                     task_id_cols = task_id_cols) 
-    outputs1 = TRUE
   } 
   
   if (any(unique_types == "sample")) {
@@ -96,26 +96,71 @@ linear_pool <- function(model_outputs, weights = NULL,
     n_samples <- 1e4
     quantile_levels <- unique(model_outputs$output_type_id)
     
-    ensemble_outputs3 <- model_outputs %>%
-      dplyr::filter(output_type == "quantile")
-      dplyr::group_by(model_id, dplyr::across(dplyr::all_of(group_by_cols))) %>%
+    if (is.null(weights)) {
+      agg_args <- c(list(x = quote(.data[["pred_qs"]]), probs = quantile_levels))
+    } else {
+    req_weight_cols <- c("model_id", weights_col_name)
+    if (!all(req_weight_cols %in% colnames(weights))) {
+      cli::cli_abort(c(
+        "x" = "{.arg weights} did not include required columns
+               {.val {req_weight_cols}}."
+      ))
+    }
+
+    weight_by_cols <- colnames(weights)[colnames(weights) != weights_col_name]
+    
+    if ("value" %in% weight_by_cols) {
+      cli::cli_abort(c(
+        "x" = "{.arg weights} included a column named {.val {\"value\"}},
+               which is not allowed."
+      ))
+    }
+
+    invalid_cols <- weight_by_cols[!weight_by_cols %in% colnames(model_outputs)]
+    if (length(invalid_cols) > 0) {
+      cli::cli_abort(c(
+        "x" = "{.arg weights} included {length(invalid_cols)} column{?s} that
+               {?was/were} not present in {.arg model_outputs}:
+               {.val {invalid_cols}}"
+      ))
+    }
+
+    if (weights_col_name %in% colnames(model_outputs)) {
+      cli::cli_abort(c(
+        "x" = "The specified {.arg weights_col_name}, {.val {weights_col_name}},
+               is already a column in {.arg model_outputs}."
+      ))
+    }
+
+    model_outputs <- model_outputs %>%
+      dplyr::left_join(weights, by = weight_by_cols)
+      
+    agg_args <- c(list(x = quote(.data[["pred_qs"]]),
+                     weights = quote(.data[[weights_col_name]]),
+                     normwt = TRUE,
+                     probs = quantile_levels))
+    
+    group_by_cols <- c(task_id_cols, "output_type", "output_type_id", weights_col_name)
+  }
+  
+  ensemble_model_outputs <- model_outputs |>
+    dplyr::group_by(model_id, dplyr::across(dplyr::all_of(group_by_cols))) |>
       dplyr::summarize(
         pred_qs = list(distfromq::make_q_fn(
           ps = output_type_id,
           qs = value)(seq(from = 0, to = 1, length.out = n_samples + 2)[2:n_samples])),
         .groups = "drop"
-      ) %>%
-      tidyr::unnest(pred_qs) %>%
-      dplyr::group_by(dplyr::across(dplyr::all_of(group_by_cols))) %>%
-      dplyr::summarize(
-        output_type_id= list(quantile_levels),
-        value = list(quantile(pred_qs, probs = quantile_levels)),
-        .groups = "drop"
       ) |>
+      tidyr::unnest(pred_qs) |>
+    dplyr::group_by(dplyr::across(dplyr::all_of(group_by_cols))) |>
+    dplyr::summarize(
+      output_type_id= list(quantile_levels),
+      value = list(do.call(Hmisc::wtd.quantile, args = agg_args)),
+      .groups = "drop") |>
       tidyr::unnest(cols = tidyselect::all_of(c("output_type_id", "value"))) |>
-      dplyr::mutate(
-        model = "ensemble_q"
-      )
+    dplyr::mutate(model_id = model_id, .before = 1) |>
+    dplyr::ungroup() |>
+    dplyr::select(-weights_col_name) 
   }
   
   ensemble_model_outputs <- ensemble_outputs1 %>%
