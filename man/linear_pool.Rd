@@ -12,9 +12,7 @@ linear_pool(
   weights = NULL,
   weights_col_name = "weight",
   model_id = "hub-ensemble",
-  task_id_cols = NULL,
-  output_type_col = "output_type",
-  output_type_id_col = "output_type_id"
+  task_id_cols = NULL
 )
 }
 \arguments{
