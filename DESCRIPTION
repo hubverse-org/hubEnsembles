@@ -29,7 +29,8 @@ Imports:
     magrittr,
     matrixStats,
     rlang,
-    tidyr
+    tidyr,
+    tidyselect
 Remotes:
     Infectious-Disease-Modeling-Hubs/hubUtils,
     reichlab/distfromq
