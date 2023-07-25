@@ -71,8 +71,6 @@ linear_pool <- function(model_outputs, weights = NULL,
   }
 
   # calculate linear opinion pool for different types
-  group_by_cols <- c(task_id_cols, "output_type", "output_type_id")
-  
   ensemble_outputs1 <- ensemble_outputs2 <- ensemble_outputs3 <- NULL
   
   if (any(unique_types %in% c("mean", "cdf", "pmf"))) {
@@ -97,6 +95,8 @@ linear_pool <- function(model_outputs, weights = NULL,
     quantile_levels <- unique(model_outputs$output_type_id)
     
     if (is.null(weights)) {
+      weights_col_name <- NULL
+      group_by_cols <- task_id_cols
       agg_args <- c(list(x = quote(.data[["pred_qs"]]), probs = quantile_levels))
     } else {
     req_weight_cols <- c("model_id", weights_col_name)
@@ -140,10 +140,10 @@ linear_pool <- function(model_outputs, weights = NULL,
                      normwt = TRUE,
                      probs = quantile_levels))
     
-    group_by_cols <- c(task_id_cols, "output_type", "output_type_id", weights_col_name)
+    group_by_cols <- c(task_id_cols, weights_col_name)
   }
-  
-  ensemble_model_outputs <- model_outputs |>
+
+  ensemble_outputs3 <- model_outputs |>
     dplyr::group_by(model_id, dplyr::across(dplyr::all_of(group_by_cols))) |>
       dplyr::summarize(
         pred_qs = list(distfromq::make_q_fn(
@@ -159,8 +159,9 @@ linear_pool <- function(model_outputs, weights = NULL,
       .groups = "drop") |>
       tidyr::unnest(cols = tidyselect::all_of(c("output_type_id", "value"))) |>
     dplyr::mutate(model_id = model_id, .before = 1) |>
+    dplyr::mutate(output_type = "quantile", .before = output_type_id) |>
     dplyr::ungroup() |>
-    dplyr::select(-weights_col_name) 
+    dplyr::select(-all_of(weights_col_name)) 
   }
   
   ensemble_model_outputs <- ensemble_outputs1 %>%
