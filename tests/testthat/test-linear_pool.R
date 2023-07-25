@@ -1,5 +1,5 @@
-#library(Hmisc)
-#library(distfromq)
+library(Hmisc)
+library(distfromq)
 library(matrixStats)
 library(dplyr)
 library(tidyr)
