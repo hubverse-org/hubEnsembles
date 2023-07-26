@@ -111,7 +111,7 @@ linear_pool <- function(model_outputs, weights = NULL,
       group_by_cols <- task_id_cols
       agg_args <- c(list(x = quote(.data[["pred_qs"]]), probs = quantile_levels))
     } else {
-    req_weight_cols <- c("model_id", weights_col_name)
+      req_weight_cols <- c("model_id", weights_col_name)
     if (!all(req_weight_cols %in% colnames(weights))) {
       cli::cli_abort(c(
         "x" = "{.arg weights} did not include required columns
