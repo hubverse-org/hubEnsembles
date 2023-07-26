@@ -22,7 +22,7 @@
 #'   ids.
 #' @param ... parameters that are passed to `distfromq::make_r_fun`, specifying
 #'   details of how to estimate a quantile function from provided quantile levels and
-#'.  quantile values.
+#'.  quantile values for `output_type` `"quantile"`.
 #'
 #' @return a `model_out_tbl` object of ensemble predictions. Note that
 #'   any additional columns in the input `model_outputs` are dropped.
