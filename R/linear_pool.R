@@ -48,10 +48,6 @@ linear_pool <- function(model_outputs, weights = NULL,
                         model_id = "hub-ensemble",
                         task_id_cols = NULL,
                         ...) {
-                                
-  if (!is.data.frame(model_outputs)) {
-    cli::cli_abort(c("x" = "{.arg model_outputs} must be a `data.frame`."))
-  }
 
   if (isFALSE("model_out_tbl" %in% class(model_outputs))) {
     model_outputs <- hubUtils::as_model_out_tbl(model_outputs)
