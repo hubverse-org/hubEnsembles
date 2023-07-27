@@ -49,7 +49,7 @@ linear_pool <- function(model_outputs, weights = NULL,
                         task_id_cols = NULL,
                         ...) {
 
-  if (isFALSE("model_out_tbl" %in% class(model_outputs))) {
+  if (!inherits(model_outputs, "model_out_tbl")) {
     model_outputs <- hubUtils::as_model_out_tbl(model_outputs)
   }
 
