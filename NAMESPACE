@@ -3,4 +3,5 @@
 export("%>%")
 export(linear_pool)
 export(simple_ensemble)
+export(validate_ensemble_inputs)
 importFrom(magrittr,"%>%")

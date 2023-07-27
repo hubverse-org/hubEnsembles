@@ -58,19 +58,5 @@ test_that("non-default columns are dropped from output", {
 })
 
 
-test_that("invalid output type throws error", {
-  expect_error(
-    quantile_outputs %>%
-      dplyr::mutate(output_type = "median") %>%
-      linear_pool()
-  )
-})
 
 
-test_that("weights column already in quantile_outputs generates error", {
-  expect_error(
-    quantile_outputs %>%
-      dplyr::mutate(weight = "a") %>%
-      linear_pool(weights = fweight)
-  )
-})
