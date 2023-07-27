@@ -45,81 +45,26 @@ simple_ensemble <- function(model_outputs, weights = NULL,
                             agg_fun = "mean", agg_args = list(),
                             model_id = "hub-ensemble",
                             task_id_cols = NULL) {
-  if (!is.data.frame(model_outputs)) {
-    cli::cli_abort(c("x" = "{.arg model_outputs} must be a `data.frame`."))
-  }
 
-  if (isFALSE("model_out_tbl" %in% class(model_outputs))) {
-    model_outputs <- hubUtils::as_model_out_tbl(model_outputs)
-  }
-
-  model_out_cols <- colnames(model_outputs)
-
-  non_task_cols <- c("model_id", "output_type", "output_type_id", "value")
-  if (is.null(task_id_cols)) {
-    task_id_cols <- model_out_cols[!model_out_cols %in% non_task_cols]
-  }
-
-  if (!all(task_id_cols %in% model_out_cols)) {
-    cli::cli_abort(c(
-      "x" = "{.arg model_outputs} did not have all listed task id columns
-             {.val {task_id_col}}."
-    ))
-  }
-  
-  # check `model_outputs` has all standard columns with correct data type
-  # and `model_outputs` has > 0 rows
-  hubUtils::validate_model_out_tbl(model_outputs)
-
+  # validate_ensemble_inputs
   valid_types <- c("mean", "median", "quantile", "cdf", "pmf")
-  unique_types <- unique(model_outputs[["output_type"]])
-  invalid_types <- unique_types[!unique_types %in% valid_types]
-  if (length(invalid_types) > 0) {
-    cli::cli_abort(c(
-      "x" = "{.arg model_outputs} contains unsupported output type.",
-      "!" = "Included invalid output type{?s}: {.val {invalid_types}}.",
-      "i" = "Supported output types: {.val {valid_types}}."
-    ))
-  }
+  validated_inputs <- validate_ensemble_inputs(model_outputs, weights=weights,
+                                       weights_col_name = weights_col_name,
+                                       task_id_cols = task_id_cols,
+                                       valid_output_types = valid_types)
+  
+    model_outputs_validated <- validated_inputs$model_outputs
+    weights_validated <- validated_inputs$weights
+    task_id_cols_validated <- validated_inputs$task_id_cols
 
-  if (is.null(weights)) {
+  if (is.null(weights_validated)) {
     agg_args <- c(agg_args, list(x = quote(.data[["value"]])))
   } else {
-    req_weight_cols <- c("model_id", weights_col_name)
-    if (!all(req_weight_cols %in% colnames(weights))) {
-      cli::cli_abort(c(
-        "x" = "{.arg weights} did not include required columns
-               {.val {req_weight_cols}}."
-      ))
-    }
+    weight_by_cols <- 
+      colnames(weights_validated)[colnames(weights_validated) != weights_col_name]
 
-    weight_by_cols <- colnames(weights)[colnames(weights) != weights_col_name]
-
-    if ("value" %in% weight_by_cols) {
-      cli::cli_abort(c(
-        "x" = "{.arg weights} included a column named {.val {\"value\"}},
-               which is not allowed."
-      ))
-    }
-
-    invalid_cols <- weight_by_cols[!weight_by_cols %in% colnames(model_outputs)]
-    if (length(invalid_cols) > 0) {
-      cli::cli_abort(c(
-        "x" = "{.arg weights} included {length(invalid_cols)} column{?s} that
-               {?was/were} not present in {.arg model_outputs}:
-               {.val {invalid_cols}}"
-      ))
-    }
-
-    if (weights_col_name %in% colnames(model_outputs)) {
-      cli::cli_abort(c(
-        "x" = "The specified {.arg weights_col_name}, {.val {weights_col_name}},
-               is already a column in {.arg model_outputs}."
-      ))
-    }
-
-    model_outputs <- model_outputs %>%
-      dplyr::left_join(weights, by = weight_by_cols)
+    model_outputs_validated <- model_outputs_validated %>%
+      dplyr::left_join(weights_validated, by = weight_by_cols)
 
     if (is.character(agg_fun)) {
       if (agg_fun == "mean") {
@@ -133,8 +78,8 @@ simple_ensemble <- function(model_outputs, weights = NULL,
                                  w = quote(.data[[weights_col_name]])))
   }
 
-  group_by_cols <- c(task_id_cols, "output_type", "output_type_id")
-  ensemble_model_outputs <- model_outputs %>%
+  group_by_cols <- c(task_id_cols_validated, "output_type", "output_type_id")
+  ensemble_model_outputs <- model_outputs_validated %>%
     dplyr::group_by(dplyr::across(dplyr::all_of(group_by_cols))) %>%
     dplyr::summarize(value = do.call(agg_fun, args = agg_args)) %>%
     dplyr::mutate(model_id = model_id, .before = 1) %>%
