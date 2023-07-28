@@ -82,46 +82,13 @@ linear_pool <- function(model_outputs, weights = NULL,
   
   if (any(unique_output_types_validated == "quantile")) {
     # linear pool calculation for quantile output type
-    n_samples <- 1e4
-    quantile_levels <- unique(model_outputs_validated$output_type_id)
-    
-    if (is.null(weights_validated)) {
-      weights_col_name <- NULL
-      group_by_cols <- task_id_cols_validated
-      agg_args <- c(list(x = quote(.data[["pred_qs"]]), probs = quantile_levels))
-    } else {
-
-    weight_by_cols <- colnames(weights_validated)[colnames(weights_validated) != weights_col_name]
-    
-    model_outputs_validated <- model_outputs_validated %>%
-      dplyr::left_join(weights_validated, by = weight_by_cols)
-      
-    agg_args <- c(list(x = quote(.data[["pred_qs"]]),
-                     weights = quote(.data[[weights_col_name]]),
-                     normwt = TRUE,
-                     probs = quantile_levels))
-    
-    group_by_cols <- c(task_id_cols_validated, weights_col_name)
-  }
-
-  ensemble_outputs3 <- model_outputs_validated |>
-    dplyr::group_by(model_id, dplyr::across(dplyr::all_of(group_by_cols))) |>
-      dplyr::summarize(
-        pred_qs = list(distfromq::make_q_fn(
-          ps = output_type_id,
-          qs = value)(seq(from = 0, to = 1, length.out = n_samples + 2)[2:n_samples])),
-        .groups = "drop"
-      ) |>
-      tidyr::unnest(pred_qs) |>
-    dplyr::group_by(dplyr::across(dplyr::all_of(task_id_cols_validated))) |>
-    dplyr::summarize(
-      output_type_id= list(quantile_levels),
-      value = list(do.call(Hmisc::wtd.quantile, args = agg_args)),
-      .groups = "drop") |>
-      tidyr::unnest(cols = tidyselect::all_of(c("output_type_id", "value"))) |>
-    dplyr::mutate(model_id = model_id, .before = 1) |>
-    dplyr::mutate(output_type = "quantile", .before = output_type_id) |>
-    dplyr::ungroup() 
+    ensemble_outputs3 <- model_outputs_validated %>%
+      dplyr::filter(output_type == "quantile") %>%
+      linear_pool_quantile(weights = weights_validated,
+                                         weights_col_name = weights_col_name,
+                                         model_id = model_id,
+                                         n_samples = 1e4,
+                                         task_id_cols = task_id_cols_validated) 
   }
   
   ensemble_model_outputs <- ensemble_outputs1 %>%
