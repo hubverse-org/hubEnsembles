@@ -60,3 +60,85 @@ test_that("non-default columns are dropped from output", {
 
 
 
+test_that("(weighted) quantiles correctly calculated", {
+
+  quantile_expected <- weighted_quantile_expected <- data.frame(
+    stringsAsFactors = FALSE,
+    model_id = "hub-ensemble",
+    location = "111",
+    horizon = 1, 
+    target = "inc death",
+    target_date = as.Date("2021-12-25"),
+    output_type = "quantile",
+    output_type_id = rep(NA, 21),
+    value = NA_real_) 
+  
+  quantile_values <- weighted_quantile_values <- seq(from = -5, to = 5, by = 0.5) # expected
+  output_prob <- stats::pnorm(quantile_values, mean = -3) / 3 + 
+    stats::pnorm(quantile_values, mean = 0) / 3 + 
+    stats::pnorm(quantile_values, mean = 3) / 3
+  weighted_output_prob <- 0.25 * stats::pnorm(quantile_values, mean = -3) + 
+    0.5 * stats::pnorm(quantile_values, mean = 0) + 
+    0.25 * stats::pnorm(quantile_values, mean = 3) 
+
+  quantile_expected$value <- weighted_quantile_expected$value <- quantile_values
+  quantile_expected$output_type_id <- output_prob
+  weighted_quantile_expected$output_type_id <- weighted_output_prob
+  
+  component_outputs <- expand.grid(
+    stringsAsFactors = FALSE,
+    model_id = letters[1:3],
+    location = "111",
+    horizon = 1, 
+    target = "inc death",
+    target_date = as.Date("2021-12-25"),
+    output_type = "quantile",
+    output_type_id = output_prob,
+    value = NA_real_)
+
+  component_outputs$value[component_outputs$model_id == "a"] <- 
+    stats::qnorm(output_prob, mean=-3)
+  component_outputs$value[component_outputs$model_id == "b"] <- 
+    stats::qnorm(output_prob, mean=0)
+  component_outputs$value[component_outputs$model_id == "c"] <- 
+    stats::qnorm(output_prob, mean=3)
+                       
+  weighted_component_outputs <- expand.grid(
+    stringsAsFactors = FALSE,
+    model_id = letters[1:3],
+    location = "111",
+    horizon = 1, 
+    target = "inc death",
+    target_date = as.Date("2021-12-25"),
+    output_type = "quantile",
+    output_type_id = weighted_output_prob,
+    value = NA_real_)
+
+  weighted_component_outputs$value[weighted_component_outputs$model_id == "a"] <- 
+    stats::qnorm(weighted_output_prob, mean=-3)
+  weighted_component_outputs$value[weighted_component_outputs$model_id == "b"] <- 
+    stats::qnorm(weighted_output_prob, mean=0)
+  weighted_component_outputs$value[weighted_component_outputs$model_id == "c"] <- 
+    stats::qnorm(weighted_output_prob, mean=3)
+    
+  fweight1 <- data.frame(model_id = letters[1:3],
+                         location = "111",
+                         weight = c(0.25, 0.5, 0.25))
+
+  quantile_actual <- linear_pool(component_outputs, weights = NULL,
+                                          weights_col_name = NULL,
+                                          model_id = "hub-ensemble",
+                                          task_id_cols = NULL) |>
+    dplyr::mutate(value = round(value, 2))
+                                          
+  weighted_quantile_actual <- linear_pool(weighted_component_outputs, 
+                                          weights = fweight1,
+                                          weights_col_name = "weight",
+                                          model_id = "hub-ensemble",
+                                          task_id_cols = NULL) |>
+    dplyr::mutate(value = round(value, 2))
+                              
+  expect_equal(quantile_expected, as.data.frame(quantile_actual))
+  expect_equal(weighted_quantile_expected, as.data.frame(weighted_quantile_actual))
+})
+
