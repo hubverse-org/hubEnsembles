@@ -29,6 +29,7 @@ Imports:
     hubUtils,
     magrittr,
     matrixStats,
+    purrr,
     rlang,
     tidyr,
     tidyselect
