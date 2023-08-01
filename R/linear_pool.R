@@ -46,7 +46,7 @@
 linear_pool <- function(model_outputs, weights = NULL,
                         weights_col_name = "weight",
                         model_id = "hub-ensemble",
-                        task_id_cols = NULL,
+                        task_id_cols = task_id_cols,
                         ...) {
 
   # validate_ensemble_inputs
@@ -56,43 +56,31 @@ linear_pool <- function(model_outputs, weights = NULL,
                                        task_id_cols = task_id_cols,
                                        valid_output_types = valid_types)
   
-    model_outputs_validated <- validated_inputs$model_outputs
-    weights_validated <- validated_inputs$weights
-    task_id_cols_validated <- validated_inputs$task_id_cols
-    unique_output_types_validated <- validated_inputs$unique_output_types
+  model_outputs_validated <- validated_inputs$model_outputs
+  weights_validated <- validated_inputs$weights
+  task_id_cols_validated <- validated_inputs$task_id_cols
   
   # calculate linear opinion pool for different types
-  ensemble_outputs1 <- ensemble_outputs2 <- ensemble_outputs3 <- NULL
-  
-  if (any(unique_output_types_validated %in% c("mean", "cdf", "pmf"))) {
-    # linear pool calculation for mean, cdf, pmf output types
-    ensemble_outputs1 <- model_outputs_validated %>%
-      dplyr::filter(output_type %in% c("mean", "cdf", "pmf")) %>%
-      hubEnsembles::simple_ensemble(weights = weights_validated,
-                                    weights_col_name = weights_col_names,
-                                    agg_fun = "mean", agg_args = list(),
-                                    model_id = model_id,
-                                    task_id_cols = task_id_cols_validated) 
-  } 
-  
-  if (any(unique_output_types_validated == "sample")) {
-    # linear pool calculation for sample output type
-    print("sample")
-  } 
-  
-  if (any(unique_output_types_validated == "quantile")) {
-    # linear pool calculation for quantile output type
-    ensemble_outputs3 <- model_outputs_validated %>%
-      dplyr::filter(output_type == "quantile") %>%
-      linear_pool_quantile(weights = weights_validated,
-                                         weights_col_name = weights_col_name,
-                                         model_id = model_id,
-                                         n_samples = 1e4,
-                                         task_id_cols = task_id_cols_validated) 
-  }
-  
-  ensemble_model_outputs <- ensemble_outputs1 %>%
-    rbind(ensemble_outputs2, ensemble_outputs3) %>%
+  ensemble_model_outputs <- model_outputs_validated |>
+    dplyr::group_split(output_type) |>
+    purrr::map_dfr(.f = function(split_outputs) {
+      type <- base::unique(split_outputs$output_type)
+      if (type %in% c("mean", "cdf", "pmf")) {
+        simple_ensemble(split_outputs, weights = weights_validated,
+                              weights_col_name = weights_col_name,
+                              agg_fun = "mean", agg_args = list(),
+                              model_id = model_id,
+                              task_id_cols = task_id_cols_validated) 
+      } else if (type == "sample") {
+        # to be written
+      } else if (type == "quantile"){
+        linear_pool_quantile(split_outputs, weights = weights_validated,
+                              weights_col_name = weights_col_name,
+                              model_id = model_id,
+                              n_samples = 1e4,
+                              task_id_cols = task_id_cols_validated) 
+      }
+    }) |>
     hubUtils::as_model_out_tbl()
 
   return(ensemble_model_outputs)
