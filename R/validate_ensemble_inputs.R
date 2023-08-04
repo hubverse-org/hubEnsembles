@@ -2,7 +2,7 @@
 #' component model outputs for each combination of model task, output type, 
 #' and output type id. Valid output types should be specified by the user
 #' 
-#' @param model_outputs an object of class `model_output_df` with component
+#' @param model_outputs an object of class `model_out_tbl` with component
 #'   model outputs (e.g., predictions).
 #' @param weights an optional `data.frame` with component model weights. If
 #'   provided, it should have a column named `model_id` and a column containing
