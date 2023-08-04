@@ -29,7 +29,7 @@
 #'   `model_output_df`, optional `weights` data frame, `task_id_cols` character 
 #'   vector, and `unique_output_types` character vector
 #'
-#' @export
+#' @NoRd
 
 validate_ensemble_inputs <- function(model_outputs, weights=NULL,
                                      weights_col_name = "weight",
