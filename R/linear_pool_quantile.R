@@ -63,7 +63,6 @@ linear_pool_quantile <- function(model_outputs, weights = NULL,
   quantile_levels <- unique(model_outputs$output_type_id)
   
   if (is.null(weights)) {
-    weights_col_name <- NULL
     group_by_cols <- task_id_cols
     agg_args <- c(list(x = quote(.data[["pred_qs"]]), probs = quantile_levels))
   } else {
