@@ -45,21 +45,6 @@ linear_pool_quantile <- function(model_outputs, weights = NULL,
                         n_samples = 1e4,
                         ...) {
   
-  unique_output_types <- unique(model_outputs[["output_type"]])
-  if (!identical(unique_output_types, "quantile")) {
-    cli::cli_abort(c(
-      "x" = "{.arg model_outputs} contains a non-quantile output type.",
-      "!" = "Included invalid output type{?s}: {.val {invalid_output_types}}.",
-      "i" = "Supported output types: quantile."
-    ))
-  }
-  
-  model_out_cols <- colnames(model_outputs)
-  non_task_cols <- c("model_id", "output_type", "output_type_id", "value")
-  if (is.null(task_id_cols)) {
-    task_id_cols <- model_out_cols[!model_out_cols %in% non_task_cols]
-  }
-
   quantile_levels <- unique(model_outputs$output_type_id)
   
   if (is.null(weights)) {
