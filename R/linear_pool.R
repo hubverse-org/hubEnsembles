@@ -71,7 +71,7 @@ linear_pool <- function(model_outputs, weights = NULL,
                               agg_fun = "mean", agg_args = list(),
                               model_id = model_id,
                               task_id_cols = task_id_cols_validated) 
-      } else if (type == "quantile"){
+      } else if (type == "quantile") {
         linear_pool_quantile(split_outputs, weights = weights_validated,
                               weights_col_name = weights_col_name,
                               model_id = model_id,

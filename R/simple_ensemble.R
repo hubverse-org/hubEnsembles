@@ -48,7 +48,7 @@ simple_ensemble <- function(model_outputs, weights = NULL,
 
   # validate_ensemble_inputs
   valid_types <- c("mean", "median", "quantile", "cdf", "pmf")
-  validated_inputs <- validate_ensemble_inputs(model_outputs, weights=weights,
+  validated_inputs <- validate_ensemble_inputs(model_outputs, weights = weights,
                                        weights_col_name = weights_col_name,
                                        task_id_cols = task_id_cols,
                                        valid_output_types = valid_types)
