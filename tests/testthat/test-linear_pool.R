@@ -61,7 +61,10 @@ test_that("non-default columns are dropped from output", {
 
 
 test_that("(weighted) quantiles correctly calculated", {
-
+  # The three component models provide quantiles from the distributions
+  # F_1 = N(-3, 1), F_2 = N(0,1), and F_3 = N(3, 1)
+  # The linear pool is a (weighted) mixture with cdf F(x) = \sum_m w_m F_m(x)
+  # We test with equal weights w_m = 1/3 and with weights w_1 = 0.25, w_2 = 0.5, w_3 = 0.25
   quantile_expected <- weighted_quantile_expected <- data.frame(
     stringsAsFactors = FALSE,
     model_id = "hub-ensemble",
