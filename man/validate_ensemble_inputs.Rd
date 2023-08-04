@@ -15,7 +15,7 @@ validate_ensemble_inputs(
 )
 }
 \arguments{
-\item{model_outputs}{an object of class \code{model_output_df} with component
+\item{model_outputs}{an object of class \code{model_out_tbl} with component
 model outputs (e.g., predictions).}
 
 \item{weights}{an optional \code{data.frame} with component model weights. If
