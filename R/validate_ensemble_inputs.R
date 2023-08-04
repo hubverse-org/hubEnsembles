@@ -45,9 +45,7 @@ validate_ensemble_inputs <- function(model_outputs, weights=NULL,
   non_task_cols <- c("model_id", "output_type", "output_type_id", "value")
   if (is.null(task_id_cols)) {
     task_id_cols <- model_out_cols[!model_out_cols %in% non_task_cols]
-  }
-
-  if (!all(task_id_cols %in% model_out_cols)) {
+  } else if (!all(task_id_cols %in% model_out_cols)) {
     cli::cli_abort(c(
       "x" = "{.arg model_outputs} did not have all listed task id columns
              {.val {task_id_col}}."
