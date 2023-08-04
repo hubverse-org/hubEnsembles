@@ -64,7 +64,7 @@ linear_pool <- function(model_outputs, weights = NULL,
   ensemble_model_outputs <- model_outputs_validated |>
     dplyr::group_split(output_type) |>
     purrr::map_dfr(.f = function(split_outputs) {
-      type <- base::unique(split_outputs$output_type)
+      type <- split_outputs$output_type[1]
       if (type %in% c("mean", "cdf", "pmf")) {
         simple_ensemble(split_outputs, weights = weights_validated,
                               weights_col_name = weights_col_name,
