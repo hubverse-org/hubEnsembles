@@ -44,7 +44,7 @@ ids. Should be pre-validated.}
 calculating quantiles from an estimated quantile function. Defaults to \code{1e4}.
 Should not be smaller than \code{1e3}.}
 
-\item{...}{parameters that are passed to \code{distfromq::make_r_fun}, specifying
+\item{...}{parameters that are passed to \code{distfromq::make_q_fun}, specifying
 details of how to estimate a quantile function from provided quantile levels
 and quantile values for \code{output_type} \code{"quantile"}.}
 }

@@ -39,7 +39,7 @@ case all columns in \code{model_outputs} other than \code{"model_id"}, the speci
 \code{output_type_col} and \code{output_type_id_col}, and \code{"value"} are used as task
 ids.}
 
-\item{...}{parameters that are passed to \code{distfromq::make_r_fun}, specifying
+\item{...}{parameters that are passed to \code{distfromq::make_q_fun}, specifying
 details of how to estimate a quantile function from provided quantile levels
 and quantile values for \code{output_type} \code{"quantile"}.}
 }

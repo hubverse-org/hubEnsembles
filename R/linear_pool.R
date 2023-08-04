@@ -20,7 +20,7 @@
 #'   case all columns in `model_outputs` other than `"model_id"`, the specified
 #'   `output_type_col` and `output_type_id_col`, and `"value"` are used as task
 #'   ids.
-#' @param ... parameters that are passed to `distfromq::make_r_fun`, specifying
+#' @param ... parameters that are passed to `distfromq::make_q_fun`, specifying
 #'   details of how to estimate a quantile function from provided quantile levels 
 #'   and quantile values for `output_type` `"quantile"`.
 #' @details The underlying mechanism for the computations varies for different 
