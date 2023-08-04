@@ -128,17 +128,19 @@ test_that("(weighted) quantiles correctly calculated", {
   quantile_actual <- linear_pool(component_outputs, weights = NULL,
                                           weights_col_name = NULL,
                                           model_id = "hub-ensemble",
-                                          task_id_cols = NULL) |>
-    dplyr::mutate(value = round(value, 2))
+                                          task_id_cols = NULL)
                                           
   weighted_quantile_actual <- linear_pool(weighted_component_outputs, 
                                           weights = fweight1,
                                           weights_col_name = "weight",
                                           model_id = "hub-ensemble",
-                                          task_id_cols = NULL) |>
-    dplyr::mutate(value = round(value, 2))
+                                          task_id_cols = NULL)
                               
-  expect_equal(quantile_expected, as.data.frame(quantile_actual))
-  expect_equal(weighted_quantile_expected, as.data.frame(weighted_quantile_actual))
+  expect_equal(quantile_expected,
+               as.data.frame(quantile_actual),
+               tolerance=1e-3)
+  expect_equal(weighted_quantile_expected,
+               as.data.frame(weighted_quantile_actual),
+               tolerance=1e-3)
 })
 
