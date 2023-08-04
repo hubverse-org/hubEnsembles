@@ -26,8 +26,8 @@
 #'   are `mean`, `quantile`, `cdf`, `pmf`, and `sample`.
 #' 
 #' @return a list of validated model inputs: `model_outputs` object of class 
-#'   `model_output_df`, optional `weights` data frame, `task_id_cols` character 
-#'   vector, and `unique_output_types` character vector
+#'   `model_output_df`, optional `weights` data frame, and `task_id_cols` 
+#'   character vector
 #'
 #' @NoRd
 
@@ -103,7 +103,6 @@ validate_ensemble_inputs <- function(model_outputs, weights=NULL,
 
   validated_inputs <- list(model_outputs = model_outputs, 
                            weights = weights, 
-                           task_id_cols = task_id_cols, 
-                           unique_output_types = unique_output_types)
+                           task_id_cols = task_id_cols)
   return (validated_inputs)
 }
