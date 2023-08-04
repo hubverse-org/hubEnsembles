@@ -40,8 +40,8 @@ information.}
 }
 \value{
 a list of validated model inputs: \code{model_outputs} object of class
-\code{model_output_df}, optional \code{weights} data frame, \code{task_id_cols} character
-vector, and \code{unique_output_types} character vector
+\code{model_output_df}, optional \code{weights} data frame, and \code{task_id_cols}
+character vector
 }
 \description{
 Perform simple validations on the inputs used to calculate an ensemble of

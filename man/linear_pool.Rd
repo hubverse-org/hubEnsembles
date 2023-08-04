@@ -40,12 +40,12 @@ case all columns in \code{model_outputs} other than \code{"model_id"}, the speci
 ids.}
 
 \item{...}{parameters that are passed to \code{distfromq::make_r_fun}, specifying
-details of how to estimate a quantile function from provided quantile levels and
-.  quantile values for \code{output_type} \code{"quantile"}.}
+details of how to estimate a quantile function from provided quantile levels
+and quantile values for \code{output_type} \code{"quantile"}.}
 }
 \value{
-a \code{model_out_tbl} object of ensemble predictions. Note that
-any additional columns in the input \code{model_outputs} are dropped.
+a \code{model_out_tbl} object of ensemble predictions. Note that any additional
+columns in the input \code{model_outputs} are dropped.
 }
 \description{
 Compute ensemble model outputs as a linear pool, otherwise known as a
@@ -54,16 +54,18 @@ each combination of model task, output type, and output type id. Supported
 output types include \code{mean}, \code{quantile}, \code{cdf}, and \code{pmf}.
 }
 \details{
-The underlying mechanism for the computations varies for different \code{output_type}s.
-When the \code{output_type} is \code{cdf}, \code{pmf}, or \code{mean}, this function simply calls \code{simple_ensemble}
-to calculate a (weighted) mean of the component model outputs. This is the definitional
-calculation for the cdf or pmf of a linear pool. For the \code{mean} output type, this is justified by
-the fact that the (weighted) mean of the linear pool is the (weighted) mean of the means of the
-component distributions.
+The underlying mechanism for the computations varies for different
+\code{output_type}s. When the \code{output_type} is \code{cdf}, \code{pmf}, or \code{mean}, this
+function simply calls \code{simple_ensemble} to calculate a (weighted) mean of the
+component model outputs. This is the definitional calculation for the cdf or
+pmf of a linear pool. For the \code{mean} output type, this is justified by the fact
+that the (weighted) mean of the linear pool is the (weighted) mean of the means
+of the component distributions.
 
-When the \code{output_type} is \code{quantile}, we obtain the quantiles of a linear pool in three steps:
-1. Interpolate and extrapolate from the provided quantiles for each component model
-to obtain an estimate of the cdf of that distribution.
+When the \code{output_type} is \code{quantile}, we obtain the quantiles of a linear pool
+in three steps:
+1. Interpolate and extrapolate from the provided quantiles for each component
+model to obtain an estimate of the cdf of that distribution.
 2. Draw samples from the distribution for each component model. To reduce Monte
 Carlo variability, we use pseudo-random samples corresponding to quantiles
 of the estimated distribution.
