@@ -1,7 +1,7 @@
 #' Compute ensemble model outputs as a linear pool, otherwise known as a
 #' distributional mixture, of component model outputs for
 #' each combination of model task, output type, and output type id. Supported
-#' output types include `mean`, `quantile`, `cdf`, `pmf`, and `sample`.
+#' output types include `mean`, `quantile`, `cdf`, and `pmf`.
 #'
 #' @param model_outputs an object of class `model_output_df` with component
 #'   model outputs (e.g., predictions).
@@ -50,7 +50,7 @@ linear_pool <- function(model_outputs, weights = NULL,
                         ...) {
 
   # validate_ensemble_inputs
-  valid_types <- c("mean", "quantile", "cdf", "pmf", "sample")
+  valid_types <- c("mean", "quantile", "cdf", "pmf")
   validated_inputs <- validate_ensemble_inputs(model_outputs, weights=weights,
                                        weights_col_name = weights_col_name,
                                        task_id_cols = task_id_cols,
@@ -71,8 +71,6 @@ linear_pool <- function(model_outputs, weights = NULL,
                               agg_fun = "mean", agg_args = list(),
                               model_id = model_id,
                               task_id_cols = task_id_cols_validated) 
-      } else if (type == "sample") {
-        # to be written
       } else if (type == "quantile"){
         linear_pool_quantile(split_outputs, weights = weights_validated,
                               weights_col_name = weights_col_name,
