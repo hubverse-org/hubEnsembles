@@ -47,7 +47,7 @@ jobs:
           
       - name: Install dependencies
         run: |
-          install.packages(c("remotes","devtools","rmarkdown","dplyr","purrr","tidyr","tidyselect"))
+          install.packages(c("remotes","rmarkdown","dplyr","purrr","tidyr","tidyselect"))
           devtools::install_github("reichlab/distfromq")
           remotes::install_deps(dependencies = NA)
         shell: Rscript {0}
