@@ -15,13 +15,9 @@ model outputs (e.g., predictions).}
 
 \item{task_id_cols}{\code{character} vector with names of columns in
 \code{model_outputs} that specify modeling tasks.}
-
-\item{valid_output_types}{\code{character} vector with the names of valid output
-types for the particular ensembling method used. See the details for more
-information.}
 }
 \value{
-validated \code{model_outputs} object of class \code{model_output_df}
+no return value
 }
 \description{
 Perform validations to check that within each group defined by a combination

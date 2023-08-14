@@ -6,15 +6,12 @@
 #'   model outputs (e.g., predictions).
 #' @param task_id_cols `character` vector with names of columns in
 #'   `model_outputs` that specify modeling tasks. 
-#' @param valid_output_types `character` vector with the names of valid output 
-#'   types for the particular ensembling method used. See the details for more 
-#'   information.
 #' @details If the ensembling function intended to be used is `"simple_ensemble"`, 
 #'   the valid output types are `mean`, `median`, `quantile`, `cdf`, and `pmf`. 
 #'   If the ensembling function will be `"linear_pool"`, the valid output types 
 #'   are `mean`, `quantile`, `cdf`, `pmf`, and `sample`.
 #' 
-#' @return validated `model_outputs` object of class `model_output_df`
+#' @return no return value
 #'
 #' @NoRd
 #' 
