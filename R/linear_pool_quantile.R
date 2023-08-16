@@ -69,7 +69,8 @@ linear_pool_quantile <- function(model_outputs, weights = NULL,
     dplyr::summarize(
       pred_qs = list(distfromq::make_q_fn(
         ps = output_type_id,
-        qs = value)(seq(from = 0, to = 1, length.out = n_samples + 2)[2:n_samples])),
+        qs = value,
+        ...)(seq(from = 0, to = 1, length.out = n_samples + 2)[2:n_samples])),
       .groups = "drop") |>
     tidyr::unnest(pred_qs) |>
     dplyr::group_by(dplyr::across(dplyr::all_of(task_id_cols))) |>
