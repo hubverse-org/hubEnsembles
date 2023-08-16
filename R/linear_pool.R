@@ -114,7 +114,7 @@ linear_pool <- function(model_outputs, weights = NULL,
         linear_pool_quantile(split_outputs, weights = weights_validated,
                               weights_col_name = weights_col_name,
                               model_id = model_id,
-                              n_samples = 1e4,
+                              n_samples = n_samples,
                               task_id_cols = task_id_cols_validated
                               ...)
       }
