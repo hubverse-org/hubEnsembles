@@ -20,6 +20,9 @@
 #'   case all columns in `model_outputs` other than `"model_id"`, the specified
 #'   `output_type_col` and `output_type_id_col`, and `"value"` are used as task
 #'   ids.
+#' @param n_samples `numeric` that specifies the number of samples to use when
+#'   calculating quantiles from an estimated quantile function. Defaults to `1e4`.
+#'   Should not be smaller than `1e3`.
 #' @param ... parameters that are passed to `distfromq::make_q_fun`, specifying
 #'   details of how to estimate a quantile function from provided quantile levels 
 #'   and quantile values for `output_type` `"quantile"`.
