@@ -41,8 +41,7 @@ case all columns in \code{model_outputs} other than \code{"model_id"}, the speci
 ids. Should be pre-validated.}
 
 \item{n_samples}{\code{numeric} that specifies the number of samples to use when
-calculating quantiles from an estimated quantile function. Defaults to \code{1e4}.
-Should not be smaller than \code{1e3}.}
+calculating quantiles from an estimated quantile function. Defaults to \code{1e4}.}
 
 \item{...}{parameters that are passed to \code{distfromq::make_q_fun}, specifying
 details of how to estimate a quantile function from provided quantile levels

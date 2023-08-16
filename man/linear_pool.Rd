@@ -13,6 +13,7 @@ linear_pool(
   weights_col_name = "weight",
   model_id = "hub-ensemble",
   task_id_cols = NULL,
+  n_samples = 10000,
   ...
 )
 }
@@ -38,6 +39,9 @@ ensemble model.}
 case all columns in \code{model_outputs} other than \code{"model_id"}, the specified
 \code{output_type_col} and \code{output_type_id_col}, and \code{"value"} are used as task
 ids.}
+
+\item{n_samples}{\code{numeric} that specifies the number of samples to use when
+calculating quantiles from an estimated quantile function. Defaults to \code{1e4}.}
 
 \item{...}{parameters that are passed to \code{distfromq::make_q_fun}, specifying
 details of how to estimate a quantile function from provided quantile levels
@@ -84,7 +88,7 @@ component_means <- c(-3, 0, 3)
 lp_qs <- seq(from = -5, to = 5, by = 0.25) # linear pool quantiles, expected outputs
 ps <- rep(0, length(lp_qs))
 for (m in seq_len(3)) {
-  ps <- ps + component_weights[m] * pnorm(lp_qs, mean =component_means[m])
+  ps <- ps + component_weights[m] * pnorm(lp_qs, mean = component_means[m])
 }
 
 component_qs <- purrr::map(component_means, ~ qnorm(ps, mean=.x)) \%>\% unlist()

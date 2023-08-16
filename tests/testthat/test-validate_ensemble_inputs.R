@@ -55,3 +55,18 @@ test_that("weights column already in model_outputs generates error", {
       validate_ensemble_inputs(weights=fweight, valid_output_types=c("quantile"))
   )
 })
+
+test_that("no error if models provide the same output_type_ids", {
+  expect_no_error(
+    validate_output_type_ids(model_outputs,
+                             task_id_cols = c("location", "horizon", "target",
+                                              "target_date")))
+})
+
+test_that("error if models provide different output_type_ids", {
+  expect_error(
+    validate_output_type_ids(model_outputs %>%
+                             dplyr::filter(!(model_id == "b" & abs(output_type_id - 0.5) < 1e-6)),
+                             task_id_cols = c("location", "horizon", "target",
+                                              "target_date")))
+})
