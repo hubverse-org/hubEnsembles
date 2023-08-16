@@ -111,7 +111,8 @@ linear_pool <- function(model_outputs, weights = NULL,
                               weights_col_name = weights_col_name,
                               model_id = model_id,
                               n_samples = 1e4,
-                              task_id_cols = task_id_cols_validated) 
+                              task_id_cols = task_id_cols_validated
+                              ...)
       }
     }) |>
     hubUtils::as_model_out_tbl()
