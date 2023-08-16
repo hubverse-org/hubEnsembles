@@ -58,7 +58,7 @@
 #' lp_qs <- seq(from = -5, to = 5, by = 0.25) # linear pool quantiles, expected outputs
 #' ps <- rep(0, length(lp_qs))
 #' for (m in seq_len(3)) {
-#'   ps <- ps + component_weights[m] * pnorm(lp_qs, mean =component_means[m])
+#'   ps <- ps + component_weights[m] * pnorm(lp_qs, mean = component_means[m])
 #' }
 #'
 #' component_qs <- purrr::map(component_means, ~ qnorm(ps, mean=.x)) %>% unlist()
