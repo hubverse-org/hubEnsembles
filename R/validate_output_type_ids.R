@@ -20,7 +20,7 @@ validate_output_type_ids <- function(model_outputs, task_id_cols) {
   same_output_id <- model_outputs |>
     dplyr::filter(output_type %in% c("cdf", "pmf", "quantile")) |>
     dplyr::group_by(model_id, dplyr::across(dplyr::all_of(task_id_cols)), output_type) |>
-    dplyr::summarize(output_type_id_list=list(output_type_id)) |>
+    dplyr::summarize(output_type_id_list=list(sort(output_type_id))) |>
     dplyr::ungroup() |>
     dplyr::group_split(dplyr::across(dplyr::all_of(task_id_cols)), output_type) |>
     purrr::map(.f = function(split_outputs) {
