@@ -25,11 +25,16 @@ URL: https://github.com/Infectious-Disease-Modeling-Hubs/hubEnsembles
 BugReports: https://github.com/Infectious-Disease-Modeling-Hubs/hubEnsembles/issues
 Imports: 
     cli,
+    distfromq,
     dplyr,
+    Hmisc,
     hubUtils,
     magrittr,
     matrixStats,
-    rlang
+    purrr,
+    rlang,
+    tidyr,
+    tidyselect
 Remotes:
-    Infectious-Disease-Modeling-Hubs/hubUtils
-VignetteBuilder: knitr
+    Infectious-Disease-Modeling-Hubs/hubUtils,
+    reichlab/distfromq

@@ -13,13 +13,11 @@ simple_ensemble(
   agg_fun = "mean",
   agg_args = list(),
   model_id = "hub-ensemble",
-  task_id_cols = NULL,
-  output_type_col = "output_type",
-  output_type_id_col = "output_type_id"
+  task_id_cols = NULL
 )
 }
 \arguments{
-\item{model_outputs}{an object of class \code{model_output_df} with component
+\item{model_outputs}{an object of class \code{model_out_tbl} with component
 model outputs (e.g., predictions).}
 
 \item{weights}{an optional \code{data.frame} with component model weights. If
@@ -47,16 +45,9 @@ ensemble model.}
 case all columns in \code{model_outputs} other than \code{"model_id"}, the specified
 \code{output_type_col} and \code{output_type_id_col}, and \code{"value"} are used as task
 ids.}
-
-\item{output_type_col}{\code{character} string with the name of the column in
-\code{model_outputs} that contains the output type.}
-
-\item{output_type_id_col}{\code{character} string with the name of the column in
-\code{model_outputs} that contains the output type id.}
 }
 \value{
-a data.frame with columns \code{model_id}, one column for
-each task id variable, \code{output_type}, \code{output_id}, and \code{value}. Note that
+a \code{model_out_tbl} object of ensemble predictions. Note that
 any additional columns in the input \code{model_outputs} are dropped.
 }
 \description{

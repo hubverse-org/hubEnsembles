@@ -1,3 +1,4 @@
+library(hubUtils)
 library(matrixStats)
 library(dplyr)
 
@@ -53,27 +54,9 @@ test_that("non-default columns are dropped from output", {
 })
 
 
-test_that("invalid output type throws error", {
-  expect_error(
-    model_outputs %>%
-      dplyr::mutate(output_type = "sample") %>%
-      simple_ensemble()
-  )
-})
-
-
 test_that("invalid method argument throws error", {
   expect_error(
     simple_ensemble(model_outputs, agg_fun = "linear pool")
-  )
-})
-
-
-test_that("weights column already in model_outputs generates error", {
-  expect_error(
-    model_outputs %>%
-      dplyr::mutate(weight = "a") %>%
-      simple_ensemble(weights = fweight)
   )
 })
 

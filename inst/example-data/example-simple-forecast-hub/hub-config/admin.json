@@ -1,5 +1,5 @@
 {
-    "schema_version": "https://raw.githubusercontent.com/Infectious-Disease-Modeling-Hubs/schemas/main/v1.0.0/admin-schema.json",
+    "schema_version": "https://raw.githubusercontent.com/Infectious-Disease-Modeling-Hubs/schemas/main/v2.0.0/admin-schema.json",
     "name": "Simple Forecast Hub",
     "maintainer": "Consortium of Infectious Disease Modeling Hubs",
     "contact": {
