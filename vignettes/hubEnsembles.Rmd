@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
 
 # Introduction
 
-The `hubEnsembles` package includes functionality for aggregating model outputs, such as forecasts or projections, that are submitted to a hub by multiple models into combined ensemble model outputs. Currently the package includes just one function: `simple_ensemble`. We illustrate that function in this vignette.
+The `hubEnsembles` package includes functionality for aggregating model outputs, such as forecasts or projections, that are submitted to a hub by multiple models and combined into ensemble model outputs. The package includes two main functions: `simple_ensemble` and `linear_pool`. We illustrate these functions in this vignette, and briefly compare them.
 
 This vignette uses the following R packages:
 
@@ -49,10 +49,54 @@ head(target_data)
 
 # Creating ensembles with `simple_ensemble`
 
+The `simple_ensemble` function is used to summarize across component model outputs; this function can be applied to predictions with an `output_type` of `mean`, `median`, `quantile`, `cdf`, or `pmf`. 
+
+The `simple_ensemble` function defaults to calculating an equally weighted mean across all component model outputs for each unique `output_type_id`. For our example data, which contains two output types (`median` and `quantile`), this means the resulting ensemble will be the mean of component model-submitted values for each quantile. 
+
 ```{r}
 mean_ens <- hubEnsembles::simple_ensemble(model_outputs)
 head(mean_ens)
 ```
+
+## Changing the aggregation function
+
+We can change the function used to aggregate across model outputs. For example, we may want to calculate a median of component model-submitted values for each quantile. We will also use the `model_id` argument to distinguish this ensemble.
+
+```{r}
+median_ens <- hubEnsembles::simple_ensemble(model_outputs, 
+                                            agg_fun = median, 
+                                            model_id = "hub-ensemble-median")
+head(median_ens)
+```
+
+Custom functions can also be passed into the `agg_fun` argument. For example, a geometric mean may be a more appropriate way to combine component model outputs. Any custom function to be used requires an argument `x` for the vector of numeric values to summarize, and if relevant, an argument `w` of numeric weights.
+
+```{r}
+geometric_mean <- function(x){
+    n <- length(x)
+    return(prod(x)^(1/n))
+}
+
+geometric_mean_ens <-  hubEnsembles::simple_ensemble(model_outputs, 
+                                            agg_fun = geometric_mean, 
+                                            model_id = "hub-ensemble-geometric")
+head(geometric_mean_ens)
+```
+
+## Weighting model contributions
+
+In addition, we can weight the contributions of each model by providing a table of weights, which are provided in a `data.frame` with a `model_id` column and a `weight` column.
+
+```{r}
+model_weights <- data.frame(model_id = c("UMass-ar", "UMass-gbq", "simple_hub-baseline"), 
+                            weight = c(0.4, 0.4, 0.2))
+
+weighted_mean_ens <- hubEnsembles::simple_ensemble(model_outputs, 
+                                                   weights = model_weights, 
+                                                   model_id = "hub-ensemble-weighted-mean")
+head(weighted_mean_ens)
+```
+
 
 # Plots
 
