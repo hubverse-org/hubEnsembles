@@ -49,9 +49,9 @@ head(target_data)
 
 # Creating ensembles with `simple_ensemble`
 
-The `simple_ensemble` function is used to summarize across component model outputs; this function can be applied to predictions with an `output_type` of `mean`, `median`, `quantile`, `cdf`, or `pmf`. 
+The `simple_ensemble` function is used to summarize across component model outputs; this function can be applied to predictions with an `output_type` of `mean`, `median`, `quantile`, `cdf`, or `pmf`.
 
-The `simple_ensemble` function defaults to calculating an equally weighted mean across all component model outputs for each unique `output_type_id`. For our example data, which contains two output types (`median` and `quantile`), this means the resulting ensemble will be the mean of component model-submitted values for each quantile. 
+The `simple_ensemble` function defaults to calculating an equally weighted mean across all component model outputs for each unique `output_type_id`. For our example data, which contains two output types (`median` and `quantile`), this means the resulting ensemble will be the mean of component model submitted values for each quantile.
 
 ```{r}
 mean_ens <- hubEnsembles::simple_ensemble(model_outputs)
@@ -60,7 +60,7 @@ head(mean_ens)
 
 ## Changing the aggregation function
 
-We can change the function used to aggregate across model outputs. For example, we may want to calculate a median of component model-submitted values for each quantile. We will also use the `model_id` argument to distinguish this ensemble.
+We can change the function used to aggregate across model outputs. For example, we may want to calculate a median of component model submitted values for each quantile. We will also use the `model_id` argument to distinguish this ensemble.
 
 ```{r}
 median_ens <- hubEnsembles::simple_ensemble(model_outputs, 
@@ -97,6 +97,17 @@ weighted_mean_ens <- hubEnsembles::simple_ensemble(model_outputs,
 head(weighted_mean_ens)
 ```
 
+# Creating ensembles with `linear_pool`
+
+An alternative approach to generate an ensemble is a linear pool, or a distributional mixture; this function can be applied to predictions with an `output_type` of `mean`, `quantile`, `cdf`, or `pmf`. Our example hub includes `median` output type, so we exclude it from the calculation.
+
+For `mean`, `cdf` and `pmf` output types, the linear pool is equivalent to using a mean `simple_ensemble`. For `quantile` model outputs, the `linear_pool` function needs to approximate a full probability distribution using the value-quantile pairs from each component model. As a default, this is done with functions in the `distfromq` package, which defaults to fitting a monotonic cubic spline.
+
+```{r}
+linear_pool_ens <- hubEnsembles::linear_pool(model_outputs %>%
+                                               filter(output_type != "median"))
+head(linear_pool_ens)
+```
 
 # Plots
 
