@@ -23,10 +23,10 @@
 #' @param n_samples `numeric` that specifies the number of samples to use when
 #'   calculating quantiles from an estimated quantile function. Defaults to `1e4`.
 #' @param ... parameters that are passed to `distfromq::make_q_fun`, specifying
-#'   details of how to estimate a quantile function from provided quantile levels 
+#'   details of how to estimate a quantile function from provided quantile levels
 #'   and quantile values for `output_type` `"quantile"`.
-#' @NoRd
-#' @details The underlying mechanism for the computations to obtain the quantiles 
+#' @noRd
+#' @details The underlying mechanism for the computations to obtain the quantiles
 #'   of a linear pool in three steps is as follows:
 #'     1. Interpolate and extrapolate from the provided quantiles for each component
 #'        model to obtain an estimate of the cdf of that distribution.
@@ -35,7 +35,7 @@
 #'        of the estimated distribution.
 #'     3. Collect the samples from all component models and extract the desired quantiles.
 #'   Steps 1 and 2 in this process are performed by `distfromq::make_q_fun`.
-#' @return a `model_out_tbl` object of ensemble predictions for the `quantile` output type. 
+#' @return a `model_out_tbl` object of ensemble predictions for the `quantile` output type.
 
 linear_pool_quantile <- function(model_outputs, weights = NULL,
                         weights_col_name = "weight",
@@ -43,23 +43,23 @@ linear_pool_quantile <- function(model_outputs, weights = NULL,
                         task_id_cols = NULL,
                         n_samples = 1e4,
                         ...) {
-  
+
   quantile_levels <- unique(model_outputs$output_type_id)
-  
+
   if (is.null(weights)) {
     group_by_cols <- task_id_cols
     agg_args <- c(list(x = quote(.data[["pred_qs"]]), probs = quantile_levels))
   } else {
     weight_by_cols <- colnames(weights)[colnames(weights) != weights_col_name]
-    
+
     model_outputs <- model_outputs %>%
       dplyr::left_join(weights, by = weight_by_cols)
-    
+
     agg_args <- c(list(x = quote(.data[["pred_qs"]]),
                      weights = quote(.data[[weights_col_name]]),
                      normwt = TRUE,
                      probs = quantile_levels))
-    
+
     group_by_cols <- c(task_id_cols, weights_col_name)
   }
 
@@ -80,7 +80,7 @@ linear_pool_quantile <- function(model_outputs, weights = NULL,
     tidyr::unnest(cols = tidyselect::all_of(c("output_type_id", "value"))) |>
     dplyr::mutate(model_id = model_id, .before = 1) |>
     dplyr::mutate(output_type = "quantile", .before = output_type_id) |>
-    dplyr::ungroup() 
-  
+    dplyr::ungroup()
+
   return(quantile_outputs)
 }

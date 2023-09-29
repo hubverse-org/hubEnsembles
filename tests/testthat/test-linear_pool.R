@@ -60,61 +60,61 @@ test_that("(weighted) quantiles correctly calculated", {
     stringsAsFactors = FALSE,
     model_id = "hub-ensemble",
     location = "111",
-    horizon = 1, 
+    horizon = 1,
     target = "inc death",
     target_date = as.Date("2021-12-25"),
     output_type = "quantile",
     output_type_id = rep(NA, 21),
-    value = NA_real_) 
-  
+    value = NA_real_)
+
   quantile_values <- weighted_quantile_values <- seq(from = -5, to = 5, by = 0.5) # expected
-  output_prob <- stats::pnorm(quantile_values, mean = -3) / 3 + 
-    stats::pnorm(quantile_values, mean = 0) / 3 + 
+  output_prob <- stats::pnorm(quantile_values, mean = -3) / 3 +
+    stats::pnorm(quantile_values, mean = 0) / 3 +
     stats::pnorm(quantile_values, mean = 3) / 3
-  weighted_output_prob <- 0.25 * stats::pnorm(quantile_values, mean = -3) + 
-    0.5 * stats::pnorm(quantile_values, mean = 0) + 
-    0.25 * stats::pnorm(quantile_values, mean = 3) 
+  weighted_output_prob <- 0.25 * stats::pnorm(quantile_values, mean = -3) +
+    0.5 * stats::pnorm(quantile_values, mean = 0) +
+    0.25 * stats::pnorm(quantile_values, mean = 3)
 
   quantile_expected$value <- weighted_quantile_expected$value <- quantile_values
   quantile_expected$output_type_id <- output_prob
   weighted_quantile_expected$output_type_id <- weighted_output_prob
-  
+
   component_outputs <- expand.grid(
     stringsAsFactors = FALSE,
     model_id = letters[1:3],
     location = "111",
-    horizon = 1, 
+    horizon = 1,
     target = "inc death",
     target_date = as.Date("2021-12-25"),
     output_type = "quantile",
     output_type_id = output_prob,
     value = NA_real_)
 
-  component_outputs$value[component_outputs$model_id == "a"] <- 
+  component_outputs$value[component_outputs$model_id == "a"] <-
     stats::qnorm(output_prob, mean=-3)
-  component_outputs$value[component_outputs$model_id == "b"] <- 
+  component_outputs$value[component_outputs$model_id == "b"] <-
     stats::qnorm(output_prob, mean=0)
-  component_outputs$value[component_outputs$model_id == "c"] <- 
+  component_outputs$value[component_outputs$model_id == "c"] <-
     stats::qnorm(output_prob, mean=3)
-                       
+
   weighted_component_outputs <- expand.grid(
     stringsAsFactors = FALSE,
     model_id = letters[1:3],
     location = "111",
-    horizon = 1, 
+    horizon = 1,
     target = "inc death",
     target_date = as.Date("2021-12-25"),
     output_type = "quantile",
     output_type_id = weighted_output_prob,
     value = NA_real_)
 
-  weighted_component_outputs$value[weighted_component_outputs$model_id == "a"] <- 
+  weighted_component_outputs$value[weighted_component_outputs$model_id == "a"] <-
     stats::qnorm(weighted_output_prob, mean=-3)
-  weighted_component_outputs$value[weighted_component_outputs$model_id == "b"] <- 
+  weighted_component_outputs$value[weighted_component_outputs$model_id == "b"] <-
     stats::qnorm(weighted_output_prob, mean=0)
-  weighted_component_outputs$value[weighted_component_outputs$model_id == "c"] <- 
+  weighted_component_outputs$value[weighted_component_outputs$model_id == "c"] <-
     stats::qnorm(weighted_output_prob, mean=3)
-    
+
   fweight1 <- data.frame(model_id = letters[1:3],
                          location = "111",
                          weight = c(0.25, 0.5, 0.25))
@@ -123,13 +123,13 @@ test_that("(weighted) quantiles correctly calculated", {
                                           weights_col_name = NULL,
                                           model_id = "hub-ensemble",
                                           task_id_cols = NULL)
-                                          
-  weighted_quantile_actual <- linear_pool(weighted_component_outputs, 
+
+  weighted_quantile_actual <- linear_pool(weighted_component_outputs,
                                           weights = fweight1,
                                           weights_col_name = "weight",
                                           model_id = "hub-ensemble",
                                           task_id_cols = NULL)
-                              
+
   expect_equal(quantile_expected,
                as.data.frame(quantile_actual),
                tolerance=1e-3)
@@ -151,58 +151,58 @@ test_that("(weighted) quantiles correctly calculated - lognormal family", {
     stringsAsFactors = FALSE,
     model_id = "hub-ensemble",
     location = "111",
-    horizon = 1, 
+    horizon = 1,
     target = "inc death",
     target_date = as.Date("2021-12-25"),
     output_type = "quantile",
     output_type_id = rep(NA, length(quantile_values)),
-    value = NA_real_) 
-  
-  output_prob <- stats::plnorm(quantile_values, mean = -3) / 3 + 
-    stats::plnorm(quantile_values, mean = 0) / 3 + 
+    value = NA_real_)
+
+  output_prob <- stats::plnorm(quantile_values, mean = -3) / 3 +
+    stats::plnorm(quantile_values, mean = 0) / 3 +
     stats::plnorm(quantile_values, mean = 3) / 3
-  weighted_output_prob <- 0.25 * stats::plnorm(quantile_values, mean = -3) + 
-    0.5 * stats::plnorm(quantile_values, mean = 0) + 
-    0.25 * stats::plnorm(quantile_values, mean = 3) 
+  weighted_output_prob <- 0.25 * stats::plnorm(quantile_values, mean = -3) +
+    0.5 * stats::plnorm(quantile_values, mean = 0) +
+    0.25 * stats::plnorm(quantile_values, mean = 3)
 
   quantile_expected$value <- weighted_quantile_expected$value <- quantile_values
   quantile_expected$output_type_id <- output_prob
   weighted_quantile_expected$output_type_id <- weighted_output_prob
-  
+
   component_outputs <- expand.grid(
     stringsAsFactors = FALSE,
     model_id = letters[1:3],
     location = "111",
-    horizon = 1, 
+    horizon = 1,
     target = "inc death",
     target_date = as.Date("2021-12-25"),
     output_type = "quantile",
     output_type_id = output_prob,
     value = NA_real_)
 
-  component_outputs$value[component_outputs$model_id == "a"] <- 
+  component_outputs$value[component_outputs$model_id == "a"] <-
     stats::qlnorm(output_prob, mean=-3)
-  component_outputs$value[component_outputs$model_id == "b"] <- 
+  component_outputs$value[component_outputs$model_id == "b"] <-
     stats::qlnorm(output_prob, mean=0)
-  component_outputs$value[component_outputs$model_id == "c"] <- 
+  component_outputs$value[component_outputs$model_id == "c"] <-
     stats::qlnorm(output_prob, mean=3)
 
   weighted_component_outputs <- expand.grid(
     stringsAsFactors = FALSE,
     model_id = letters[1:3],
     location = "111",
-    horizon = 1, 
+    horizon = 1,
     target = "inc death",
     target_date = as.Date("2021-12-25"),
     output_type = "quantile",
     output_type_id = weighted_output_prob,
     value = NA_real_)
 
-  weighted_component_outputs$value[weighted_component_outputs$model_id == "a"] <- 
+  weighted_component_outputs$value[weighted_component_outputs$model_id == "a"] <-
     stats::qlnorm(weighted_output_prob, mean=-3)
-  weighted_component_outputs$value[weighted_component_outputs$model_id == "b"] <- 
+  weighted_component_outputs$value[weighted_component_outputs$model_id == "b"] <-
     stats::qlnorm(weighted_output_prob, mean=0)
-  weighted_component_outputs$value[weighted_component_outputs$model_id == "c"] <- 
+  weighted_component_outputs$value[weighted_component_outputs$model_id == "c"] <-
     stats::qlnorm(weighted_output_prob, mean=3)
 
   fweight1 <- data.frame(model_id = letters[1:3],
@@ -215,7 +215,7 @@ test_that("(weighted) quantiles correctly calculated - lognormal family", {
                                           task_id_cols = NULL,
                                           n_samples = 1e5)
 
-  weighted_quantile_actual_norm <- linear_pool(weighted_component_outputs, 
+  weighted_quantile_actual_norm <- linear_pool(weighted_component_outputs,
                                           weights = fweight1,
                                           weights_col_name = "weight",
                                           model_id = "hub-ensemble",
@@ -226,17 +226,15 @@ test_that("(weighted) quantiles correctly calculated - lognormal family", {
                                           weights_col_name = NULL,
                                           model_id = "hub-ensemble",
                                           task_id_cols = NULL,
-                                          lower_tail_dist = "lnorm",
-                                          upper_tail_dist = "lnorm",
+                                          tail_dist = "lnorm",
                                           n_samples = 1e5)
 
-  weighted_quantile_actual_lnorm <- linear_pool(weighted_component_outputs, 
+  weighted_quantile_actual_lnorm <- linear_pool(weighted_component_outputs,
                                           weights = fweight1,
                                           weights_col_name = "weight",
                                           model_id = "hub-ensemble",
                                           task_id_cols = NULL,
-                                          lower_tail_dist = "lnorm",
-                                          upper_tail_dist = "lnorm",
+                                          tail_dist = "lnorm",
                                           n_samples = 1e5)
 
   expect_false(isTRUE(
