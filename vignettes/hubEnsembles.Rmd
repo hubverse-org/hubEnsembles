@@ -16,7 +16,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# Introduction
+# Introduction - Emily
 
 The `hubEnsembles` package includes functionality for aggregating model outputs, such as forecasts or projections, that are submitted to a hub by multiple models and combined into ensemble model outputs. The package includes two main functions: `simple_ensemble` and `linear_pool`. We illustrate these functions in this vignette, and briefly compare them.
 
@@ -29,7 +29,10 @@ library(hubUtils)
 library(hubEnsembles)
 ```
 
-# Example data: a simple forecast hub
+# Ensembling methods - Li
+
+# Demonstration of functionality - Emily
+## Example data: a simple forecast hub
 
 The `example-simple-forecast-hub` has been created by the Consortium of Infectious Disease Modeling Hubs as a simple example hub to demonstrate the set up and functionality for the hubverse. The hub includes both target data and example model output data.
 
@@ -47,7 +50,7 @@ target_data <- read.csv(target_data_path)
 head(target_data)
 ```
 
-# Creating ensembles with `simple_ensemble`
+## Creating ensembles with `simple_ensemble`
 
 The `simple_ensemble` function is used to summarize across component model outputs; this function can be applied to predictions with an `output_type` of `mean`, `median`, `quantile`, `cdf`, or `pmf`.
 
@@ -58,7 +61,7 @@ mean_ens <- hubEnsembles::simple_ensemble(model_outputs)
 head(mean_ens)
 ```
 
-## Changing the aggregation function
+### Changing the aggregation function
 
 We can change the function used to aggregate across model outputs. For example, we may want to calculate a median of component model submitted values for each quantile. We will also use the `model_id` argument to distinguish this ensemble.
 
@@ -83,7 +86,7 @@ geometric_mean_ens <-  hubEnsembles::simple_ensemble(model_outputs,
 head(geometric_mean_ens)
 ```
 
-## Weighting model contributions
+### Weighting model contributions
 
 In addition, we can weight the contributions of each model by providing a table of weights, which are provided in a `data.frame` with a `model_id` column and a `weight` column.
 
@@ -97,7 +100,7 @@ weighted_mean_ens <- hubEnsembles::simple_ensemble(model_outputs,
 head(weighted_mean_ens)
 ```
 
-# Creating ensembles with `linear_pool`
+## Creating ensembles with `linear_pool`
 
 An alternative approach to generate an ensemble is a linear pool, or a distributional mixture; this function can be applied to predictions with an `output_type` of `mean`, `quantile`, `cdf`, or `pmf`. Our example hub includes `median` output type, so we exclude it from the calculation.
 
@@ -109,7 +112,7 @@ linear_pool_ens <- hubEnsembles::linear_pool(model_outputs %>%
 head(linear_pool_ens)
 ```
 
-# Plots
+## Plots
 
 ```{r}
 basic_plot_function <- function(plot_df, truth_df, plain_line = 0.5, ribbon = c(0.975, 0.025),
@@ -161,3 +164,7 @@ plot <- basic_plot_function(
     forecast_date = "2022-12-12")
 plot
 ```
+
+# Case study: Weekly incident flu hospitalizations - Li
+
+# Conclusion/Discussion - Undecided
