@@ -3,7 +3,7 @@ title: "The `hubEnsembles` package"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{The `hubEnsembles` package}
-  %\VignetteEngine{knitr::knitr}
+  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
