@@ -80,7 +80,11 @@ test_that("sorted unique output_type_ids are identical in the component model ou
                             quantile_outputs$output_type_id == .9] <-
     c(250, 350, 500, 350)
 
-  expected_output_type_ids <- sort(unique(quantile_outputs$output_type_id))
+  expected_output_type_ids <- data.frame(quantile_outputs) |>
+    dplyr::mutate(output_type_id=as.character(output_type_id)) |>
+    dplyr::pull(output_type_id) |>
+    unique() |>
+    sort()
     
   actual_output_type_ids <- linear_pool(quantile_outputs, weights = NULL,
                                           weights_col_name = NULL,
@@ -368,3 +372,5 @@ test_that("(weighted) quantiles correctly calculated - lognormal family", {
                as.data.frame(weighted_quantile_actual_lnorm),
                tolerance=1e-3)
 })
+
+
