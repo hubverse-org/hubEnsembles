@@ -105,6 +105,73 @@ test_that("sorted unique output_type_ids are identical in the component model ou
   expect_equal(expected_output_type_ids, actual_output_type_ids)
 })
 
+test_that("group_by(output_type_id) produces expected results", {
+  explicit_outputs <- expand.grid(
+    stringsAsFactors = FALSE,
+    model_id = letters[1:4],
+    location = c("222", "888"),
+    horizon = 1, #week
+    target = "inc death",
+    target_date = as.Date("2021-12-25"),
+    output_type = "quantile",
+    output_type_id = c(.025, .1, .25, .75, .9, .975),
+    value = NA_real_)
+  
+  explicit_outputs$value[explicit_outputs$location == "222" &
+                            explicit_outputs$output_type_id == .025] <-
+    c(4, 12, 6, 8)
+  explicit_outputs$value[explicit_outputs$location == "222" &
+                            explicit_outputs$output_type_id == .100] <-
+    c(10, 30, 15, 20)
+  explicit_outputs$value[explicit_outputs$location == "222" &
+                            explicit_outputs$output_type_id == .250] <-
+    c(20, 40, 25, 30)
+  explicit_outputs$value[explicit_outputs$location == "222" &
+                            explicit_outputs$output_type_id == .750] <-
+    c(50, 50, 55, 60)
+  explicit_outputs$value[explicit_outputs$location == "222" &
+                            explicit_outputs$output_type_id == .900] <-
+    c(60, 70, 75, 80)
+  explicit_outputs$value[explicit_outputs$location == "222" &
+                            explicit_outputs$output_type_id == .975] <-
+    c(70, 80, 85, 90)
+  explicit_outputs$value[explicit_outputs$location == "888" &
+                            explicit_outputs$output_type_id == .025] <-
+    c(40, 120, 160, 100)
+  explicit_outputs$value[explicit_outputs$location == "888" &
+                            explicit_outputs$output_type_id == .100] <-
+    c(100, 300, 400, 250)
+  explicit_outputs$value[explicit_outputs$location == "888" &
+                            explicit_outputs$output_type_id == .250] <-
+    c(150, 325, 475, 300)
+  explicit_outputs$value[explicit_outputs$location == "888" &
+                            explicit_outputs$output_type_id == .750] <-
+    c(200, 325, 500, 325)
+  explicit_outputs$value[explicit_outputs$location == "888" &
+                            explicit_outputs$output_type_id == .900] <-
+    c(250, 350, 500, 350)
+  explicit_outputs$value[explicit_outputs$location == "888" &
+                            explicit_outputs$output_type_id == .975] <-
+    c(350, 450, 550, 450)
+  
+  intervals = c(.50, .80, .95)
+  implicit_outputs <- explicit_outputs
+  implicit_outputs$output_type_id <- sort(rep(c((1-intervals)/2, 1-(1-intervals)/2), 8))
+
+  explicit_ensemble <- simple_ensemble(explicit_outputs, weights = NULL,
+                                          weights_col_name = NULL,
+                                          model_id = "hub-ensemble",
+                                          task_id_cols = NULL) 
+    
+  implicit_ensemble <- simple_ensemble(implicit_outputs, weights = NULL,
+                                          weights_col_name = NULL,
+                                          model_id = "hub-ensemble",
+                                          task_id_cols = NULL) 
+                                          
+  expect_equal(explicit_ensemble, implicit_ensemble)
+})
+
+
 test_that("(weighted) medians and means correctly calculated", {
   median_expected <- mean_expected <-
     weighted_median_expected <- weighted_mean_expected <- data.frame(
