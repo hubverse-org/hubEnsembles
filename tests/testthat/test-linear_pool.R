@@ -49,6 +49,49 @@ test_that("non-default columns are dropped from output", {
 })
 
 
+test_that("sorted unique output_type_ids are identical in the component model outputs and the resulting ensemble model outputs", {
+  quantile_outputs <- expand.grid(
+    stringsAsFactors = FALSE,
+    model_id = letters[1:4],
+    location = c("222", "888"),
+    horizon = 1, #week
+    target = "inc death",
+    target_date = as.Date("2021-12-25"),
+    output_type = "quantile",
+    output_type_id = c(.1, .5, .9),
+    value = NA_real_)
+
+  quantile_outputs$value[quantile_outputs$location == "222" &
+                            quantile_outputs$output_type_id == .1] <-
+    c(10, 30, 15, 20)
+  quantile_outputs$value[quantile_outputs$location == "222" &
+                            quantile_outputs$output_type_id == .5] <-
+    c(40, 40, 45, 50)
+  quantile_outputs$value[quantile_outputs$location == "222" &
+                            quantile_outputs$output_type_id == .9] <-
+    c(60, 70, 75, 80)
+  quantile_outputs$value[quantile_outputs$location == "888" &
+                            quantile_outputs$output_type_id == .1] <-
+    c(100, 300, 400, 250)
+  quantile_outputs$value[quantile_outputs$location == "888" &
+                            quantile_outputs$output_type_id == .5] <-
+    c(150, 325, 500, 300)
+  quantile_outputs$value[quantile_outputs$location == "888" &
+                            quantile_outputs$output_type_id == .9] <-
+    c(250, 350, 500, 350)
+
+  expected_output_type_ids <- sort(unique(quantile_outputs$output_type_id))
+    
+  actual_output_type_ids <- linear_pool(quantile_outputs, weights = NULL,
+                                          weights_col_name = NULL,
+                                          model_id = "hub-ensemble",
+                                          task_id_cols = NULL) |>
+                              dplyr::pull(output_type_id) |>
+                              unique() |>
+                              sort()
+                      
+  expect_equal(expected_output_type_ids, actual_output_type_ids)
+})
 
 
 test_that("(weighted) quantiles correctly calculated", {
