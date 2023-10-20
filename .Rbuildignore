@@ -5,5 +5,4 @@
 ^cran-comments\.md$
 ^\.github$
 ^_pkgdown\.yml$
-^docs$
 ^pkgdown$
