@@ -43,7 +43,9 @@ linear_pool_quantile <- function(model_outputs, weights = NULL,
                         task_id_cols = NULL,
                         n_samples = 1e4,
                         ...) {
-
+  model_outputs <- model_outputs |>
+    dplyr::mutate(output_type_id=as.numeric(output_type_id))
+  
   quantile_levels <- unique(model_outputs$output_type_id)
 
   if (is.null(weights)) {
@@ -80,6 +82,7 @@ linear_pool_quantile <- function(model_outputs, weights = NULL,
     tidyr::unnest(cols = tidyselect::all_of(c("output_type_id", "value"))) |>
     dplyr::mutate(model_id = model_id, .before = 1) |>
     dplyr::mutate(output_type = "quantile", .before = output_type_id) |>
+    dplyr::mutate(output_type_id=as.character(output_type_id)) |>
     dplyr::ungroup()
 
   return(quantile_outputs)

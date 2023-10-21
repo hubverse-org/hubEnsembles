@@ -49,6 +49,119 @@ test_that("non-default columns are dropped from output", {
 })
 
 
+test_that("sorted unique output_type_ids are identical in the component model outputs and the resulting ensemble model outputs", {
+  quantile_outputs <- expand.grid(
+    stringsAsFactors = FALSE,
+    model_id = letters[1:4],
+    location = c("222", "888"),
+    horizon = 1, #week
+    target = "inc death",
+    target_date = as.Date("2021-12-25"),
+    output_type = "quantile",
+    output_type_id = c(.1, .5, .9),
+    value = NA_real_)
+
+  quantile_outputs$value[quantile_outputs$location == "222" &
+                            quantile_outputs$output_type_id == .1] <-
+    c(10, 30, 15, 20)
+  quantile_outputs$value[quantile_outputs$location == "222" &
+                            quantile_outputs$output_type_id == .5] <-
+    c(40, 40, 45, 50)
+  quantile_outputs$value[quantile_outputs$location == "222" &
+                            quantile_outputs$output_type_id == .9] <-
+    c(60, 70, 75, 80)
+  quantile_outputs$value[quantile_outputs$location == "888" &
+                            quantile_outputs$output_type_id == .1] <-
+    c(100, 300, 400, 250)
+  quantile_outputs$value[quantile_outputs$location == "888" &
+                            quantile_outputs$output_type_id == .5] <-
+    c(150, 325, 500, 300)
+  quantile_outputs$value[quantile_outputs$location == "888" &
+                            quantile_outputs$output_type_id == .9] <-
+    c(250, 350, 500, 350)
+
+  expected_output_type_ids <- data.frame(quantile_outputs) |>
+    dplyr::mutate(output_type_id=as.character(output_type_id)) |>
+    dplyr::pull(output_type_id) |>
+    unique() |>
+    sort()
+    
+  actual_output_type_ids <- linear_pool(quantile_outputs, weights = NULL,
+                                          weights_col_name = NULL,
+                                          model_id = "hub-ensemble",
+                                          task_id_cols = NULL) |>
+                              dplyr::pull(output_type_id) |>
+                              unique() |>
+                              sort()
+                      
+  expect_equal(expected_output_type_ids, actual_output_type_ids)
+})
+
+test_that("group_by(output_type_id) produces expected results", {
+  explicit_outputs <- expand.grid(
+    stringsAsFactors = FALSE,
+    model_id = letters[1:4],
+    location = c("222", "888"),
+    horizon = 1, #week
+    target = "inc death",
+    target_date = as.Date("2021-12-25"),
+    output_type = "quantile",
+    output_type_id = c(.025, .1, .25, .75, .9, .975),
+    value = NA_real_)
+  
+  explicit_outputs$value[explicit_outputs$location == "222" &
+                            explicit_outputs$output_type_id == .025] <-
+    c(4, 12, 6, 8)
+  explicit_outputs$value[explicit_outputs$location == "222" &
+                            explicit_outputs$output_type_id == .100] <-
+    c(10, 30, 15, 20)
+  explicit_outputs$value[explicit_outputs$location == "222" &
+                            explicit_outputs$output_type_id == .250] <-
+    c(20, 40, 25, 30)
+  explicit_outputs$value[explicit_outputs$location == "222" &
+                            explicit_outputs$output_type_id == .750] <-
+    c(50, 50, 55, 60)
+  explicit_outputs$value[explicit_outputs$location == "222" &
+                            explicit_outputs$output_type_id == .900] <-
+    c(60, 70, 75, 80)
+  explicit_outputs$value[explicit_outputs$location == "222" &
+                            explicit_outputs$output_type_id == .975] <-
+    c(70, 80, 85, 90)
+  explicit_outputs$value[explicit_outputs$location == "888" &
+                            explicit_outputs$output_type_id == .025] <-
+    c(40, 120, 160, 100)
+  explicit_outputs$value[explicit_outputs$location == "888" &
+                            explicit_outputs$output_type_id == .100] <-
+    c(100, 300, 400, 250)
+  explicit_outputs$value[explicit_outputs$location == "888" &
+                            explicit_outputs$output_type_id == .250] <-
+    c(150, 325, 475, 300)
+  explicit_outputs$value[explicit_outputs$location == "888" &
+                            explicit_outputs$output_type_id == .750] <-
+    c(200, 325, 500, 325)
+  explicit_outputs$value[explicit_outputs$location == "888" &
+                            explicit_outputs$output_type_id == .900] <-
+    c(250, 350, 500, 350)
+  explicit_outputs$value[explicit_outputs$location == "888" &
+                            explicit_outputs$output_type_id == .975] <-
+    c(350, 450, 550, 450)
+  
+  intervals = c(.50, .80, .95)
+  implicit_outputs <- explicit_outputs
+  implicit_outputs$output_type_id <- sort(rep(c((1-intervals)/2, 1-(1-intervals)/2), 8))
+
+  explicit_ensemble <- linear_pool(explicit_outputs, weights = NULL,
+                                          weights_col_name = NULL,
+                                          model_id = "hub-ensemble",
+                                          task_id_cols = NULL) 
+    
+  implicit_ensemble <- linear_pool(implicit_outputs, weights = NULL,
+                                          weights_col_name = NULL,
+                                          model_id = "hub-ensemble",
+                                          task_id_cols = NULL) 
+                                          
+  expect_equal(explicit_ensemble, implicit_ensemble)
+})
 
 
 test_that("(weighted) quantiles correctly calculated", {
@@ -122,13 +235,15 @@ test_that("(weighted) quantiles correctly calculated", {
   quantile_actual <- linear_pool(component_outputs, weights = NULL,
                                           weights_col_name = NULL,
                                           model_id = "hub-ensemble",
-                                          task_id_cols = NULL)
+                                          task_id_cols = NULL) |>
+                      dplyr::mutate(output_type_id = as.numeric(output_type_id))
 
   weighted_quantile_actual <- linear_pool(weighted_component_outputs,
                                           weights = fweight1,
                                           weights_col_name = "weight",
                                           model_id = "hub-ensemble",
-                                          task_id_cols = NULL)
+                                          task_id_cols = NULL) |>
+                      dplyr::mutate(output_type_id = as.numeric(output_type_id))
 
   expect_equal(quantile_expected,
                as.data.frame(quantile_actual),
@@ -213,21 +328,24 @@ test_that("(weighted) quantiles correctly calculated - lognormal family", {
                                           weights_col_name = NULL,
                                           model_id = "hub-ensemble",
                                           task_id_cols = NULL,
-                                          n_samples = 1e5)
+                                          n_samples = 1e5) |>
+                            dplyr::mutate(output_type_id = as.numeric(output_type_id))
 
   weighted_quantile_actual_norm <- linear_pool(weighted_component_outputs,
                                           weights = fweight1,
                                           weights_col_name = "weight",
                                           model_id = "hub-ensemble",
                                           task_id_cols = NULL,
-                                          n_samples = 1e5)
+                                          n_samples = 1e5) |>
+                                      dplyr::mutate(output_type_id = as.numeric(output_type_id))
 
   quantile_actual_lnorm <- linear_pool(component_outputs, weights = NULL,
                                           weights_col_name = NULL,
                                           model_id = "hub-ensemble",
                                           task_id_cols = NULL,
                                           tail_dist = "lnorm",
-                                          n_samples = 1e5)
+                                          n_samples = 1e5) |>
+                              dplyr::mutate(output_type_id = as.numeric(output_type_id))
 
   weighted_quantile_actual_lnorm <- linear_pool(weighted_component_outputs,
                                           weights = fweight1,
@@ -235,8 +353,9 @@ test_that("(weighted) quantiles correctly calculated - lognormal family", {
                                           model_id = "hub-ensemble",
                                           task_id_cols = NULL,
                                           tail_dist = "lnorm",
-                                          n_samples = 1e5)
-
+                                          n_samples = 1e5) |>
+                                      dplyr::mutate(output_type_id = as.numeric(output_type_id))
+      
   expect_false(isTRUE(
     all.equal(quantile_expected,
               as.data.frame(quantile_actual_norm),
@@ -253,3 +372,5 @@ test_that("(weighted) quantiles correctly calculated - lognormal family", {
                as.data.frame(weighted_quantile_actual_lnorm),
                tolerance=1e-3)
 })
+
+
