@@ -30,6 +30,22 @@ The `hubEnsembles` package is part of a larger collection of open-source softwar
 
 # Ensembling methods - Li
 
+## Introduction to hubverse terminology and conventions
+- Define: Round, Target, Task, Model Output, Nowcast, Forecast
+  - Modeling tasks: task ID variables, output types, (target metadata)
+  - Model output representation: output_type, output_type_id, value
+
+## General definitions and ensemble properties
+- Introduce mathematical notation
+- Note properties shared by both ensembles (e.g. combining component forecasts over unique combination of task ID variables)
+- Option for weighting
+
+## Simple ensemble
+
+## Linear pool
+### CDF, PMF, and Mean output types
+### Quantile output type
+
 # Demonstration of functionality - Emily
 
 The `hubEnsembles` package includes functionality for aggregating model outputs, such as forecasts or projections, that are submitted to a hub by multiple models and combined into ensemble model outputs. The package includes two main functions: `simple_ensemble` and `linear_pool`. We illustrate these functions in this vignette, and briefly compare them.
