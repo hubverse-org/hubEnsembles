@@ -41,6 +41,8 @@ The `hubEnsembles` package is part of a larger collection of open-source softwar
 - Option for weighting
 
 ## Simple ensemble
+The `simple_ensemble` function directly computes an ensemble from component model forecasts by combining them over a unique combination of task ID variables, output types, and output type IDs. This function can be used to summarize predictions of output types mean, median, quantile, CDF, and PDF; calculation of the ensemble is the same for each of the output types and an aggregation function of choice may be specified by the user.
+The default aggregation function is mean, so `simple_ensemble` computes a mean (unweighted) ensemble by default. A median ensemble may also be created by specifying "median" as the aggregation function, or a custom function may be passed to the `agg_fun` argument to create other ensemble types.
 
 ## Linear pool
 ### CDF, PMF, and Mean output types
