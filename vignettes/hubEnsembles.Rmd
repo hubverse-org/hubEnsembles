@@ -28,12 +28,12 @@ The `hubEnsembles` package is part of a larger collection of open-source softwar
 
 <!--#EH GENERAL COMMENT: IF YOU HAVE BETTER REFERENCES ANYWHERE, LET ME KNOW.-->.
 
-# Ensembling methods - Li
-
-## Introduction to hubverse terminology and conventions
+# Hubverse terminology and conventions
 - Define: Round, Target, Task, Model Output, Nowcast, Forecast
   - Modeling tasks: task ID variables, output types, (target metadata)
   - Model output representation: output_type, output_type_id, value
+
+# Ensembling methods - Li
 
 ## General definitions and ensemble properties
 - Introduce mathematical notation
