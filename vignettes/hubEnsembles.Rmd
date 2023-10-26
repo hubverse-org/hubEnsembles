@@ -42,12 +42,21 @@ The `hubEnsembles` package is part of a larger collection of open-source softwar
 
 ## Simple ensemble
 The `simple_ensemble` function directly computes an ensemble from component model forecasts by combining them over a unique combination of task ID variables, output types, and output type IDs. This function can be used to summarize predictions of output types mean, median, quantile, CDF, and PMF; calculation of the ensemble is the same for each of the output types and an aggregation function of choice may be specified by the user.
+
 The default aggregation function is mean, so `simple_ensemble` computes a mean (unweighted) ensemble by default. A median ensemble may also be created by specifying "median" as the aggregation function, or a custom function may be passed to the `agg_fun` argument to create other ensemble types.
 
 ## Linear pool
 The `linear_pool` function provides an alternative approach to generating an ensemble over a unique combination of task ID variables using a method also known as a distributional mixture or a linear opinion pool (LOP). This function can be used to combine predictions with output types mean, quantile, CDF, and PMF. Unlike for `simple_ensemble`, this function handles its computation differently based on the output type.
 
-For the mean, CDF, and PMF output types, the linear pool method is equivalent to using a mean `simple_ensemble`.
+For the CDF, PMF, and mean output types, the linear pool method is equivalent to calling `simple_ensemble` with a mean aggregation function. This (weighted) mean of component model outputs is the definitional calculation for a linear pool of a CDF or PMF. Similarly, for the mean output type, the (weighted) mean of a linear pool is just the (weighted) mean of the means of the component distributions.
+
+However, for the quantile output type, we must first obtain an estimate of the CDF for each component distribution using the provided quantiles, combine the CDFs, then calculate the quantiles from the ensemble's CDF. We perform this calculation in three main steps, assisted by `distfromq::make_q_fun` for the first two:
+
+1. Interpolate and extrapolate from the provided quantiles for each component model to obtain an estimate of the CDF of that particular distribution.
+2. Draw samples from each component model distribution. To reduce Monte Carlo variability, we use pseudo-random samples corresponding to quantiles of the estimated distribution.
+3. Pool the samples from all component models and extract the desired quantiles.
+
+The `make_q_fun` function uses a monotonic cubic spline for interpolation of the interior while the user may choose one of several distributions to perform extrapolation of the CDF tails. These include normal, lognormal, and cauchy distributions, with "normal" set as the default.
 
 
 # Demonstration of functionality - Emily
