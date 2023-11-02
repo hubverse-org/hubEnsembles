@@ -19,26 +19,49 @@ knitr::opts_chunk$set(
 
 # Introduction - Emily
 
-Predictions of future outcomes are essential to planning and decision making. Despite their utility, generating reliable predictions of the future is challenging. One method for overcoming this challenge is combining predictions across multiple, independent models. These combination methods (also called aggregation or ensembling) have been repeatedly shown to produce predictions that are more accurate [@clemen1989; @timmermann2006b] and more consistent [@hibon2005] than individual models. Because of the clear performance benefits, multi-model ensembles are commonplace across fields, including weather [@alley2019], climate [@tebaldi2007], and economics [@aastveit2018]. More recently, multi-model ensembles have been used to improve predictions of infectious disease outbreaks, including for respiratory viruses (influenza [@mcgowan2019], SARS-CoV-2 [@cramer2022]), vector borne diseases (Dengue [@johansson2019]), and hemorrhagic fevers (Ebola [@viboud2018]). <!--#EH: I DON'T LOVE THE EMPHASIS ON DISEASE APPLICATIONS… THOUGHTS ON WHETHER TO LEAVE THIS SENTENCE, SIMPLIFY IT, OR CUT IT?-->
-<!--# LS: We could include infectious diseases in the list of different fields that use ensembles, then move this sentence further down to around the mention of the hubverse since its goal and our main expertise lies in infectious disease forecasting.-->
+Predictions of future outcomes are essential to planning and decision making. Despite their utility, generating reliable predictions of the future is challenging. One method for overcoming this challenge is combining predictions across multiple, independent models. These combination methods (also called aggregation or ensembling) have been repeatedly shown to produce predictions that are more accurate [@clemen1989; @timmermann2006b] and more consistent [@hibon2005] than individual models. Because of the clear performance benefits, multi-model ensembles are commonplace across fields, including weather [@alley2019], climate [@tebaldi2007], and economics [@aastveit2018]. More recently, multi-model ensembles have been used to improve predictions of infectious disease outbreaks, including for respiratory viruses (influenza [@mcgowan2019], SARS-CoV-2 [@cramer2022]), vector borne diseases (Dengue [@johansson2019]), and hemorrhagic fevers (Ebola [@viboud2018]). <!--#EH: I DON'T LOVE THE EMPHASIS ON DISEASE APPLICATIONS… THOUGHTS ON WHETHER TO LEAVE THIS SENTENCE, SIMPLIFY IT, OR CUT IT?--> <!--# LS: We could include infectious diseases in the list of different fields that use ensembles, then move this sentence further down to around the mention of the hubverse since its goal and our main expertise lies in infectious disease forecasting.-->
 
 Across this vast literature, there are many proposed methods for generating ensembles. Generally, these methods differ in at least one of two ways: (1) the function used to combine or "average" predictions, and (2) how predictions are weighted when performing the combination. No one method is universally "the best"; a simple average of predictions works surprisingly well across a range of settings [@winkler2015], but more complex approaches have also been shown to have benefits [REF]. Here, we present the `hubEnsembles` package, which provides a flexible framework for generating ensemble predictions from multiple models. Complimenting an existing R package for generating ensembles of point estimates [@weiss2019], `hubEnsembles` supports multiple types of predictions, from point estimates to probabilistic predictions <!--#EH: DOES ANYONE KNOW OF OTHER PACKAGES?-->.
 
 The `hubEnsembles` package is part of a larger collection of open-source software and data tools that enables collaborative forecasting exercises called the "hubverse". The broader "hubverse" initiative is motivated by the demonstrated benefits of collaborative hubs [@reich2022], including performance improvements of multi-model ensembles, and the desire for standardization across such hubs. In this paper, we focus specifically on the functionality encompassed in `hubEnsembles`. We provide an overview of the methods implemented (Section 2), give simple examples to demonstrate the functionality (Section 3) and a more complex case study (Section 4) that motivates a discussion and comparison of the various methods (Section 5).
 
-<!--#EH GENERAL COMMENT: IF YOU HAVE BETTER REFERENCES ANYWHERE, LET ME KNOW.-->.
+<!--#EH GENERAL COMMENT: IF YOU HAVE BETTER REFERENCES ANYWHERE, LET ME KNOW.-->
 
 # Mathematical definitions and properties of ensemble methods
-- Introduce mathematical notation
-- Note properties shared by both ensembles (e.g. combining component forecasts over unique combination of task ID variables)
-- Option for weighting
+
+The `hubEnsembles` package supports both point predictions and probabilistic predictions of different formats. A point prediction, $x$, is a single estimate of future outcomes, and a probabilistic prediction gives probabilities for a range of future outcomes specified by a distribution, $f(x)$ over future outcomes $x$.
+
+For a set of point predictions, $x_i$ each from an distinct model $i$, the `hubEnsembles` package can compute an ensemble of these predictions
+
+$$
+x_E = f(x_i, w_i) 
+$$
+
+using any function $f$, and model-specific weights $w_i$. For example, an arithemtic average of predictions yields $x_E = \sum_{i=1}^Nx_iw_i$, where $N$ is the number of predictions and $\sum_{i=1}^Nw_i=1$. If $w_i = 1/N$ for all $i$, all predictions will be equally weighted. This framework can also support more complex functions for aggregation, such as ADD HERE.
+
+For probabilistic predictions, there exist two such classes of methods to average or ensemble multiple predictions: quantile averaging [@lichtendahl2013] (also called a Vincent average [@vincent1912]) and probability averaging [@lichtendahl2013] also called a distributional mixture [REF?] or linear opinion pool [@stone1961]). Let $F(x)$ be a cumulative density function (CDF) defined over values $x$, and $F^{-1}(\theta)$ be the corresponding quantile function defined over quantiles $\theta$. Then, the quantile average is calculated as
+
+$$
+F^{-1}_Q(x) = \sum_{i = 1}^Nw_iF^{-1}_i(\theta)
+$$
+
+across all individual predictions, $F^{-1}_i(\theta)$, for $N$ total predictions, and $w_i$ weights for each prediction. In other words, this computes the average value across predictions for a fixed quantile. Conversely, the probability average or linear pool is calculated by averaging quantiles across predictions for a fixed value, or
+
+$$
+F_{LOP}(x) = \sum_{i = 1}^Nw_iF_i(x)
+$$
+
+again for individual predictions, $F_i(x)$, $N$ total predictions, and weights $w_i$.
+
+The different averaging methods for probabilistic predictions yield different properties of the resulting ensemble distribution. For example, the variance of the linear pool is $\sigma^2_{LOP} = \sum_{i=1}^Nw_i\sigma_i^2 + \sum_{i=1}^Nw_i(\mu_i-\mu_{LOP})^2$, where $\mu_i$ is the mean and $\sigma^2_i$ is the variance of individual prediction $i$, and although there is no closed-form variance for the quantile average, the variance of the quantile average will always be less than or equal to that of the linear pool [@lichtendahl2013]. The linear pool method preserves variation between individual models, whereas the quantile average cancels away this variation [@howerton2023]. Both methods generate distributions with the same mean, $\mu_Q = \mu_{LOP} = \sum_{i=1}^Nw_i\mu_i$, which is the mean of individual model means.
 
 # Model implementation details
 
 ## Hubverse terminology and conventions
-- Define: Round, Target, Task, Model Output, Nowcast, Forecast
-  - Modeling tasks: task ID variables, output types, (target metadata)
-  - Model output representation: output_type, output_type_id, value
+
+-   Define: Round, Target, Task, Model Output, Nowcast, Forecast
+    -   Modeling tasks: task ID variables, output types, (target metadata)
+    -   Model output representation: output_type, output_type_id, value
 
 The hubverse standardizes some common forecasting conventions, and each package within the larger suite of tools follows the set of outlined rules. We begin with a short overview of concepts needed to understand and utilize the `hubEnsembles` package.
 
@@ -52,25 +75,25 @@ The model output representation specifies how the forecasts are being conveyed a
 
 <!-- # LS: Maybe we should include the same summary table from the hubverse docs here https://hubdocs.readthedocs.io/en/latest/user-guide/model-output.html -->
 
-
 ## Simple ensemble
+
 The `simple_ensemble` function directly computes an ensemble from component model forecasts by combining them over a unique combination of task ID variables, output types, and output type IDs. This function can be used to summarize predictions of output types mean, median, quantile, CDF, and PMF; calculation of the ensemble is the same for each of the output types and an aggregation function of choice may be specified by the user.
 
 The default aggregation function is mean, so `simple_ensemble` computes a mean (unweighted) ensemble by default. A median ensemble may also be created by specifying "median" as the aggregation function, or a custom function may be passed to the `agg_fun` argument to create other ensemble types.
 
 ## Linear pool
+
 The `linear_pool` function provides an alternative approach to generating an ensemble over a unique combination of task ID variables using a method also known as a distributional mixture or a linear opinion pool (LOP). This function can be used to combine predictions with output types mean, quantile, CDF, and PMF. Unlike for `simple_ensemble`, this function handles its computation differently based on the output type.
 
 For the CDF, PMF, and mean output types, the linear pool method is equivalent to calling `simple_ensemble` with a mean aggregation function. This (weighted) mean of component model outputs is the definitional calculation for a linear pool of a CDF or PMF. Similarly, for the mean output type, the (weighted) mean of a linear pool is just the (weighted) mean of the means of the component distributions.
 
 However, for the quantile output type, we must first obtain an estimate of the CDF for each component distribution using the provided quantiles, combine the CDFs, then calculate the quantiles from the ensemble's CDF. We perform this calculation in three main steps, assisted by `distfromq::make_q_fun` for the first two:
 
-1. Interpolate and extrapolate from the provided quantiles for each component model to obtain an estimate of the CDF of that particular distribution.
-2. Draw samples from each component model distribution. To reduce Monte Carlo variability, we use pseudo-random samples corresponding to quantiles of the estimated distribution.
-3. Pool the samples from all component models and extract the desired quantiles.
+1.  Interpolate and extrapolate from the provided quantiles for each component model to obtain an estimate of the CDF of that particular distribution.
+2.  Draw samples from each component model distribution. To reduce Monte Carlo variability, we use pseudo-random samples corresponding to quantiles of the estimated distribution.
+3.  Pool the samples from all component models and extract the desired quantiles.
 
 The `make_q_fun` function uses a monotonic cubic spline for interpolation of the interior while the user may choose one of several distributions to perform extrapolation of the CDF tails. These include normal, lognormal, and cauchy distributions, with "normal" set as the default.
-
 
 # Demonstration of functionality - Emily
 
