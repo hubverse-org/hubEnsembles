@@ -34,10 +34,10 @@ The `hubEnsembles` package supports both point predictions and probabilistic pre
 For a set of point predictions, $x_i$ each from an distinct model $i$, the `hubEnsembles` package can compute an ensemble of these predictions
 
 $$
-x_E = f(x_i, w_i) 
+x_E = C(x_i, w_i) 
 $$
 
-using any function $f$, and model-specific weights $w_i$. For example, an arithemtic average of predictions yields $x_E = \sum_{i=1}^Nx_iw_i$, where $N$ is the number of predictions and $\sum_{i=1}^Nw_i=1$. If $w_i = 1/N$ for all $i$, all predictions will be equally weighted. This framework can also support more complex functions for aggregation, such as ADD HERE.
+using any function $C$, and model-specific weights $w_i$. For example, an arithemtic average of predictions yields $x_E = \sum_{i=1}^Nx_iw_i$, where $N$ is the number of predictions and $\sum_{i=1}^Nw_i=1$. If $w_i = 1/N$ for all $i$, all predictions will be equally weighted. This framework can also support more complex functions for aggregation, such as ADD HERE.
 
 For probabilistic predictions, there exist two such classes of methods to average or ensemble multiple predictions: quantile averaging [@lichtendahl2013] (also called a Vincent average [@vincent1912]) and probability averaging [@lichtendahl2013] also called a distributional mixture [REF?] or linear opinion pool [@stone1961]). Let $F(x)$ be a cumulative density function (CDF) defined over values $x$, and $F^{-1}(\theta)$ be the corresponding quantile function defined over quantiles $\theta$. Then, the quantile average is calculated as
 
@@ -77,17 +77,17 @@ The model output representation specifies how the forecasts are being conveyed a
 
 ## Simple ensemble
 
-The `simple_ensemble` function directly computes an ensemble from component model forecasts by combining them over a unique combination of task ID variables, output types, and output type IDs. This function can be used to summarize predictions of output types mean, median, quantile, CDF, and PMF; calculation of the ensemble is the same for each of the output types and an aggregation function of choice may be specified by the user.
+The `simple_ensemble` function directly computes an ensemble from component model forecasts by combining via some function (\$f\$) them over a unique combination of task ID variables, output types, and output type IDs. This function can be used to summarize predictions of output types mean, median, quantile, CDF, and PMF; calculation of the ensemble is the same for each of the output types and an aggregation function of choice may be specified by the user.
 
-The default aggregation function is mean, so `simple_ensemble` computes a mean (unweighted) ensemble by default. A median ensemble may also be created by specifying "median" as the aggregation function, or a custom function may be passed to the `agg_fun` argument to create other ensemble types.
+The default aggregation function is mean, so `simple_ensemble` computes a mean (unweighted) ensemble by default; this corresponds to $x_E = \frac{1}{N}\sum_{i=1}^Nx_i$ for mean and median output types. Applying `simple_ensemble` to a quantile output type is the definitional calculation of a quantile average, $F^{-1}_Q(\theta) = \sum_{i=1}^Nw_iF^{-1}_i(\theta)$. A median ensemble may also be created by specifying "median" as the aggregation function, or a custom function may be passed to the `agg_fun` argument to create other ensemble types. Similarly, weights can be specified, and if not specified, `simple_ensemble` defaults to equal weighting.
 
 ## Linear pool
 
-The `linear_pool` function provides an alternative approach to generating an ensemble over a unique combination of task ID variables using a method also known as a distributional mixture or a linear opinion pool (LOP). This function can be used to combine predictions with output types mean, quantile, CDF, and PMF. Unlike for `simple_ensemble`, this function handles its computation differently based on the output type.
+The `linear_pool` function implements the linear opinion pool method for ensembling projections. This function can be used to combine predictions with output types mean, quantile, CDF, and PMF. Unlike for `simple_ensemble`, this function handles its computation differently based on the output type.
 
-For the CDF, PMF, and mean output types, the linear pool method is equivalent to calling `simple_ensemble` with a mean aggregation function. This (weighted) mean of component model outputs is the definitional calculation for a linear pool of a CDF or PMF. Similarly, for the mean output type, the (weighted) mean of a linear pool is just the (weighted) mean of the means of the component distributions.
+For the CDF, PMF, and mean output types, the linear pool method is equivalent to calling `simple_ensemble` with a mean aggregation function. This (weighted) mean of component model outputs is the definitional calculation for a linear pool of a CDF or PMF (see [Mathematical definitions and properties of ensemble methods]), and the mean of the LOP is the (weighted) mean of the means of the component distributions, $\mu_{LOP} = \sum_{i=1}^Nw_i\mu_i$.
 
-However, for the quantile output type, we must first obtain an estimate of the CDF for each component distribution using the provided quantiles, combine the CDFs, then calculate the quantiles from the ensemble's CDF. We perform this calculation in three main steps, assisted by `distfromq::make_q_fun` for the first two:
+However, implementation of LOP is less straightfoward for the quantile output type. The reason for this is that LOP averages quantiles across fixed values, but the predictions are provided for fixed quantiles. Thus, we must first obtain an estimate of the CDF for each component distribution using the provided quantiles, combine the CDFs, then calculate the quantiles from the ensemble's CDF. We perform this calculation in three main steps, assisted by `distfromq::make_q_fun` for the first two:
 
 1.  Interpolate and extrapolate from the provided quantiles for each component model to obtain an estimate of the CDF of that particular distribution.
 2.  Draw samples from each component model distribution. To reduce Monte Carlo variability, we use pseudo-random samples corresponding to quantiles of the estimated distribution.
