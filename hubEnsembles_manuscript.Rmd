@@ -238,4 +238,19 @@ plot
 
 # Case study: Weekly incident flu hospitalizations - Li
 
+To demonstrate the utility of the `hubEnsembles` package and the differences between the two ensembling functions, we examine the case of predicting weekly influenza hospitalizations in the US.
+
+- utility/importance of infection disease forecasting: help inform policy, balance prevention and mitigation efforts [disease economics]
+- But issues with accuracy, especially with challenges unique to infectious disease forecasting
+- Ensembles offer a stable, usually accurate solution for making effective predictions
+- We compare several methods using the two functions to create four equally weighted ensembles against each other and a baseline
+- Component forecasts from CDC FluSight initiative during 2021-22 and 2022-23 seasons which predicted weekly incident flu hospitalizations [cite from CDC paper]
+- Figure: Truth data and period of analysis
+- Task id variables: horizon, locations, target, forecast date
+- Model output specifications: quantile output type, 23 output type ids, non-negative values
+- Need to transform into hubverse format, then easy to use the hubEnsembles functions (show the code for the latter)
+- Evaluation: use score_forecasts() with metrics WIS, MAE, 50% and 95% PI coverage, relative metrics; group scores
+- Brief overview of results: overall and by forecast_date scores? Just show plotted forecasts, NOT plotted scores?
+- Conclusion: The ensembles generally out perform the baseline with median ensemble as best except in certain specific cases where linear pool is better
+
 # Conclusion/Discussion - Undecided
