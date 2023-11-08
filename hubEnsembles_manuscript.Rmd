@@ -238,7 +238,15 @@ plot
 
 # Case study: Weekly incident flu hospitalizations - Li
 
-To demonstrate the utility of the `hubEnsembles` package and the differences between the two ensembling functions, we examine the case of predicting weekly influenza hospitalizations in the US.
+To demonstrate the utility of the `hubEnsembles` package and the differences between the two ensembling functions, we examine the case of predicting weekly influenza hospitalizations in the US. Accurate infectious disease forecasts are needed to make decisions that inform public policy, balance prevention and mitigation efforts with other monetary and societal costs, and properly allocate resources [@disease_economics]. However, making reliable predictions is hindered by four main factors unique to infectious disease forecasting: 1) the systems governing the spread of infectious disease tend to be non-stationary, 2) communicated forecasts impact the spread of infectious disease, 3) variable truth data quality, and 4) the many unknowns about the underlying disease mechanisms [@lauer]. 
+
+The US Center for Disease Control and Prevention (CDC) has been soliciting flu forecasts from modeling teams for years through FluSight, and here we combine them using various aggregation methods to take advantage of the greater consistency [@hibon2005] and accuracy [@clemen1989; @timmermann2006b] of ensembles over individual models. In particular, we examine four equally-weighted ensembling methods implemented through `simple_ensemble()` and `linear_pool()`: a quantile (arithmetic) mean, a quantile median, a linear pool with normal tails, and a linear pool with lognormal tails.
+
+The component forecasts used to generate the ensembles consist of those submitted during influenza seasons 2021-2022 and 2022-2023, the only two complete seasons for which FluSight collected quantile forecasts for a target of weekly incident flu hospitalizations. These predictions are not yet formatted according to hubverse standards but are easily transformed using the `as_model_out_tbl()` function from the `hubUtils` package.
+
+Within the now-properly formatted model outputs, the task ID variables are horizon, location, target, and forecast date (the date on which the forecast was made). For model output specifications, all of the forecasts are a quantile output type with 23 total unique output type IDs $$Q = \{.010, 0.025, .050, .100, \cdots, .900, .950, .990\}$$. The values of these quantile forecasts are non-negative. The resulting ensemble forecasts will have the same task ID variables and model output specifications.
+
+Next the component model outputs are combined using the following code to generate each model. <!-- # LS: Should it be just for a single forecast date or mapping over all of them? -->
 
 - utility/importance of infection disease forecasting: help inform policy, balance prevention and mitigation efforts [disease economics]
 - But issues with accuracy, especially with challenges unique to infectious disease forecasting
