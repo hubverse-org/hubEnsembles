@@ -248,6 +248,8 @@ Within the now-properly formatted model outputs, the task ID variables are horiz
 
 Next the component model outputs are combined using the following code to generate each model. <!-- # LS: Should it be just for a single forecast date or mapping over all of them? -->
 
+
+
 - utility/importance of infection disease forecasting: help inform policy, balance prevention and mitigation efforts [disease economics]
 - But issues with accuracy, especially with challenges unique to infectious disease forecasting
 - Ensembles offer a stable, usually accurate solution for making effective predictions
