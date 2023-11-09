@@ -248,7 +248,156 @@ Within the now-properly formatted model outputs, the task ID variables are horiz
 
 Next the component model outputs are combined using the following code to generate each model. <!-- # LS: Should it be just for a single forecast date or mapping over all of them? -->
 
+```{r read in forecasts and scores}
+library(covidHubUtils)
+library(lubridate)
+library(patchwork)
+source("evaluation_functions.R")
 
+flu_truth_all <- readr::read_rds("data/flu_truth_all.rds")
+flu_files <- list.files(path="data", pattern="hub", full.names=TRUE)
+flu_forecasts_all <- purrr::map_dfr(flu_files, .f=readr::read_rds) |>
+  as_covid_hub_forecasts(model_id_col = "model_id",
+                        reference_date_col="forecast_date", 
+                        location_col="location", 
+                        horizon_col="horizon", 
+                        target_col="target", 
+                        temp_res_col=NULL, 
+                        target_end_date_col="target_end_date")
+
+flu_scores_baseline <- readr::read_rds("data/flu_baseline_scores.rds")
+flu_scores_ensembles <- readr::read_rds("data/flu_scores_ensembles.rds")
+flu_scores_all <- rbind(flu_scores_ensembles, flu_scores_baseline)
+
+flu_dates_21_22 <- as.Date("2022-01-24") + weeks(0:21)
+flu_dates_22_23 <- as.Date("2022-10-17") + weeks(0:30)
+all_flu_dates <- c(flu_dates_21_22, flu_dates_22_23)
+
+model_names <- c("Flusight-baseline", "mean-ensemble", "median-ensemble", "lp-normal", "lp-lognormal")
+model_colors <- c("black", "#F8766D", "#B79F00", "#00BFC4", "#C77CFF")
+```
+
+
+```{r plot forecasts}
+flu_forecasts_wide <- flu_forecasts_all |>
+  dplyr::left_join(hub_locations_flusight, by = c("location" = "fips")) |>
+  dplyr::mutate(horizon=as.character(horizon)) 
+
+select_dates <- all_flu_dates[seq(1, 53, 4)]
+flu_locations <- flu_forecasts_wide |>
+  dplyr::distinct(location) |>
+  pull(location) |>
+  sort()
+plotted_locations <- flu_locations[c(10, 12, 44, 54)]
+
+for (i in 1:length(plotted_locations)) {
+  location_forecasts <- flu_forecasts_wide %>% 
+    filter(location == plotted_locations[i], forecast_date %in% select_dates)
+    
+  p <- plot_forecasts(location_forecasts, 
+                      hub = "FluSight",
+                      intervals = c(.50, .95),
+                      truth_data = select(flu_truth_all, model, location, target_end_date, target_variable, value),
+                      truth_source = "HealthData",
+                      use_median_as_point = TRUE,
+                      facet = model ~.,
+                      facet_nrow = 3,
+                      fill_by_model = TRUE, 
+                      plot=FALSE)
+
+  max_truth <-max(filter(flu_truth_all, location==plotted_locations[i])$value)
+  max_forecast <- max(location_forecasts$value)
+  
+  pt <- p +
+    scale_x_date(name=NULL, limits = c(as.Date("2022-01-01"), as.Date("2023-06-08")), date_breaks = "2 months", date_labels = "%b %y") +
+    coord_cartesian(ylim = c(0, max(25, min(max_truth * 3.5, max_forecast)))) +
+    theme(axis.ticks.length.x = unit(0.5, "cm"),
+          axis.text.x = element_text(vjust = 7, hjust = -0.2),
+          legend.position = "none")
+          
+  print(pt)
+}
+```
+
+```{r overall evaluation, message=FALSE, warning=FALSE}
+flu_overall_states <- flu_scores_all |>
+  evaluate_flu_scores(grouping_variables=NULL, baseline_name="Flusight-baseline", us_only=FALSE)
+
+knitr::kable(flu_overall_states, caption="Summary of overall model performance across both seasons, averaged over the states geographic scale.")
+```
+
+```{r By date States 2021-22, message=FALSE, warning=FALSE, fig.cap='Average h-week ahead WIS and 95% PI coverage for each model for the States national level.'}  
+flu_date_horizon_season_states <- flu_scores_all |>
+  evaluate_flu_scores(grouping_variables=c("horizon", "forecast_date", "season"), baseline_name="Flusight-baseline", us_only=FALSE)
+
+# WIS
+wis_date_plot_states1_2122 <- flu_date_horizon_season_states |>
+  dplyr::filter(season == "2021-2022") |>
+  plot_evaluated_scores_forecast_date(model_names, model_colors, h=1, main="States 2021-2022, 1 week ahead")
+wis_date_plot_states4_2122 <- flu_date_horizon_season_states |>
+  dplyr::filter(season == "2021-2022") |>
+  plot_evaluated_scores_forecast_date(model_names, model_colors, h=4, main="States 2021-2022, 4 week ahead")
+  
+wis_date_plot_states1_2223 <- flu_date_horizon_season_states |>
+  dplyr::filter(season == "2022-2023") |>
+  plot_evaluated_scores_forecast_date(model_names, model_colors, h=1, main="States 2022-2023, 1 week ahead")
+wis_date_plot_states4_2223 <- flu_date_horizon_season_states |>
+  dplyr::filter(season == "2022-2023") |>
+  plot_evaluated_scores_forecast_date(model_names, model_colors, h=4, main="States 2022-2023, 4 week ahead")
+  
+# MAE
+flu_date_horizon_season_states <- flu_scores_all |>
+    evaluate_flu_scores(grouping_variables=c("horizon", "forecast_date", "season"), baseline_name="Flusight-baseline", us_only=FALSE)
+
+mae_date_plot_states1_2122 <- flu_date_horizon_season_states |>
+    dplyr::filter(season == "2021-2022") |>
+    plot_evaluated_scores_forecast_date(model_names, model_colors, h=1, y_var="mae", main="States 2021-2022, 1 week ahead")
+mae_date_plot_states4_2122 <- flu_date_horizon_season_states |>
+    dplyr::filter(season == "2021-2022") |>
+    plot_evaluated_scores_forecast_date(model_names, model_colors, h=4, y_var="mae", main="States 2021-2022, 4 week ahead")
+
+mae_date_plot_states1_2223 <- flu_date_horizon_season_states |>
+    dplyr::filter(season == "2022-2023") |>
+    plot_evaluated_scores_forecast_date(model_names, model_colors, h=1, y_var="mae", main="States 2022-2023, 1 week ahead")
+mae_date_plot_states4_2223 <- flu_date_horizon_season_states |>
+    dplyr::filter(season == "2022-2023") |>
+    plot_evaluated_scores_forecast_date(model_names, model_colors, h=4, y_var="mae", main="States 2022-2023, 4 week ahead")
+
+# 95% Coverage
+cov95_date_plot_states1_2122 <- flu_date_horizon_season_states |>
+  dplyr::filter(season == "2021-2022") |>
+  plot_evaluated_scores_forecast_date(model_names, model_colors, h=1, y_var="cov95", main="States 2021-22, 1 week ahead") +
+  coord_cartesian(ylim = c(0, 1.05))
+cov95_date_plot_states4_2122 <- flu_date_horizon_season_states |>
+  dplyr::filter(season == "2021-2022") |>
+  plot_evaluated_scores_forecast_date(model_names, model_colors, h=4, y_var="cov95", main="States 2021-22, 4 week ahead") +
+  coord_cartesian(ylim = c(0, 1.05))
+  
+cov95_date_plot_states1_2223 <- flu_date_horizon_season_states |>
+  dplyr::filter(season == "2022-2023") |>
+  plot_evaluated_scores_forecast_date(model_names, model_colors, h=1, y_var="cov95", main="States 2022-23, 1 week ahead") +
+  coord_cartesian(ylim = c(0, 1.05))
+cov95_date_plot_states4_2223 <- flu_date_horizon_season_states |>
+  dplyr::filter(season == "2022-2023") |>
+  plot_evaluated_scores_forecast_date(model_names, model_colors, h=4, y_var="cov95", main="States 2022-23, 4 week ahead") +
+  coord_cartesian(ylim = c(0, 1.05))
+
+  
+wis_date_plot_states1_2122 + wis_date_plot_states1_2223 + 
+  wis_date_plot_states4_2122 + wis_date_plot_states4_2223 + 
+  plot_layout(ncol = 2, guides='collect') &
+  theme(legend.position='bottom')
+
+mae_date_plot_states1_2122 + mae_date_plot_states1_2223 + 
+    mae_date_plot_states4_2122 + mae_date_plot_states4_2223 + 
+    plot_layout(ncol = 2, guides='collect') &
+    theme(legend.position='bottom')
+    
+cov95_date_plot_states1_2122 + cov95_date_plot_states1_2223 + 
+  cov95_date_plot_states4_2122 + cov95_date_plot_states4_2223 + 
+  plot_layout(ncol = 2, guides='collect') &
+  theme(legend.position='bottom')
+```
 
 - utility/importance of infection disease forecasting: help inform policy, balance prevention and mitigation efforts [disease economics]
 - But issues with accuracy, especially with challenges unique to infectious disease forecasting
