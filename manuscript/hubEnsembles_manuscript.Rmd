@@ -1,12 +1,14 @@
 ---
 title: "`hubEnsembles`: Ensembling Methods in R"
 output: 
-bibliography: vignettes/references.bib
+bibliography: ../vignettes/references.bib
 ---
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
+  warning = FALSE,
+  message = FALSE,
   fig.width = 7,
   fig.height = 4
 )
@@ -248,7 +250,7 @@ Within the now-properly formatted model outputs, the task ID variables are horiz
 
 Next the component model outputs are combined using the following code to generate each model. <!-- # LS: Should it be just for a single forecast date or mapping over all of them? -->
 
-```{r read in forecasts and scores}
+```{r read in forecasts and scores, echo=FALSE}
 library(covidHubUtils)
 library(lubridate)
 library(patchwork)
@@ -278,7 +280,7 @@ model_colors <- c("black", "#F8766D", "#B79F00", "#00BFC4", "#C77CFF")
 ```
 
 
-```{r plot forecasts}
+```{r plot forecasts, echo = FALSE}
 flu_forecasts_wide <- flu_forecasts_all |>
   dplyr::left_join(hub_locations_flusight, by = c("location" = "fips")) |>
   dplyr::mutate(horizon=as.character(horizon)) 
@@ -319,14 +321,14 @@ for (i in 1:length(plotted_locations)) {
 }
 ```
 
-```{r overall evaluation, message=FALSE, warning=FALSE}
+```{r overall evaluation, message=FALSE, warning=FALSE, echo=FALSE}
 flu_overall_states <- flu_scores_all |>
   evaluate_flu_scores(grouping_variables=NULL, baseline_name="Flusight-baseline", us_only=FALSE)
 
 knitr::kable(flu_overall_states, caption="Summary of overall model performance across both seasons, averaged over the states geographic scale.")
 ```
 
-```{r By date States 2021-22, message=FALSE, warning=FALSE, fig.cap='Average h-week ahead WIS and 95% PI coverage for each model for the States national level.'}  
+```{r By date States 2021-22, message=FALSE, warning=FALSE, fig.cap='Average h-week ahead WIS and 95% PI coverage for each model for the States national level.', echo=FALSE}  
 flu_date_horizon_season_states <- flu_scores_all |>
   evaluate_flu_scores(grouping_variables=c("horizon", "forecast_date", "season"), baseline_name="Flusight-baseline", us_only=FALSE)
 
