@@ -103,11 +103,20 @@ library(hubUtils)
 library(hubEnsembles)
 ```
 
-# 
 
 ## Example data: a simple forecast hub
 
-The `example-simple-forecast-hub` has been created by the Consortium of Infectious Disease Modeling Hubs as a simple example hub to demonstrate the set up and functionality for the hubverse. The hub includes both target data and example model output data.
+The `example-simple-forecast-hub` has been created by the Consortium of Infectious Disease Modeling Hubs as a simple example hub to demonstrate the set up and functionality for the hubverse. The hub includes both example model output data and target data. The model output data includes `quantile`, `mean` and `median` forecasts of future incident hospitalizations, as well as `pmf` forecasts of the probability that the change in hospitalizations will bee a "large decrease", "decrease", "stable", "increase", "large increase". 
+
+<!-- # EH: A few notes on this: 
+(1) I modified the example hub data to include mean and pmf output types. The mean output type was estimated from 1E4 samples (using distfromq package). The pmf output type was modeled after FluSight (probability of "large_decrease", "decrease", "stable", etc. but the values were randomly generated from a uniform distribution. Does this sound okay? Is it a problem that this won't match the example-hub directly?
+
+(2) As of now, I have not included the cdf output type for inc hosp forecasts because it is difficult to define standard bins. I do, however, see value in including an example with cdf output type. So two potential options for that: 
+    (a) include another target (e.g., peak timing) of cdf output type in this example hub 
+    (b) create a very simple example, say with normal distributions, that will illustrate the fundamental differences between quantile average and linear pool (similar to Fig 2 in my paper, https://royalsocietypublishing.org/doi/10.1098/rsif.2022.0659) I have always found this figure useful, but maybe it is just me! I also think this option could help reinforce the connection between the methods described in the Mathematical Definitions section, and the implementation of each function (i.e., simple_ensemble() applied to quantile is a different method than simple_ensemble() applied to cdf/pmf).
+) -->
+
+First we load the example model output data and the target data using the `connect_hub()` function from `hubUtils`, another package developed by the Consortium of Infectious Disease Modeling Hubs.
 
 ```{r}
 hub_path <- system.file("example-data/example-simple-forecast-hub",
@@ -119,15 +128,14 @@ head(model_outputs)
 
 target_data_path <- file.path(hub_path, "target-data",
                               "covid-hospitalizations.csv")
-target_data <- read.csv(target_data_path)
+target_data <- read.csv(target_data_path) %>%
+    mutate(time_idx = as.Date(time_idx))
 head(target_data)
 ```
 
 ## Creating ensembles with `simple_ensemble`
 
-The `simple_ensemble` function is used to summarize across component model outputs; this function can be applied to predictions with an `output_type` of `mean`, `median`, `quantile`, `cdf`, or `pmf`.
-
-The `simple_ensemble` function defaults to calculating an equally weighted mean across all component model outputs for each unique `output_type_id`. For our example data, which contains two output types (`median` and `quantile`), this means the resulting ensemble will be the mean of component model submitted values for each quantile.
+We can generate an equally weighted mean ensemble for each unique combination of `task_id` variables (here, `origin_date`, `horizon`, `location`, and `target`), as well as for each unique `output_type` and `output_type_id`. For the `quantile` output type in our example data, this means the resulting ensemble will be the mean of component model submitted values for each quantile. 
 
 ```{r}
 mean_ens <- hubEnsembles::simple_ensemble(model_outputs)
@@ -136,7 +144,7 @@ head(mean_ens)
 
 ### Changing the aggregation function
 
-We can change the function used to aggregate across model outputs. For example, we may want to calculate a median of component model submitted values for each quantile. We will also use the `model_id` argument to distinguish this ensemble.
+We can change the function used to aggregate across model outputs. For example, we may want to calculate a median of component model submitted values for each quantile. We do so by specifying `agg_fun = median`. We will also use `model_id = "hub-ensemble-median` to change the name of this ensemble in the resulting data frame.
 
 ```{r}
 median_ens <- hubEnsembles::simple_ensemble(model_outputs, 
@@ -144,8 +152,7 @@ median_ens <- hubEnsembles::simple_ensemble(model_outputs,
                                             model_id = "hub-ensemble-median")
 head(median_ens)
 ```
-
-Custom functions can also be passed into the `agg_fun` argument. For example, a geometric mean may be a more appropriate way to combine component model outputs. Any custom function to be used requires an argument `x` for the vector of numeric values to summarize, and if relevant, an argument `w` of numeric weights.
+Custom functions can also be passed into the `agg_fun` argument. For example, a geometric mean may be a more appropriate way to combine component model outputs; here we define a custom function `geometric_mean()` to do so. Any custom function to be used requires an argument `x` for the vector of numeric values to summarize, and if relevant, an argument `w` of numeric weights. Then, we can use this custom function to ensemble the component model outputs, again using `agg_fun = geometric_mean`.
 
 ```{r}
 geometric_mean <- function(x){
@@ -158,6 +165,47 @@ geometric_mean_ens <-  hubEnsembles::simple_ensemble(model_outputs,
                                             model_id = "hub-ensemble-geometric")
 head(geometric_mean_ens)
 ```
+
+As expected, the mean, median, and geometric mean each give us slightly different resulting ensembles. The median point estimates in Figure XX demonstrate this. 
+
+```{r}
+plt_all_point_ens <- bind_rows(mean_ens, 
+                               median_ens, 
+                               geometric_mean_ens) %>% 
+    filter(location == "US", 
+           origin_date == "2022-12-12", 
+           output_type == "median") %>%
+    mutate(target_date =  origin_date + horizon, 
+           ens_flag = model_id)
+
+plt_all_point_mod <- model_outputs %>% 
+    filter(location == "US", 
+           origin_date == "2022-12-12", 
+           output_type == "median") %>%
+    mutate(target_date =  origin_date + horizon)
+
+ggplot(data = plt_all_point_ens) + 
+    geom_point(data = target_data %>%
+                   filter(location == "US", 
+                          time_idx >= "2022-10-01",
+                          time_idx <= "2023-03-01"),
+               aes(x = time_idx, y = value)) +
+    geom_line(data = target_data %>%
+                   filter(location == "US", 
+                          time_idx >= "2022-10-01",
+                          time_idx <= "2023-03-01"),
+               aes(x = time_idx, y = value)) +
+    geom_line(data = plt_all_point_mod, 
+              aes(x = target_date, y = value, color = model_id), size = 0.9) + 
+    geom_line(aes(x = target_date, y = value, color = model_id), size = 0.9) + 
+    facet_grid(cols = vars(ens_flag)) +
+    scale_color_manual(values = c(rainbow(3), gray(seq(0.2, 0.8,length.out = 3)))) +
+    theme_bw() + 
+    theme(legend.position = "bottom", 
+          legend.title = element_blank())
+```
+
+<!-- # EH: I don't love the color scheme here... it's especially hard to see the baseline model. -->
 
 ### Weighting model contributions
 
@@ -181,61 +229,65 @@ For `mean`, `cdf` and `pmf` output types, the linear pool is equivalent to using
 
 ```{r}
 linear_pool_ens <- hubEnsembles::linear_pool(model_outputs %>%
-                                               filter(output_type != "median"))
+                                               filter(output_type == "quantile") %>%
+                                               mutate(output_type_id = as.numeric(output_type_id)))
 head(linear_pool_ens)
 ```
 
-## Plots
+
+
+
+<!-- # EH: I am leaving Evan's plotly code for now, in case we want it in the vignette. I opted for ggplot for the manuscript.-->
 
 ```{r}
-basic_plot_function <- function(plot_df, truth_df, plain_line = 0.5, ribbon = c(0.975, 0.025),
-                                forecast_date) {
-
-  plain_df <- dplyr::filter(plot_df, output_type_id == plain_line)
-
-  ribbon_df <- dplyr::filter(plot_df, output_type_id %in% ribbon) %>%
-    dplyr::mutate(output_type_id = ifelse(output_type_id == min(ribbon),
-                                          "min", "max")) %>% 
-    tidyr::pivot_wider(names_from = output_type_id, values_from = value)
-
-  plot_model <- plot_ly(height = 600, colors = scales::hue_pal()(50)) 
-
-  if (!is.null(truth_df)) {
-    plot_model <- plot_model %>% 
-      add_trace(data = truth_df, x = ~time_idx, y = ~value, type = "scatter",
-                mode = "lines+markers", line = list(color = "#6e6e6e"),
-                hoverinfo = "text", name = "ground truth",
-                hovertext = paste("Date: ", truth_df$time_value, "<br>", 
-                                  "Ground truth: ", 
-                                  format(truth_df$value, big.mark = ","), 
-                             sep = ""), 
-                marker = list(color = "#6e6e6e", size = 7))
-  }
-  plot_model <- plot_model %>% 
-    add_lines(data = plain_df, x = ~target_date, y = ~value, 
-              color = ~model_id) %>% 
-    add_ribbons(data = ribbon_df, x = ~target_date, ymin = ~min, 
-                ymax = ~max, color = ~model_id, opacity = 0.25, 
-                line = list(width = 0), showlegend = FALSE) %>%
-    plotly::layout(shapes = list(type = "line", y0 = 0, y1 = 1, yref = "paper",
-                                x0 = forecast_date, x1 = forecast_date,
-                                line = list(color = "gray")))
-}
+# basic_plot_function <- function(plot_df, truth_df, plain_line = 0.5, ribbon = c(0.975, 0.025),
+#                                 forecast_date) {
+# 
+#   plain_df <- dplyr::filter(plot_df, output_type_id == plain_line)
+# 
+#   ribbon_df <- dplyr::filter(plot_df, output_type_id %in% ribbon) %>%
+#     dplyr::mutate(output_type_id = ifelse(output_type_id == min(ribbon),
+#                                           "min", "max")) %>% 
+#     tidyr::pivot_wider(names_from = output_type_id, values_from = value)
+# 
+#   plot_model <- plot_ly(height = 600, colors = scales::hue_pal()(50)) 
+# 
+#   if (!is.null(truth_df)) {
+#     plot_model <- plot_model %>% 
+#       add_trace(data = truth_df, x = ~time_idx, y = ~value, type = "scatter",
+#                 mode = "lines+markers", line = list(color = "#6e6e6e"),
+#                 hoverinfo = "text", name = "ground truth",
+#                 hovertext = paste("Date: ", truth_df$time_value, "<br>", 
+#                                   "Ground truth: ", 
+#                                   format(truth_df$value, big.mark = ","), 
+#                              sep = ""), 
+#                 marker = list(color = "#6e6e6e", size = 7))
+#   }
+#   plot_model <- plot_model %>% 
+#     add_lines(data = plain_df, x = ~target_date, y = ~value, 
+#               color = ~model_id) %>% 
+#     add_ribbons(data = ribbon_df, x = ~target_date, ymin = ~min, 
+#                 ymax = ~max, color = ~model_id, opacity = 0.25, 
+#                 line = list(width = 0), showlegend = FALSE) %>%
+#     plotly::layout(shapes = list(type = "line", y0 = 0, y1 = 1, yref = "paper",
+#                                 x0 = forecast_date, x1 = forecast_date,
+#                                 line = list(color = "gray")))
+# }
 ```
 
 ```{r}
-plot_df <- dplyr::bind_rows(model_outputs, mean_ens) %>%
-  dplyr::filter(location == "US", origin_date == "2022-12-12") %>%
-  dplyr::mutate(target_date = origin_date + horizon)
-
-plot <- basic_plot_function(
-    plot_df,
-    truth_df = target_data %>%
-        dplyr::filter(location == "US",
-                      time_idx >= "2022-10-01",
-                      time_idx <= "2023-03-01"),
-    forecast_date = "2022-12-12")
-plot
+# plot_df <- dplyr::bind_rows(model_outputs, mean_ens) %>%
+#   dplyr::filter(location == "US", origin_date == "2022-12-12") %>%
+#   dplyr::mutate(target_date = origin_date + horizon)
+# 
+# plot <- basic_plot_function(
+#     plot_df,
+#     truth_df = target_data %>%
+#         dplyr::filter(location == "US",
+#                       time_idx >= "2022-10-01",
+#                       time_idx <= "2023-03-01"),
+#     forecast_date = "2022-12-12")
+# plot
 ```
 
 # Case study: Weekly incident flu hospitalizations - Li
