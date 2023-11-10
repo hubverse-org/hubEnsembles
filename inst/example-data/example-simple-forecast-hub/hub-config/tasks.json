@@ -88,6 +88,33 @@
                             "minimum": 0
                         }
                     },
+                    "median": {
+                        "output_type_id": {
+                            "required": null,
+                            "optional": ["NA"]
+                        },
+                        "value": {
+                            "type": "integer",
+                            "minimum": 0
+                        }
+                    },
+                    "pmf": {
+                        "output_type_id": {
+                            "required": [
+                                "large_decrease",
+                                "decrease",
+                                "stable",
+                                "increase",
+                                "large_increase"
+                            ],
+                            "optional": null
+                        },
+                        "value": {
+                            "type": "double",
+                            "minimum": 0,
+                            "maximum": 1
+                        }
+                    },
                     "quantile": {
                         "output_type_id": {
                             "required": [
