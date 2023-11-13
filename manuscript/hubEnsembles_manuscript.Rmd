@@ -9,8 +9,8 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   warning = FALSE,
   message = FALSE,
-  fig.width = 7,
-  fig.height = 4
+  fig.width = 16,
+  fig.height = 12
 )
 ```
 
@@ -72,7 +72,7 @@ The model_id column gives a unique identification a model that created the forec
 
 ## Simple ensemble
 
-The `simple_ensemble` function directly computes an ensemble from component model outputs by combining via some function (\$f\$) them over a unique combination of task ID variables, output types, and output type IDs. This function can be used to summarize predictions of output types mean, median, quantile, CDF, and PMF; calculation of the ensemble is the same for each of the output types and an aggregation function of choice may be specified by the user.
+The `simple_ensemble` function directly computes an ensemble from component model outputs by combining via some function ($f$) them over a unique combination of task ID variables, output types, and output type IDs. This function can be used to summarize predictions of output types mean, median, quantile, CDF, and PMF; calculation of the ensemble is the same for each of the output types and an aggregation function of choice may be specified by the user.
 
 The default aggregation function is mean, so `simple_ensemble` computes a mean (unweighted) ensemble by default; this corresponds to $x_E = \frac{1}{N}\sum_{i=1}^Nx_i$ for mean and median output types. Applying `simple_ensemble` (with weights) to a quantile output type is the definitional calculation of a (weighted) quantile average, $F^{-1}_Q(\theta) = \sum_{i=1}^N w_iF^{-1}_i(\theta)$. A median ensemble may also be created by specifying "median" as the aggregation function, or a custom function may be passed to the `agg_fun` argument to create other ensemble types. Similarly, weights can be specified, and if not specified, `simple_ensemble` defaults to equal weighting.
 
@@ -411,7 +411,7 @@ The US Center for Disease Control and Prevention (CDC) has been soliciting flu f
 
 The component forecasts used to generate the ensembles consist of those submitted during influenza seasons 2021-2022 and 2022-2023, the only two complete seasons for which FluSight collected quantile forecasts for a target of weekly incident flu hospitalizations. These predictions are not yet formatted according to hubverse standards but are easily transformed using the `as_model_out_tbl()` function from the `hubUtils` package.
 
-Within the now-properly formatted model outputs, the task ID variables are horizon, location, target, and forecast date (the date on which the forecast was made). For model output specifications, all of the forecasts are a quantile output type with 23 total unique output type IDs $$Q = \{.010, 0.025, .050, .100, \cdots, .900, .950, .990\}$$. The values of these quantile forecasts are non-negative. The resulting ensemble forecasts will have the same task ID variables and model output specifications.
+Within the now-properly formatted model outputs, the task ID variables are horizon, location, target, and forecast date (the date on which the forecast was made). For model output specifications, all of the forecasts are a quantile output type with 23 total unique output type IDs $$Q = \{.010, 0.025, .050, .100, \cdots, .900, .950, .990\}.$$ The values of these quantile forecasts are non-negative. The resulting ensemble forecasts will have the same task ID variables and model output specifications.
 
 Next the component model outputs are combined using the following code to generate each model. <!-- # LS: Should it be just for a single forecast date or mapping over all of them? -->
 
@@ -476,7 +476,7 @@ for (i in 1:length(plotted_locations)) {
   max_forecast <- max(location_forecasts$value)
   
   pt <- p +
-    scale_x_date(name=NULL, limits = c(as.Date("2022-01-01"), as.Date("2023-06-08")), date_breaks = "2 months", date_labels = "%b %y") +
+    scale_x_date(name=NULL, limits = c(as.Date("2022-01-01"), as.Date("2023-06-08")), date_labels = "%b '%y") +
     coord_cartesian(ylim = c(0, max(25, min(max_truth * 3.5, max_forecast)))) +
     theme(axis.ticks.length.x = unit(0.5, "cm"),
           axis.text.x = element_text(vjust = 7, hjust = -0.2),
@@ -493,7 +493,7 @@ flu_overall_states <- flu_scores_all |>
 knitr::kable(flu_overall_states, caption="Summary of overall model performance across both seasons, averaged over the states geographic scale.")
 ```
 
-```{r By date States 2021-22, message=FALSE, warning=FALSE, fig.cap='Average h-week ahead WIS and 95% PI coverage for each model for the States national level.', echo=FALSE}  
+```{r By date States WIS, message=FALSE, warning=FALSE, fig.cap='Average h-week ahead WIS for each model for the States national level.', echo=FALSE}  
 flu_date_horizon_season_states <- flu_scores_all |>
   evaluate_flu_scores(grouping_variables=c("horizon", "forecast_date", "season"), baseline_name="Flusight-baseline", us_only=FALSE)
 
@@ -511,7 +511,14 @@ wis_date_plot_states1_2223 <- flu_date_horizon_season_states |>
 wis_date_plot_states4_2223 <- flu_date_horizon_season_states |>
   dplyr::filter(season == "2022-2023") |>
   plot_evaluated_scores_forecast_date(model_names, model_colors, h=4, main="States 2022-2023, 4 week ahead")
+
+wis_date_plot_states1_2122 + wis_date_plot_states1_2223 + 
+  wis_date_plot_states4_2122 + wis_date_plot_states4_2223 + 
+  plot_layout(ncol = 2, guides='collect') &
+  theme(legend.position='bottom')
+```
   
+```{r By date States MAE, message=FALSE, warning=FALSE, fig.cap='Average h-week ahead MAE for each model for the States national level.', echo=FALSE}  
 # MAE
 flu_date_horizon_season_states <- flu_scores_all |>
     evaluate_flu_scores(grouping_variables=c("horizon", "forecast_date", "season"), baseline_name="Flusight-baseline", us_only=FALSE)
@@ -530,6 +537,13 @@ mae_date_plot_states4_2223 <- flu_date_horizon_season_states |>
     dplyr::filter(season == "2022-2023") |>
     plot_evaluated_scores_forecast_date(model_names, model_colors, h=4, y_var="mae", main="States 2022-2023, 4 week ahead")
 
+mae_date_plot_states1_2122 + mae_date_plot_states1_2223 + 
+    mae_date_plot_states4_2122 + mae_date_plot_states4_2223 + 
+    plot_layout(ncol = 2, guides='collect') &
+    theme(legend.position='bottom')
+```
+
+```{r By date States 95 PI, message=FALSE, warning=FALSE, fig.cap='Average h-week ahead 95% PI coverage for each model for the States national level.', echo=FALSE}  
 # 95% Coverage
 cov95_date_plot_states1_2122 <- flu_date_horizon_season_states |>
   dplyr::filter(season == "2021-2022") |>
@@ -548,17 +562,6 @@ cov95_date_plot_states4_2223 <- flu_date_horizon_season_states |>
   dplyr::filter(season == "2022-2023") |>
   plot_evaluated_scores_forecast_date(model_names, model_colors, h=4, y_var="cov95", main="States 2022-23, 4 week ahead") +
   coord_cartesian(ylim = c(0, 1.05))
-
-  
-wis_date_plot_states1_2122 + wis_date_plot_states1_2223 + 
-  wis_date_plot_states4_2122 + wis_date_plot_states4_2223 + 
-  plot_layout(ncol = 2, guides='collect') &
-  theme(legend.position='bottom')
-
-mae_date_plot_states1_2122 + mae_date_plot_states1_2223 + 
-    mae_date_plot_states4_2122 + mae_date_plot_states4_2223 + 
-    plot_layout(ncol = 2, guides='collect') &
-    theme(legend.position='bottom')
     
 cov95_date_plot_states1_2122 + cov95_date_plot_states1_2223 + 
   cov95_date_plot_states4_2122 + cov95_date_plot_states4_2223 + 
