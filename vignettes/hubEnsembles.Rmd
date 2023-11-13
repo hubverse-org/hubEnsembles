@@ -241,6 +241,4 @@ plot <- basic_plot_function(
 plot
 ```
 
-# Case study: Weekly incident flu hospitalizations - Li
-
 # Conclusion/Discussion - Undecided
