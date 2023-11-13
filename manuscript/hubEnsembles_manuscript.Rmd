@@ -98,7 +98,10 @@ This vignette uses the following R packages:
 
 ```{r setup}
 library(dplyr)
-library(plotly)
+library(tidyr)
+library(ggplot2)
+library(scales)
+library(cowplot)
 library(hubUtils)
 library(hubEnsembles)
 ```
@@ -195,13 +198,17 @@ ggplot(data = plt_all_point_ens) +
                           time_idx >= "2022-10-01",
                           time_idx <= "2023-03-01"),
                aes(x = time_idx, y = value)) +
+    geom_vline(aes(xintercept = as.Date("2022-12-06"))) +
     geom_line(data = plt_all_point_mod, 
               aes(x = target_date, y = value, color = model_id), size = 0.9) + 
     geom_line(aes(x = target_date, y = value, color = model_id), size = 0.9) + 
     facet_grid(cols = vars(ens_flag)) +
     scale_color_manual(values = c(rainbow(3), gray(seq(0.2, 0.8,length.out = 3)))) +
+    scale_y_continuous(labels = comma, 
+                       name = "US incident hospitalizations") +
     theme_bw() + 
-    theme(legend.position = "bottom", 
+    theme(axis.title.x = element_blank(), 
+          legend.position = "bottom", 
           legend.title = element_blank())
 ```
 
@@ -209,7 +216,7 @@ ggplot(data = plt_all_point_ens) +
 
 ### Weighting model contributions
 
-In addition, we can weight the contributions of each model by providing a table of weights, which are provided in a `data.frame` with a `model_id` column and a `weight` column.
+In addition, we can weight the contributions of each model by providing a `data.frame` that specifies the weights for each model. For example, if we wanted to include the baseline model in the ensemble, but give it less weight than the other forecasts, we would use the `weights = model_weights` argument, where `model_weights` is a `data.frame` with a `model_id` column containing each unique model_id and a `weight` column.
 
 ```{r}
 model_weights <- data.frame(model_id = c("UMass-ar", "UMass-gbq", "simple_hub-baseline"), 
@@ -220,20 +227,126 @@ weighted_mean_ens <- hubEnsembles::simple_ensemble(model_outputs,
                                                    model_id = "hub-ensemble-weighted-mean")
 head(weighted_mean_ens)
 ```
+If the `data.frame` defines model weights in a column named something other than `weight`, we can specify this using the `weights_col_name` argument. 
+
+```{r}
+model_weights <- data.frame(model_id = c("UMass-ar", "UMass-gbq", "simple_hub-baseline"), 
+                            w = c(0.4, 0.4, 0.2))
+
+weighted_mean_ens <- hubEnsembles::simple_ensemble(model_outputs, 
+                                                   weights = model_weights, 
+                                                   weights_col_name = "w",
+                                                   model_id = "hub-ensemble-weighted-mean")
+head(weighted_mean_ens)
+```
 
 ## Creating ensembles with `linear_pool`
 
-An alternative approach to generate an ensemble is a linear pool, or a distributional mixture; this function can be applied to predictions with an `output_type` of `mean`, `quantile`, `cdf`, or `pmf`. Our example hub includes `median` output type, so we exclude it from the calculation.
+We can also generate a linear pool ensemble, or distributional mixture, using the `linear_pool()` function; this function can be applied to predictions with an `output_type` of `mean`, `quantile`, `cdf`, or `pmf`. Our example hub includes `median` output type, so we exclude it from the calculation. 
 
-For `mean`, `cdf` and `pmf` output types, the linear pool is equivalent to using a mean `simple_ensemble`. For `quantile` model outputs, the `linear_pool` function needs to approximate a full probability distribution using the value-quantile pairs from each component model. As a default, this is done with functions in the `distfromq` package, which defaults to fitting a monotonic cubic spline.
+
+
+
+<!-- # EH: I needed to add the `as.numeric(output_type_id)` line to get this function to work because the model_outputs data.frame has output_types of pmf and quantile (so the output_type_id column is chr), and the distfromq function for the quantile output type cannot use character quatnile values. I have added an issue for this. -->
+
 
 ```{r}
 linear_pool_ens <- hubEnsembles::linear_pool(model_outputs %>%
-                                               filter(output_type == "quantile") %>%
-                                               mutate(output_type_id = as.numeric(output_type_id)))
+                                               filter(output_type != "median") %>%
+                                               mutate(output_type_id = as.numeric(output_type_id)), 
+                                             model_id = "hub-ensemble-linear-pool")
 head(linear_pool_ens)
 ```
 
+For `quantile` model outputs, the `linear_pool` function approximates a full probability distribution using the value-quantile pairs from each component model. As a default, this is done with functions in the `distfromq` package, which defaults to fitting a monotonic cubic spline. To increase the number of samples drawn from the distribution of each component model defaults to `1e4`, but this can be changed using the `n_samples` argument. 
+
+For `mean`, `cdf` and `pmf` output types, the linear pool is equivalent to using a mean `simple_ensemble` (see Mathematical definitions and properties for explanation). For `quantile` output types, the `linear_pool` function yields an ensemble with wider prediction intervals than `simple_ensemble`. 
+
+```{r}
+plt_model_outputs = model_outputs %>%
+    filter(location == "US", 
+           origin_date == "2022-12-12", 
+           output_type == "quantile", 
+           output_type_id %in% c(0.05, 0.25, 0.5, 0.75, 0.95)) %>%
+    mutate(target_date =  origin_date + horizon, 
+           output_type_id = paste0("Q", as.numeric(output_type_id)*100)) %>%
+    spread(output_type_id, value)
+    
+plt_ens_outputs <- bind_rows(
+    mean_ens %>% 
+        filter(location == "US", 
+               origin_date == "2022-12-12", 
+               output_type == "quantile", 
+               output_type_id %in% c(0.05, 0.25, 0.5, 0.75, 0.95)) %>%
+        mutate(target_date =  origin_date + horizon, 
+               output_type_id = paste0("Q", as.numeric(output_type_id)*100), 
+               ens_fn = "simple_ensemble"), 
+    linear_pool_ens %>% 
+        filter(location == "US", 
+               origin_date == "2022-12-12", 
+               output_type == "quantile", 
+               output_type_id %in% c(0.05, 0.25, 0.5, 0.75, 0.95)) %>%
+        mutate(target_date =  origin_date + horizon, 
+               output_type_id = paste0("Q", as.numeric(output_type_id)*100), 
+               ens_fn = "linear_pool")
+) %>%
+    spread(output_type_id, value)
+
+lims = c(min(c(plt_model_outputs$Q5, plt_ens_outputs$Q5)), 
+         max(c(plt_model_outputs$Q95, plt_ens_outputs$Q95)))
+
+p1 = ggplot(data = plt_model_outputs, 
+            aes(x = target_date)) + 
+    geom_point(data = target_data %>%
+                   filter(location == "US", 
+                          time_idx >= "2022-10-01",
+                          time_idx <= "2023-03-01"),
+               aes(x = time_idx, y = value)) +
+    geom_line(data = target_data %>%
+                  filter(location == "US", 
+                         time_idx >= "2022-10-01",
+                         time_idx <= "2023-03-01"),
+              aes(x = time_idx, y = value)) +
+    geom_vline(aes(xintercept = as.Date("2022-12-06"))) +
+    geom_ribbon(aes(ymin = Q5, ymax = Q95), alpha = 0.2) + 
+    geom_ribbon(aes(ymin = Q25, ymax = Q75), alpha = 0.2) + 
+    geom_line(aes(y = Q50), size = 0.9) +
+    facet_wrap(vars(model_id), ncol = 1)+
+    scale_y_continuous(labels = comma, 
+                       limits = lims,
+                       name = "US incident hospitalizations") +
+    theme_bw() +
+    theme(axis.title.x = element_blank(), 
+          legend.position = "none", 
+          legend.title = element_blank())
+    
+p2 = ggplot(data = plt_ens_outputs, 
+            aes(x = target_date)) + 
+    geom_point(data = target_data %>%
+                   filter(location == "US", 
+                          time_idx >= "2022-10-01",
+                          time_idx <= "2023-03-01"),
+               aes(x = time_idx, y = value)) +
+    geom_line(data = target_data %>%
+                   filter(location == "US", 
+                          time_idx >= "2022-10-01",
+                          time_idx <= "2023-03-01"),
+               aes(x = time_idx, y = value)) +
+    geom_vline(aes(xintercept = as.Date("2022-12-06"))) +
+    geom_ribbon(aes(ymin = Q5, ymax = Q95, fill = model_id), alpha = 0.2) + 
+    geom_ribbon(aes(ymin = Q25, ymax = Q75, fill = model_id), alpha = 0.2) + 
+    geom_line(aes(y = Q50, color = model_id), size = 0.9) +
+    scale_y_continuous(labels = comma, 
+                       limits = lims,
+                       name = "US incident hospitalizations") +
+    theme_bw() +
+    theme(axis.title.x = element_blank(), 
+          legend.position = "bottom", 
+          legend.title = element_blank())
+
+plot_grid(p1, p2, 
+          align = "h", axis = "b")
+```
 
 
 
