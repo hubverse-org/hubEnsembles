@@ -9,8 +9,8 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   warning = FALSE,
   message = FALSE,
-  fig.width = 16,
-  fig.height = 12
+  fig.width = 14,
+  fig.height = 8
 )
 ```
 
@@ -451,39 +451,73 @@ flu_forecasts_wide <- flu_forecasts_all |>
   dplyr::mutate(horizon=as.character(horizon)) 
 
 select_dates <- all_flu_dates[seq(1, 53, 4)]
-flu_locations <- flu_forecasts_wide |>
-  dplyr::distinct(location) |>
-  pull(location) |>
-  sort()
-plotted_locations <- flu_locations[c(10, 12, 44, 54)]
 
-for (i in 1:length(plotted_locations)) {
-  location_forecasts <- flu_forecasts_wide %>% 
-    filter(location == plotted_locations[i], forecast_date %in% select_dates)
+
+forecasts_hi <- flu_forecasts_wide %>% 
+  filter(location == "15", forecast_date %in% select_dates)
     
-  p <- plot_forecasts(location_forecasts, 
-                      hub = "FluSight",
-                      intervals = c(.50, .95),
-                      truth_data = select(flu_truth_all, model, location, target_end_date, target_variable, value),
-                      truth_source = "HealthData",
-                      use_median_as_point = TRUE,
-                      facet = model ~.,
-                      facet_nrow = 3,
-                      fill_by_model = TRUE, 
-                      plot=FALSE)
+hi_plot <- plot_forecasts(forecasts_hi, 
+                    hub = "FluSight",
+                    intervals = c(.50, .95),
+                    truth_data = select(flu_truth_all, model, location, target_end_date, target_variable, value),
+                    truth_source = "HealthData",
+                    use_median_as_point = TRUE,
+                    facet = model ~.,
+                    facet_nrow = 5,
+                    fill_by_model = TRUE, 
+                    title = "none",
+                    subtitle = "none",
+                    show_caption = FALSE,
+                    plot=FALSE)
 
-  max_truth <-max(filter(flu_truth_all, location==plotted_locations[i])$value)
-  max_forecast <- max(location_forecasts$value)
+max_truth_hi <- max(filter(flu_truth_all, location=="15")$value)
+max_forecast_hi <- max(filter(forecasts_hi, location=="15")$value)
   
-  pt <- p +
-    scale_x_date(name=NULL, limits = c(as.Date("2022-01-01"), as.Date("2023-06-08")), date_labels = "%b '%y") +
-    coord_cartesian(ylim = c(0, max(25, min(max_truth * 3.5, max_forecast)))) +
-    theme(axis.ticks.length.x = unit(0.5, "cm"),
-          axis.text.x = element_text(vjust = 7, hjust = -0.2),
-          legend.position = "none")
+hi_plot <- hi_plot +
+  scale_x_date(name=NULL, limits = c(as.Date("2022-01-01"), as.Date("2023-06-08")), date_labels = "%b '%y") +
+  coord_cartesian(ylim = c(0, max(25, min(max_truth_hi * 3.5, max_forecast_hi)))) +
+  ggtitle("Hawaii (lowest cumulative hospitalizations)") +
+  theme(axis.ticks.length.x = unit(0.5, "cm"),
+        axis.text.x = element_text(vjust = 7, hjust = -0.2),
+        legend.position = "none")
           
-  print(pt)
-}
+
+forecasts_tx <- flu_forecasts_wide %>% 
+  filter(location == "48", forecast_date %in% select_dates)
+    
+tx_plot <- plot_forecasts(forecasts_tx, 
+                    hub = "FluSight",
+                    intervals = c(.50, .95),
+                    truth_data = select(flu_truth_all, model, location, target_end_date, target_variable, value),
+                    truth_source = "HealthData",
+                    use_median_as_point = TRUE,
+                    facet = model ~.,
+                    facet_nrow = 5,
+                    fill_by_model = TRUE, 
+                    title = "none",
+                    subtitle = "none",
+                    show_caption = FALSE,
+                    plot=FALSE)
+
+max_truth_tx <- max(filter(flu_truth_all, location=="48")$value)
+max_forecast_tx <- max(filter(forecasts_tx, location=="48")$value)
+  
+tx_plot <- tx_plot +
+  scale_x_date(name=NULL, limits = c(as.Date("2022-01-01"), as.Date("2023-06-08")), date_labels = "%b '%y") +
+  coord_cartesian(ylim = c(0, max(25, min(max_truth_tx * 3.5, max_forecast_tx)))) +
+  ggtitle("Texas (highest cumulative hospitalizations)") +
+  theme(axis.ticks.length.x = unit(0.5, "cm"),
+        axis.text.x = element_text(vjust = 7, hjust = -0.2),
+        legend.position = "none")
+          
+
+hi_plot + tx_plot +
+  plot_layout(ncol = 2, guides='collect') &
+  plot_annotation(
+    title="Weekly Influenza Hospitalizations: observed and forecasted",
+    subtitle="Forecasts for Hawaii and Texas, every 4 weeks",
+  ) &
+  theme(legend.position='bottom')
 ```
 
 ```{r overall evaluation, message=FALSE, warning=FALSE, echo=FALSE}
