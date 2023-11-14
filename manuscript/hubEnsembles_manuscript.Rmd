@@ -599,7 +599,7 @@ wis_date_plot_states1_2122 + mae_date_plot_states1_2122 + cov95_date_plot_states
   theme(legend.position='bottom')
 ```
 
-<!-- LS: How much to include of location results which are only by WIS? -->
+Grouping the scores by horizon on its own and horizon in conjunction with season reveal similar patterns in model rankings, with the quantile median achieving the lowest WIS except at the 1 week ahead horizon. When the scores are grouped by only location, the quantile median has the lowest relative WIS for all but three locations, two of which demonstrate inferior performance compared to the baseline and one which has worse performance than the quantile mean. The linear pools outperform the quantile mean ensemble for 75% of locations and perform the same for about 8%, each of these three models outperforming the baseline for approximately 75% of locations.
 
 From these results, we can see that different ensembling methods perform best under different circumstances, though all outperform the baseline model. While the quantile median demonstrates the best overall results for WIS, MAE, 50% PI coverage, and 95% PI coverage, other models may perform better from week-to-week for each metric. For example, the linear pools achieve the lowest WIS during several instances of rapid change in incident flu hospitalizations.
 
