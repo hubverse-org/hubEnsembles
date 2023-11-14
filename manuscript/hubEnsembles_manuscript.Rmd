@@ -444,6 +444,18 @@ model_names <- c("Flusight-baseline", "mean-ensemble", "median-ensemble", "lp-no
 model_colors <- c("black", "#F8766D", "#B79F00", "#00BFC4", "#C77CFF")
 ```
 
+We score the ensemble forecasts for every unique combination of task ID variables using weighted interval score (WIS), MAE, 50% PI coverage, and 95% PI coverage. The scores are then grouped together and averages are taken of these metrics over different combinations of five variables: none, season, horizon, forecast date, and location. We display a table of the overall results (no grouping) and figures showing average WIS, MAE, and 95% PI coverage plotted against forecast date, horizon, and season.
+
+The summarized scores show that the quantile median ensemble has the best overall performance in terms of WIS and MAE (and the relative versions of these metrics) with above-nominal coverage rates. The two linear opinion pools had the second-best WIS and MAE values, the latter being very similar in value, but the highest 50% and 95% coverage rates. The quantile mean performed the worst of the ensembles and similarly to the baseline, only outperforming it in terms of WIS.
+
+```{r overall evaluation, message=FALSE, warning=FALSE, echo=FALSE}
+flu_overall_states <- flu_scores_all |>
+  evaluate_flu_scores(grouping_variables=NULL, baseline_name="Flusight-baseline", us_only=FALSE)
+
+knitr::kable(flu_overall_states, caption="Summary of overall model performance across both seasons, averaged over the states geographic scale.")
+```
+
+Plots of the models' forecasts can aid our understanding about the origin of these accuracy differences. For example, the linear opinion pools, which had the highest coverage rates, consistently demonstrate some of the widest intervals. The median ensemble, which had the best WIS, seems to have best-balanced interval width and point forecast accuracy among the models, with narrower intervals than the linear pools that achieved near-nominal coverage on average. The baseline, however, generated intervals that were too narrow and often inaccurate point forecasts. The quantile mean also frequently suffered from similarly narrow intervals, though at times it had intervals as wide or wider than those of the linear pools. 
 
 ```{r plot forecasts, echo = FALSE}
 flu_forecasts_wide <- flu_forecasts_all |>
@@ -520,14 +532,9 @@ hi_plot + tx_plot +
   theme(legend.position='bottom')
 ```
 
-```{r overall evaluation, message=FALSE, warning=FALSE, echo=FALSE}
-flu_overall_states <- flu_scores_all |>
-  evaluate_flu_scores(grouping_variables=NULL, baseline_name="Flusight-baseline", us_only=FALSE)
+We may also examine the scores grouped by forecast date and horizon. The three sets of plots show average WIS, MAE, and 95% PI coverage for these groupings (as well as by season for readability). The models, especially the ensembles, demonstrate great similarity in terms of MAE during the entire time period for the one week ahead horizon, though the MAE values diverge at increased horizons. However, the models show greater differences for the other two metrics, especially during times of rapid change. The linear pools show greater or equal 95% coverage rates compared to that of the other models for the entire period of analysis at both plotted horizons. Notably, for WIS the linear pools outperform the median ensemble at the one week ahead horizon during these times of rapid change, something not shown in the overall analysis.
 
-knitr::kable(flu_overall_states, caption="Summary of overall model performance across both seasons, averaged over the states geographic scale.")
-```
-
-```{r By date States metrics, message=FALSE, warning=FALSE, fig.cap='Average h-week ahead metrics for each model for the States national level.', echo=FALSE}  
+```{r By date States metrics, message=FALSE, warning=FALSE, fig.cap='Average h-week ahead WIS, MAE, and 95% PI coverage for each model for the States national level.', echo=FALSE}  
 flu_date_horizon_season_states <- flu_scores_all |>
   evaluate_flu_scores(grouping_variables=c("horizon", "forecast_date", "season"), baseline_name="Flusight-baseline", us_only=FALSE)
 
@@ -591,14 +598,6 @@ wis_date_plot_states1_2122 + mae_date_plot_states1_2122 + cov95_date_plot_states
   plot_layout(ncol=3, guides='collect') &
   theme(legend.position='bottom')
 ```
-
-We score the ensemble forecasts for every unique combination of task ID variables using weighted interval score (WIS), MAE, 50% PI coverage, and 95% PI coverage. The scores are then grouped together and averages are taken of these metrics over different combinations of five variables: none, season, horizon, forecast date, and location. We display a table of the overall results (no grouping) and figures showing average WIS, MAE, and 95% PI coverage plotted against forecast date, horizon, and season.
-
-The summarized scores show that the quantile median ensemble has the best overall performance in terms of WIS and MAE (and the relative versions of these metrics) with above-nominal coverage rates. The two linear opinion pools had the second-best WIS and MAE values, the latter being very similar in value, but the highest 50% and 95% coverage rates. The quantile mean performed the worst of the ensembles and similarly to the baseline, only outperforming it in terms of WIS.
-
-Plots of the models' forecasts can aid our understanding about the origin of these accuracy differences. For example, the linear opinion pools, which had the highest coverage rates, consistently demonstrate some of the widest intervals. The median ensemble, which had the best WIS, seems to have best-balanced interval width and point forecast accuracy among the models, with narrower intervals than the linear pools that achieved near-nominal coverage on average. The baseline, however, generated intervals that were too narrow and often inaccurate point forecasts. The quantile mean also frequently suffered from similarly narrow intervals, though at times it had intervals as wide or wider than those of the linear pools. 
-
-We may also examine the scores grouped by forecast date and horizon. The three sets of plots show average WIS, MAE, and 95% PI coverage for these groupings (as well as by season for readability). The models, especially the ensembles, demonstrate great similarity in terms of MAE during the entire time period for the one week ahead horizon, though the MAE values diverge at increased horizons. However, the models show greater differences for the other two metrics, especially during times of rapid change. The linear pools show greater or equal 95% coverage rates compared to that of the other models for the entire period of analysis at both plotted horizons. Notably, for WIS the linear pools outperform the median ensemble at the one week ahead horizon during these times of rapid change, something not shown in the overall analysis.
 
 <!-- LS: How much to include of location results which are only by WIS? -->
 
