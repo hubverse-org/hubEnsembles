@@ -200,8 +200,8 @@ ggplot(data = plt_all_point_ens) +
                aes(x = time_idx, y = value)) +
     geom_vline(aes(xintercept = as.Date("2022-12-06"))) +
     geom_line(data = plt_all_point_mod, 
-              aes(x = target_date, y = value, color = model_id), size = 0.9) + 
-    geom_line(aes(x = target_date, y = value, color = model_id), size = 0.9) + 
+              aes(x = target_date, y = value, color = model_id), linewidth = 0.9) + 
+    geom_line(aes(x = target_date, y = value, color = model_id), linewidth = 0.9) + 
     facet_grid(cols = vars(ens_flag)) +
     scale_color_manual(values = c(rainbow(3), gray(seq(0.2, 0.8,length.out = 3)))) +
     scale_y_continuous(labels = comma, 
@@ -244,16 +244,9 @@ head(weighted_mean_ens)
 
 We can also generate a linear pool ensemble, or distributional mixture, using the `linear_pool()` function; this function can be applied to predictions with an `output_type` of `mean`, `quantile`, `cdf`, or `pmf`. Our example hub includes `median` output type, so we exclude it from the calculation. 
 
-
-
-
-<!-- # EH: I needed to add the `as.numeric(output_type_id)` line to get this function to work because the model_outputs data.frame has output_types of pmf and quantile (so the output_type_id column is chr), and the distfromq function for the quantile output type cannot use character quatnile values. I have added an issue for this. -->
-
-
 ```{r}
 linear_pool_ens <- hubEnsembles::linear_pool(model_outputs %>%
-                                               filter(output_type != "median") %>%
-                                               mutate(output_type_id = as.numeric(output_type_id)), 
+                                               filter(output_type != "median"), 
                                              model_id = "hub-ensemble-linear-pool")
 head(linear_pool_ens)
 ```
@@ -419,12 +412,12 @@ Next the component model outputs are combined using the following code to genera
 library(covidHubUtils)
 library(lubridate)
 library(patchwork)
-source("evaluation_functions.R")
+source("manuscript/evaluation_functions.R")
 
-flu_truth_all <- readr::read_rds("data/flu_truth_all.rds")
-flu_files <- list.files(path="data", pattern="hub", full.names=TRUE)
+flu_truth_all <- readr::read_rds("manuscript/data/flu_truth_all.rds")
+flu_files <- list.files(path="manuscript/data", pattern="hub", full.names=TRUE)
 flu_forecasts_all <- purrr::map_dfr(flu_files, .f=readr::read_rds) |>
-  as_covid_hub_forecasts(model_id_col = "model_id",
+  covidHubUtils::as_covid_hub_forecasts(model_id_col = "model_id",
                         reference_date_col="forecast_date", 
                         location_col="location", 
                         horizon_col="horizon", 
@@ -432,8 +425,8 @@ flu_forecasts_all <- purrr::map_dfr(flu_files, .f=readr::read_rds) |>
                         temp_res_col=NULL, 
                         target_end_date_col="target_end_date")
 
-flu_scores_baseline <- readr::read_rds("data/flu_baseline_scores.rds")
-flu_scores_ensembles <- readr::read_rds("data/flu_scores_ensembles.rds")
+flu_scores_baseline <- readr::read_rds("manuscript/data/flu_baseline_scores.rds")
+flu_scores_ensembles <- readr::read_rds("manuscript/data/flu_scores_ensembles.rds")
 flu_scores_all <- rbind(flu_scores_ensembles, flu_scores_baseline)
 
 flu_dates_21_22 <- as.Date("2022-01-24") + weeks(0:21)
