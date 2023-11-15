@@ -1,7 +1,7 @@
 #' Perform simple validations on the inputs used to calculate an ensemble of
-#' component model outputs for each combination of model task, output type, 
+#' component model outputs for each combination of model task, output type,
 #' and output type id. Valid output types should be specified by the user
-#' 
+#'
 #' @param model_outputs an object of class `model_out_tbl` with component
 #'   model outputs (e.g., predictions).
 #' @param weights an optional `data.frame` with component model weights. If
@@ -17,19 +17,19 @@
 #'   case all columns in `model_outputs` other than `"model_id"`, the specified
 #'   `output_type_col` and `output_type_id_col`, and `"value"` are used as task
 #'   ids.
-#' @param valid_output_types `character` vector with the names of valid output 
-#'   types for the particular ensembling method used. See the details for more 
+#' @param valid_output_types `character` vector with the names of valid output
+#'   types for the particular ensembling method used. See the details for more
 #'   information.
-#' @details If the ensembling function intended to be used is `"simple_ensemble"`, 
-#'   the valid output types are `mean`, `median`, `quantile`, `cdf`, and `pmf`. 
-#'   If the ensembling function will be `"linear_pool"`, the valid output types 
+#' @details If the ensembling function intended to be used is `"simple_ensemble"`,
+#'   the valid output types are `mean`, `median`, `quantile`, `cdf`, and `pmf`.
+#'   If the ensembling function will be `"linear_pool"`, the valid output types
 #'   are `mean`, `quantile`, `cdf`, `pmf`, and `sample`.
-#' 
-#' @return a list of validated model inputs: `model_outputs` object of class 
-#'   `model_output_df`, optional `weights` data frame, and `task_id_cols` 
+#'
+#' @return a list of validated model inputs: `model_outputs` object of class
+#'   `model_output_df`, optional `weights` data frame, and `task_id_cols`
 #'   character vector
 #'
-#' @NoRd
+#' @noRd
 
 validate_ensemble_inputs <- function(model_outputs, weights=NULL,
                                      weights_col_name = "weight",
@@ -51,7 +51,7 @@ validate_ensemble_inputs <- function(model_outputs, weights=NULL,
              {.val {task_id_col}}."
     ))
   }
-  
+
   # check `model_outputs` has all standard columns with correct data type
   # and `model_outputs` has > 0 rows
   hubUtils::validate_model_out_tbl(model_outputs)
@@ -70,7 +70,7 @@ validate_ensemble_inputs <- function(model_outputs, weights=NULL,
   if (any(unique_output_types %in% c("cdf", "pmf", "quantile"))) {
     validate_output_type_ids(model_outputs, task_id_cols)
   }
-  
+
   if (!is.null(weights)) {
       req_weight_cols <- c("model_id", weights_col_name)
     if (!all(req_weight_cols %in% colnames(weights))) {
@@ -81,7 +81,7 @@ validate_ensemble_inputs <- function(model_outputs, weights=NULL,
     }
 
     weight_by_cols <- colnames(weights)[colnames(weights) != weights_col_name]
-    
+
     if ("value" %in% weight_by_cols) {
       cli::cli_abort(c(
         "x" = "{.arg weights} included a column named {.val {\"value\"}},
@@ -106,8 +106,8 @@ validate_ensemble_inputs <- function(model_outputs, weights=NULL,
     }
   }
 
-  validated_inputs <- list(model_outputs = model_outputs, 
-                           weights = weights, 
+  validated_inputs <- list(model_outputs = model_outputs,
+                           weights = weights,
                            task_id_cols = task_id_cols)
   return (validated_inputs)
 }

@@ -43,7 +43,7 @@ ids.}
 \item{n_samples}{\code{numeric} that specifies the number of samples to use when
 calculating quantiles from an estimated quantile function. Defaults to \code{1e4}.}
 
-\item{...}{parameters that are passed to \code{distfromq::make_q_fun}, specifying
+\item{...}{parameters that are passed to \code{distfromq::make_q_fn}, specifying
 details of how to estimate a quantile function from provided quantile levels
 and quantile values for \code{output_type} \code{"quantile"}.}
 }
@@ -74,7 +74,7 @@ model to obtain an estimate of the cdf of that distribution.
 Carlo variability, we use pseudo-random samples corresponding to quantiles
 of the estimated distribution.
 3. Collect the samples from all component models and extract the desired quantiles.
-Steps 1 and 2 in this process are performed by \code{distfromq::make_q_fun}.
+Steps 1 and 2 in this process are performed by \code{distfromq::make_q_fn}.
 }
 \examples{
 # We illustrate the calculation of a linear pool when we have quantiles from the
