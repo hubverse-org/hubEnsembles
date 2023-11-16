@@ -60,11 +60,11 @@ To understand how these methods are implemented in `hubEnsembles`, we first must
 
 One may consider the model output to be a central concept in the `hubEnsembles` package. A model output generally refers to a specially formatted tabular representation of forecasts produced by a modeling team. Each row represents a single, unique prediction with each column providing information about what is being forecasted, its scope, and its value. Per hubverse convention, the columns may be broken down into task IDs, model output representation, and, optionally, the model_id [@hubverse_docs].
 
-At minimum the task IDs (also called task ID variables) together specify the desired outcome being forecast, but they also they may include additional information, such as any conditions, assumptions, or quantitative outcomes of interest. For example, forecasts aiming to predict incident flu hospitalizations in the US at different locations and amounts of time in the future might split up this information into a "incident flu hospitalizations" target column, a location column, and a horizon column, all of which are considered task ID columns [@hubverse_docs].
+At minimum the task IDs (also called task ID variables) together specify the desired outcome being forecast, but they also they may include additional information, such as any conditions, assumptions, or quantitative outcomes of interest [@hubverse_docs]. For example, forecasts aiming to predict incident flu hospitalizations in the US at different locations and amounts of time in the future might split up this information into a "incident flu hospitalizations" target column, a location column, and a horizon column, all of which are considered task ID columns [@hubverse_docs].
 
-Each modeling effort may specify their forecasting goals differently within the task ID framework since the hubverse does not enforce uniformity for task ID columns. This allows for flexibility in how information about forecasting goals is split up into task ID columns and in the naming of columns. Then, the user provides task ID column names to functions that require them, like those in `hubEnsembles`. Additional examples of task ID variables are available on the [hubverse documentation website](https://hubdocs.readthedocs.io/en/latest/format/tasks.html).
+Each modeling effort may specify their forecasting goals differently within the task ID framework since the hubverse does not enforce uniformity for task ID columns. This allows for flexibility in how information about forecasting goals is split up into task ID columns and in the naming of columns [@hubverse_docs]. Then, the user provides task ID column names to functions that require them, like those in `hubEnsembles`, though these functions often default to assume that all non--model output representation columns are task ID columns. Additional examples of task ID variables are available on the [hubverse documentation website](https://hubdocs.readthedocs.io/en/latest/format/tasks.html).
 
-The model output representation specifies how the forecasts are being conveyed and consists of three columns: (1) output_type, (2) output_type_id, and (3) value. The output_type defines how the predictive distribution is represented and may be one of mean or median (point forecasts), quantile, cdf, or pmf (distributional forecasts). The output_type_id provides more identifying information for a forecast and is specific to the particular output_type. The value contains the actual numerical prediction. Requirements for the values of the output_type_id and value columns associated with each valid output type are summarized [here](https://hubdocs.readthedocs.io/en/latest/user-guide/model-output.html#formats-of-model-output) in the hubverse documentation. Additionally, unlike for the task IDs, these three columns are required and their names are fixed. [@hubverse_docs].
+The model output representation specifies how the forecasts are being conveyed and consists of three columns: (1) output_type, (2) output_type_id, and (3) value. The output_type defines how the predictive distribution is represented and may be one of mean or median (point forecasts), quantile, cdf, or pmf (distributional forecasts) [@hubverse_docs]. The output_type_id provides more identifying information for a forecast and is specific to the particular output_type. The value contains the actual numerical prediction. Requirements for the values of the output_type_id and value columns associated with each valid output type are summarized [here](https://hubdocs.readthedocs.io/en/latest/user-guide/model-output.html#formats-of-model-output) in the hubverse documentation. Additionally, unlike for the task IDs, these three columns are required and their names are fixed. [@hubverse_docs].
 
 <!-- # LS: Should we include the summary table from the hubverse docs in the paper itself or simply link it? -->
 
@@ -402,19 +402,50 @@ The US Center for Disease Control and Prevention (CDC) has been soliciting forec
 
 The component forecasts used to generate the ensembles consist of those submitted during influenza seasons 2021-2022 and 2022-2023, the only two complete seasons for which FluSight collected quantile forecasts for a target of weekly incident flu hospitalizations. These predictions are not yet formatted according to hubverse standards but are easily transformed using the `as_model_out_tbl()` function from the `hubUtils` package.
 
+```{r transform data, eval=FALSE}
+forecast_data_hub <- flu_data_raw |>
+  covidHubUtils::as_covid_hub_forecasts(model_id_col = "model_id",
+                                        reference_date_col="timezero", 
+                                        location_col="unit", 
+                                        horizon_col="horizon", 
+                                        target_col="target_long", 
+                                        output_type_col="output_type",
+                                        output_type_id_col="output_type_id",
+                                        value_col="value",
+                                        temp_res_col=NULL, 
+                                        target_end_date_col=NULL)
+```
+
 Within the now-properly formatted model outputs, the task ID variables are horizon, location, target, and forecast date (the date on which the forecast was made). For model output specifications, all of the forecasts are a quantile output type with 23 total unique output type IDs $$Q = \{.010, 0.025, .050, .100, \cdots, .900, .950, .990\}.$$ The values of these quantile forecasts are non-negative. The resulting ensemble forecasts will have the same task ID variables and model output specifications.
 
-Next the component model outputs are combined using the following code to generate each model. <!-- # LS: Should it be just for a single forecast date or mapping over all of them? -->
+Next the component model outputs are combined using the following code to generate each model.
 
-<!-- # EH: Do we want echo = FALSE? LS: Yes, for this part of the code, which is only loading in data. I don't think it makes sense to include in a paper. -->
+```{r construct ensembles, eval=FALSE}
+mean_ensemble <- forecast_data_hub |>
+  filter(model_id != "Flusight-baseline") |>
+  hubEnsembles::simple_ensemble(weights=NULL, agg_fun = "mean", model_id="mean-ensemble") 
+
+median_ensemble <- forecast_data_hub |>
+  filter(model_id != "Flusight-baseline") |>
+  hubEnsembles::simple_ensemble(weights=NULL, agg_fun = "median", model_id="median-ensemble")
+  
+lp_normal <- forecast_data_hub |>
+  filter(model_id != "Flusight-baseline") |>
+  hubEnsembles::linear_pool(weights=NULL, n_samples = 1e5, model_id="lp-normal", tail_dist="norm") 
+
+lp_lognormal <- forecast_data_hub |>
+  filter(model_id != "Flusight-baseline") |>
+  hubEnsembles::linear_pool(weights=NULL, n_samples = 1e5, model_id="lp-lognormal", tail_dist="lnorm") 
+```
+
 ```{r read in forecasts and scores, echo=FALSE}
 library(covidHubUtils)
 library(lubridate)
 library(patchwork)
-source("manuscript/evaluation_functions.R")
+source("evaluation_functions.R")
 
-flu_truth_all <- readr::read_rds("manuscript/data/flu_truth_all.rds")
-flu_files <- list.files(path="manuscript/data", pattern="hub", full.names=TRUE)
+flu_truth_all <- readr::read_rds("data/flu_truth_all.rds")
+flu_files <- list.files(path="data", pattern="hub", full.names=TRUE)
 flu_forecasts_all <- purrr::map_dfr(flu_files, .f=readr::read_rds) |>
   covidHubUtils::as_covid_hub_forecasts(model_id_col = "model_id",
                         reference_date_col="forecast_date", 
@@ -424,20 +455,20 @@ flu_forecasts_all <- purrr::map_dfr(flu_files, .f=readr::read_rds) |>
                         temp_res_col=NULL, 
                         target_end_date_col="target_end_date")
 
-flu_scores_baseline <- readr::read_rds("manuscript/data/flu_baseline_scores.rds")
-flu_scores_ensembles <- readr::read_rds("manuscript/data/flu_scores_ensembles.rds")
+flu_scores_baseline <- readr::read_rds("data/flu_baseline_scores.rds")
+flu_scores_ensembles <- readr::read_rds("data/flu_scores_ensembles.rds")
 flu_scores_all <- rbind(flu_scores_ensembles, flu_scores_baseline)
 
 flu_dates_21_22 <- as.Date("2022-01-24") + weeks(0:21)
 flu_dates_22_23 <- as.Date("2022-10-17") + weeks(0:30)
 all_flu_dates <- c(flu_dates_21_22, flu_dates_22_23)
-
-model_names <- c("Flusight-baseline", "mean-ensemble", "median-ensemble", "lp-normal", "lp-lognormal")
-model_colors <- c("black", "#F8766D", "#B79F00", "#00BFC4", "#C77CFF")
 ```
 
-We score the ensemble forecasts for every unique combination of task ID variables using several common metrics in forecast evaluation, including weighted interval score (WIS) [@bracher_evaluating_2021], mean absolute error (MAE), 50% prediction interval (PI) coverage, and 95% PI coverage. The scores are then grouped together and averages are taken of these metrics over different combinations of five variables: none, season, horizon, forecast date, and location. We display a table of the overall results (no grouping) and figures showing average WIS, MAE, and 95% PI coverage plotted against forecast date, horizon, and season.
-<!-- # EH: Do we need to briefly introduce the metrics, describe what they are measuring? -->
+We score the ensemble forecasts for every unique combination of task ID variables using several common metrics in forecast evaluation, including weighted interval score (WIS) [@bracher_evaluating_2021], mean absolute error (MAE), 50% prediction interval (PI) coverage, and 95% PI coverage. Of these metrics, WIS and $(1-\alpha)*100$% PI coverage evaluate probabilistic forecasts while MAE evaluates point forecasts. In this analysis, we take the 0.5 quantile to be the point forecast. 
+
+WIS measures how closely a set of prediction intervals is consistent with the true value and is an alternative to common proper scoring rules like the Log Score and Continuous Ranked Probability Score, which can't be evaluated directly for quantile forecasts [@cramer2022]. Since WIS is made up of three component penalties—one for each of spread, over-prediction, and under-prediction—a lower value indicates a more accurate forecast [@cramer2022]. The $(1-\alpha)*100$% PI coverage measures the proportion of times a certain $(1-\alpha)*100$%-level interval includes the true value, which provides information about whether a forecast has accurately characterized the uncertainty of future observations. Achieving approximately nominal ($(1-\alpha)*100$%) coverage indicates a well-calibrated forecast [@cramer2022]. MAE measures the average absolute error of a set of forecasts against the true value.
+
+The scores are then grouped together and averages are taken of these metrics over different combinations of five variables: none, season, horizon, forecast date, and location. We display a table of the overall results (no grouping) and figures showing average WIS, MAE, and 95% PI coverage plotted against forecast date, horizon, and season.
 
 The summarized scores show that the quantile median ensemble has the best overall performance in terms of WIS and MAE (and the relative versions of these metrics) with above-nominal coverage rates. The two linear opinion pools had the second-best WIS and MAE values, the latter being very similar in value, but the highest 50% and 95% coverage rates. The quantile mean performed the worst of the ensembles and similarly to the baseline, only outperforming it in terms of WIS.
 
@@ -525,11 +556,12 @@ hi_plot + tx_plot +
   theme(legend.position='bottom')
 ```
 
-<!-- # EH: can we make the colors for each ensemble consistent across plots? -->
-
 We may also examine the scores grouped by forecast date and horizon. The three sets of plots show average WIS, MAE, and 95% PI coverage for these groupings (as well as by season for readability). The models, especially the ensembles, demonstrate great similarity in terms of MAE during the entire time period for the one week ahead horizon, though the MAE values diverge at increased horizons. However, the models show greater differences for the other two metrics, especially during times of rapid change. The linear pools show greater or equal 95% coverage rates compared to that of the other models for the entire period of analysis at both plotted horizons. Notably, for WIS the linear pools outperform the median ensemble at the one week ahead horizon during these times of rapid change, something not shown in the overall analysis.
 
 ```{r By date States metrics, message=FALSE, warning=FALSE, fig.cap='Average h-week ahead WIS, MAE, and 95% PI coverage for each model for all locations except the US national location.', echo=FALSE}  
+model_names <- sort(c("Flusight-baseline", "mean-ensemble", "median-ensemble", "lp-normal", "lp-lognormal"))
+model_colors <- c("#6BAED6", "#FD8D3C", "#74C476", "#9E9AC8", "#FB6A4A")
+
 flu_date_horizon_season_states <- flu_scores_all |>
   evaluate_flu_scores(grouping_variables=c("horizon", "forecast_date", "season"), baseline_name="Flusight-baseline", us_only=FALSE)
 
@@ -605,3 +637,5 @@ Depending on the target being forecast or the goal of forecasting, the user may 
 <!-- # EH: I opted for short and sweet here. We could also expand each of the ideas into a paragraph. -->
 
 Ensembles of independent models are a powerful tool to generate more accurate and more reliable forecasts of future outcomes than a single model alone. Here, we have demonstrated how to utilize `hubEnsembles`, a simple and flexible framework to combine individual model forecasts and create ensemble predictions. When using `hubEnsembles`, it is important to carefully choose an ensemble method that is well suited for the situation. Although there may not be a "best" method, matching the properties of a given ensemble method with the features of the component models will likely yield best results. For example, we showed for forecasts of seasonal influenza in the US, the quantile median ensemble performed best overall, but the linear pool method had advantages during periods of rapid change, when outlying component forecasts were likely more important. Importantly, all ensemble methods outperformed the baseline model. These performance improvements from ensemble models motivates the use of a "hub-based" approach to prediction for infectious diseases and in other fields. Fitting within the larger suite of "hubverse" tools that support such efforts, the `hubEnsembles` package provides important software infrastructure for leveraging the power of multi-model ensembles.
+
+# References
