@@ -85,7 +85,7 @@ Finally, the `model_id` column gives a unique identifier of the model that creat
 
 ## Simple ensemble
 
-The `simple_ensemble` function directly computes an ensemble from component model outputs by combining them via some function ($C$) <!--#ELR: sticking with notation for the combination function that was introduced earlier, and avoiding collision with the notation for a pmf --> within each unique combination of task ID variables, output types, and output type IDs. This function can be used to summarize predictions of output types mean, median, quantile, CDF, and PMF. The mechanics of the ensemble calculations are the same for each of the output types, though the resulting statistical ensembling method differs for different output types as described below. An aggregation function $C$ of choice may be specified by the user.
+The `simple_ensemble` function directly computes an ensemble from component model outputs by combining them via some function ($C$) within each unique combination of task ID variables, output types, and output type IDs. This function can be used to summarize predictions of output types mean, median, quantile, CDF, and PMF. The mechanics of the ensemble calculations are the same for each of the output types, though the resulting statistical ensembling method differs for different output types as described below. An aggregation function $C$ of choice may be specified by the user.
 
 By default, `simple_ensemble` uses the mean for the aggregation function $C$ and equal weights for all models. For point predictions with a mean or median output type, the resulting ensemble prediction is an equally weighted average of the individual models' predictions. For probabilistic forecasts in a quantile format, by default `simple_ensemble` produces a quantile average, and for model outputs in a CDF or PMF format, by default `simple_ensemble` computes an equally weighted linear opinion pool.
 
@@ -95,9 +95,60 @@ A median ensemble may also be created by specifying "median" as the aggregation 
 
 The `linear_pool` function implements the linear opinion pool method for ensembling projections. This function can be used to combine predictions with output types mean, quantile, CDF, and PMF. Unlike `simple_ensemble`, this function handles its computation differently based on the output type.
 
-For the CDF, PMF, and mean output types, the linear pool method is equivalent to calling `simple_ensemble` with a mean aggregation function, since `simple_ensemble` produces a linear pool prediction for those output types. <!-- ELR: Commenting out the following text -- I moved the main point here up to the previous section about `simple_ensemble`, so that we could say what simple_ensemble did for all output types. Also, note that the statement about the mean is already present in the mathematical definitions section, so I think it's ok to jsut remove here.  "This (weighted) mean of component model outputs is the definitional calculation for a linear pool of a CDF or PMF (see [Mathematical definitions and properties of ensemble methods]), and the mean of the LOP is the (weighted) mean of the means of the component distributions, $\mu_{LOP} = \sum_{i=1}^Nw_i\mu_i$." -->
+For the CDF, PMF, and mean output types, the linear pool method is equivalent to calling `simple_ensemble` with a mean aggregation function, since `simple_ensemble` produces a linear pool prediction for those output types. 
 
-However, implementation of LOP is less straightforward for the quantile output type. The reason for this is that LOP averages CDF values (probabilities) at each value of the target variable, but the predictions are quantiles (on the scale of the target variable) at fixed probability levels. These quantiles will generally differ for different predictions, and as a result we typically are not provided with CDF values at the same values of $x$ for all component predictions. <!-- ELR: I personally find this to be confusing/non-obvious when I first start thinking about it. I tried to re-work this a bit to clarify, but I think it might be really helpful to include a figure somewhere to illustrate that if you are handed quantiles from different distributions at a fixed set of probability levels, you don't get to see the CDF values at the same places on the horizontal axis. --> Thus, we must first obtain an estimate of the CDF for each component distribution using the provided quantiles, combine the CDFs, then calculate the quantiles from the ensemble's CDF. We perform this calculation in three main steps, assisted by the `distfromq` package [REF] for the first two:
+However, implementation of LOP is less straightforward for the quantile output type. The reason for this is that LOP averages CDF values (probability) at each value of the target variable, but the predictions are quantiles (on the scale of the target variable) at fixed probability levels. The value for these quantile predictions will generally differ between models, and as a result we are typically not provided with CDF values at the same values of $x$ from all component predictions. The lack of alignment between CDF values for the same probability levels is illustrated in the figure below. 
+
+```{r linear pool from quantiles, echo=FALSE, fig.cap="The probabilities and associated values of two normal CDFs (N(100, 10) and N(110, 5)) for nine fixed quantiles are plotted as points. Vertical dashed lines show that the values of these distributions at the fixed probability levels do not align and thus can not be used to calculate LOP. However, the quantiles can be used to obtain the full CDFs, shown by the faint outline behind the points, which then can be used to calculate LOP."}
+library(distfromq)
+library(ggplot2)
+quantile_probs <- seq(from = 0.1, to = 0.9, by = 0.1)
+x <- seq(from = 0.0, to = 400.0, length = 1001)
+
+mean1 <- 100
+sd1 <- 10
+q_normal1 <- qnorm(quantile_probs, mean = mean1, sd = sd1)
+cdf_normal1 <- pnorm(x, mean = mean1, sd = sd1)
+
+mean2 <- 120
+sd2 <- 5
+q_normal2 <- qnorm(quantile_probs, mean = mean2, sd = sd2)
+cdf_normal2 <- pnorm(x, mean = mean2, sd = sd2)
+
+dplyr::bind_rows(
+  data.frame(x = x, y = cdf_normal1, dist = "N(100, 10)"),
+  data.frame(x = x, y = cdf_normal2,dist = "N(120, 5)"),
+) |>
+    ggplot() +
+      geom_line(
+        mapping = aes(x = x, y = y, color = dist),
+        linewidth = 0.8, alpha = 0.15) +
+      geom_point(
+        data = dplyr::bind_rows(
+          data.frame(q = q_normal1, p = quantile_probs, dist="N(100, 10)"),
+          data.frame(q = q_normal2, p = quantile_probs, dist="N(120, 5)")
+        ),
+        mapping = aes(x = q, y = p, color = dist),
+        size = 1.2
+      ) +
+      geom_vline(
+        data = dplyr::bind_rows(
+          data.frame(q = q_normal1, dist="N(100, 10)"),
+          data.frame(q = q_normal2, dist="N(120, 5)")
+        ),
+        mapping = aes(xintercept = q, color = dist),
+        linewidth = 0.5, alpha = 0.9, linetype = 2
+      ) +
+      scale_color_viridis_d(
+        "Distribution",
+        end = 0.9
+      ) +
+      coord_cartesian(xlim=c(75, 140)) +
+      xlab("Value") + ylab("Probability") +
+      theme_bw()
+```
+
+Given that LOP cannot be directly calculated from quantile predictions, we must first obtain an estimate of the CDF for each component distribution using the provided quantiles, combine the CDFs, then calculate the quantiles from the ensemble's CDF. We perform this calculation in three main steps, assisted by the `distfromq` package [REF] for the first two:
 
 1.  Interpolate and extrapolate from the provided quantiles for each component model to obtain an estimate of the CDF of that particular distribution.
 2.  Draw samples from each component model distribution. To reduce Monte Carlo variability, we use quasi-random samples corresponding to quantiles of the estimated distribution [@niederreiter1992quasirandom].
