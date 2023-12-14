@@ -414,33 +414,38 @@ plot_grid(p1, p2,
 
 # Case study: Weekly incident flu hospitalizations
 
-To demonstrate the utility of the `hubEnsembles` package and the differences between the two ensembling functions, we examine the case of predicting weekly influenza hospitalizations in the US. <!-- ELR: I'm commenting out this text, which feels out of place to me. "Accurate infectious disease forecasts are needed to make decisions that inform public policy, balance prevention and mitigation efforts with other monetary and societal costs, and properly allocate resources [@disease_economics]. However, making reliable predictions is hindered by four main factors unique to infectious disease forecasting: 1) the systems governing the spread of infectious disease tend to be non-stationary, 2) communicated forecasts impact the spread of infectious disease, 3) the quality of truth data is often variable, and 4) there are many unknowns about underlying disease mechanisms [@lauer]." -->
+To demonstrate the utility of the `hubEnsembles` package and the differences between the two ensembling functions, we examine the case of predicting weekly influenza hospitalizations in the US. 
 
 For over XX years, the US Center for Disease Control and Prevention (CDC) has been soliciting forecasts of seasonal influenza from modeling teams through a collaborative challenge called FluSight [REF]. Here we combine these forecasts using various aggregation methods to take advantage of the greater consistency [@hibon2005] and accuracy [@clemen1989; @timmermann2006b] of ensembles over individual models. In particular, we examine four equally-weighted ensembling methods implemented through `simple_ensemble()` and `linear_pool()`: a quantile (arithmetic) mean, a quantile median, a linear pool with normal tails, and a linear pool with lognormal tails.
 
-The component forecasts used to generate the ensembles consist of those submitted during influenza seasons 2021-2022 and 2022-2023, the only two complete seasons for which FluSight collected quantile forecasts for a target of weekly incident flu hospitalizations at the time of this writing. These predictions are not yet formatted according to hubverse standards but are easily transformed using the `as_model_out_tbl()` function from the `hubUtils` package.
+The component forecasts used to generate the ensembles consist of those submitted during influenza seasons 2021-2022 and 2022-2023, the only two complete seasons for which FluSight collected quantile forecasts for a target of weekly incident flu hospitalizations at the time of this writing. These predictions are not yet formatted according to hubverse standards but are easily transformed using the `as_model_out_tbl()` function from the `hubUtils` package. Below we print the first six rows of the transformed forecasts made on May 15, 2023 for California.
 
-<!-- ELR: Let's think about whether we can remove the dependence on covidHubUtils. I filed an issue for this here: https://github.com/Infectious-Disease-Modeling-Hubs/hubEnsembles/issues/46 -->
+```{r transform data, eval=TRUE}
+flu_forecasts_raw <- readr::read_rds("data/flu_forecasts_raw.rds")
 
-```{r transform data, eval=FALSE}
-forecast_data_hub <- flu_data_raw |>
-  covidHubUtils::as_covid_hub_forecasts(model_id_col = "model_id",
-                                        reference_date_col="timezero", 
-                                        location_col="unit", 
-                                        horizon_col="horizon", 
-                                        target_col="target_long", 
-                                        output_type_col="output_type",
-                                        output_type_id_col="output_type_id",
-                                        value_col="value",
-                                        temp_res_col=NULL, 
-                                        target_end_date_col=NULL)
+forecast_data_hub <- flu_forecasts_raw |>
+  tidyr::separate(target, sep=" ", convert=TRUE, into=c("horizon", "target"), extra="merge") |>
+  as_model_out_tbl(
+    model_id_col = "model",
+    output_type_col = "class",
+    output_type_id_col = "quantile",
+    value_col = "value",
+    sep = "-",
+    trim_to_task_ids = FALSE,
+    hub_con = NULL,
+    task_id_cols = c("forecast_date", "location", "horizon", "target"),
+    remove_empty = TRUE
+  )
+  
+forecast_data_hub |>
+  dplyr::filter(location == "06") |>
+  head() |>
+  knitr::kable()
 ```
-
-<!-- consider showing the head of the data frame? -->
 
 Within the now-properly formatted model outputs, the task ID variables are horizon, location, target, and forecast date (the date on which the forecast was made). All of the forecasts have a quantile output type with 23 total unique output type IDs $$Q = \{.010, 0.025, .050, .100, \cdots, .900, .950, .990\}.$$ The values of these quantile forecasts are non-negative. The resulting ensemble forecasts will have the same task ID variables and model output specifications.
 
-Next the component model outputs are combined using the following code to generate each model.
+Next the component model outputs are combined using the following code to generate each model, then repeated for every forecast date.
 
 ```{r construct ensembles, eval=FALSE}
 mean_ensemble <- forecast_data_hub |>
@@ -461,21 +466,15 @@ lp_lognormal <- forecast_data_hub |>
 ```
 
 ```{r read in forecasts and scores, echo=FALSE}
-library(covidHubUtils)
 library(lubridate)
 library(patchwork)
 source("evaluation_functions.R")
+source("as_covid_hub_forecasts.R")
 
 flu_truth_all <- readr::read_rds("data/flu_truth_all.rds")
 flu_files <- list.files(path="data", pattern="hub", full.names=TRUE)
 flu_forecasts_all <- purrr::map_dfr(flu_files, .f=readr::read_rds) |>
-  covidHubUtils::as_covid_hub_forecasts(model_id_col = "model_id",
-                        reference_date_col="forecast_date", 
-                        location_col="location", 
-                        horizon_col="horizon", 
-                        target_col="target", 
-                        temp_res_col=NULL, 
-                        target_end_date_col="target_end_date")
+  as_covid_hub_forecasts()
 
 flu_scores_baseline <- readr::read_rds("data/flu_baseline_scores.rds")
 flu_scores_ensembles <- readr::read_rds("data/flu_scores_ensembles.rds")
@@ -492,7 +491,7 @@ WIS measures how consistent a set of prediction intervals is with the true value
 
 <!-- ELR: commenting out the following text.  Rather than saying "we made tables and figures with results", let's say things like "The results show that XX model was better than YY model (Table 1, Fig 2)".   "The scores are then grouped together and averages are taken of these metrics over different combinations of five variables: none, season, horizon, forecast date, and location. We display a table of the overall results (no grouping) and figures showing average WIS, MAE, and 95% PI coverage plotted broken down by forecast date, horizon, and season." -->
 
-The quantile median ensemble had the best overall performance in terms of WIS and MAE (and the relative versions of these metrics) with above-nominal coverage rates (Table 1). The two linear opinion pools had very similar performance to each other. These methods had the second-best performance as measured by WIS and MAE, but they had the highest 50% and 95% coverage rates, with empirical coverage that was well above the nominal coverage rate. The quantile mean performed the worst of the ensembles.
+The results show that the quantile median ensemble had the best overall performance in terms of WIS and MAE (and the relative versions of these metrics) with above-nominal coverage rates (Table 1). The two linear opinion pools had very similar performance to each other. These methods had the second-best performance as measured by WIS and MAE, but they had the highest 50% and 95% coverage rates, with empirical coverage that was well above the nominal coverage rate. The quantile mean performed the worst of the ensembles with the highest MAE, which was substantially different from that of the other ensembles.
 
 ```{r overall evaluation, message=FALSE, warning=FALSE, echo=FALSE}
 flu_overall_states <- flu_scores_all |>
@@ -515,13 +514,13 @@ flu_forecasts_wide <- flu_forecasts_all |>
   dplyr::left_join(hub_locations_flusight, by = c("location" = "fips")) |>
   dplyr::mutate(horizon=as.character(horizon)) 
 
-select_dates <- all_flu_dates[seq(1, 53, 4)]
+select_dates <- all_flu_dates[seq(2, 53, 4)]
 
 
-forecasts_hi <- flu_forecasts_wide %>% 
-  filter(location == "15", forecast_date %in% select_dates)
+forecasts_vt <- flu_forecasts_wide %>% 
+  filter(location == "50", forecast_date %in% select_dates)
     
-hi_plot <- plot_forecasts(forecasts_hi, 
+vt_plot <- plot_forecasts(forecasts_vt, 
                     hub = "FluSight",
                     intervals = c(.50, .95),
                     truth_data = select(flu_truth_all, model, location, target_end_date, target_variable, value),
@@ -535,22 +534,22 @@ hi_plot <- plot_forecasts(forecasts_hi,
                     show_caption = FALSE,
                     plot=FALSE)
 
-max_truth_hi <- max(filter(flu_truth_all, location=="15")$value)
-max_forecast_hi <- max(filter(forecasts_hi, location=="15")$value)
+max_truth_vt <- max(filter(flu_truth_all, location=="50")$value)
+max_forecast_vt <- max(filter(forecasts_vt, location=="50")$value)
   
-hi_plot <- hi_plot +
-  scale_x_date(name=NULL, limits = c(as.Date("2022-01-01"), as.Date("2023-06-08")), date_labels = "%b '%y") +
-  coord_cartesian(ylim = c(0, max(25, min(max_truth_hi * 3.5, max_forecast_hi)))) +
-  ggtitle("Hawaii (lowest cumulative hospitalizations)") +
+vt_plot <- vt_plot +
+  scale_x_date(name=NULL, limits = c(as.Date("2022-01-01"), as.Date("2023-06-08")), date_breaks = "4 months", date_labels = "%b '%y") +
+  coord_cartesian(ylim = c(0, max(25, min(max_truth_vt * 3.5, max_forecast_vt)))) +
+  ggtitle("Vermont") +
   theme(axis.ticks.length.x = unit(0.5, "cm"),
         axis.text.x = element_text(vjust = 7, hjust = -0.2),
         legend.position = "none")
           
 
-forecasts_tx <- flu_forecasts_wide %>% 
+forecasts_ca <- flu_forecasts_wide %>% 
   filter(location == "48", forecast_date %in% select_dates)
     
-tx_plot <- plot_forecasts(forecasts_tx, 
+ca_plot <- plot_forecasts(forecasts_ca, 
                     hub = "FluSight",
                     intervals = c(.50, .95),
                     truth_data = select(flu_truth_all, model, location, target_end_date, target_variable, value),
@@ -564,25 +563,25 @@ tx_plot <- plot_forecasts(forecasts_tx,
                     show_caption = FALSE,
                     plot=FALSE)
 
-max_truth_tx <- max(filter(flu_truth_all, location=="48")$value)
-max_forecast_tx <- max(filter(forecasts_tx, location=="48")$value)
+max_truth_ca <- max(filter(flu_truth_all, location=="48")$value)
+max_forecast_ca <- max(filter(forecasts_ca, location=="48")$value)
   
-tx_plot <- tx_plot +
-  scale_x_date(name=NULL, limits = c(as.Date("2022-01-01"), as.Date("2023-06-08")), date_labels = "%b '%y") +
-  coord_cartesian(ylim = c(0, max(25, min(max_truth_tx * 3.5, max_forecast_tx)))) +
-  ggtitle("Texas (highest cumulative hospitalizations)") +
+ca_plot <- ca_plot +
+  scale_x_date(name=NULL, limits = c(as.Date("2022-01-01"), as.Date("2023-06-08")), date_breaks = "4 months", date_labels = "%b '%y") +
+  coord_cartesian(ylim = c(0, max(25, min(max_truth_ca * 3.5, max_forecast_ca)))) +
+  ggtitle("California") +
   theme(axis.ticks.length.x = unit(0.5, "cm"),
         axis.text.x = element_text(vjust = 7, hjust = -0.2),
         legend.position = "none")
           
 
-hi_plot + tx_plot +
+vt_plot + ca_plot +
   plot_layout(ncol = 2, guides='collect') &
   plot_annotation(
     title="Weekly Influenza Hospitalizations: observed and forecasted",
-    subtitle="Forecasts for Hawaii and Texas, every 4 weeks",
+    subtitle="Forecasts for Vermont and California, every 4 weeks",
   ) &
-  theme(legend.position='bottom')
+  theme(legend.position='none')
 ```
 
 <!-- ELR similar to above, removing text that says "a figure exists" so that we can jump more directly to the results. Commented text: "We may also examine the scores grouped by forecast date and horizon. The three sets of plots show average WIS, MAE, and 95% PI coverage for these groupings (as well as by season for readability)." --> The ensemble models all have similar MAE during the entire time period for the one week ahead horizon, though the MAE values diverge at increased horizons [ref to figure]. However, the models show greater differences for the other two metrics, especially during times of rapid change [ref to figures]. Specifically, during ___, the linear pools have better WIS than the median ensemble at the one week ahead forecast horizon. The PI coverage rates for the linear pools were at least as large as the coverage rates of the other models throughout the entire period of analysis at both the 1 and 4 week ahead forecast horizons.
