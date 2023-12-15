@@ -496,9 +496,16 @@ WIS measures how consistent a set of prediction intervals is with the true value
 The results show that the quantile median ensemble had the best overall performance in terms of WIS and MAE (and the relative versions of these metrics) with above-nominal coverage rates (Table 1). The two linear opinion pools had very similar performance to each other. These methods had the second-best performance as measured by WIS and MAE, but they had the highest 50% and 95% coverage rates, with empirical coverage that was well above the nominal coverage rate. The quantile mean performed the worst of the ensembles with the highest MAE, which was substantially different from that of the other ensembles.
 
 ```{r overall evaluation, message=FALSE, warning=FALSE, echo=FALSE}
+source("format_cells.R")
 flu_overall_states <- flu_scores_all |>
   evaluate_flu_scores(grouping_variables=NULL, baseline_name="Flusight-baseline", us_only=FALSE)
 
+flu_overall_states |>
+  format_cells(rows=1, cols=c(1:3, 5:7), "bold") |>
+  format_cells(rows=4, cols=4, "bold") |>
+  format_cells(rows=1, cols=4, "italics") |>
+  knitr::kable(caption="Summary of overall model performance across both seasons, averaged over all locations except the US national location.")
+  
 knitr::kable(flu_overall_states, caption="Summary of overall model performance across both seasons, averaged over all locations except the US national location.")
 ```
 
