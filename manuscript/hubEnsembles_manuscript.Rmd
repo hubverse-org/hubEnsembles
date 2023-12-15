@@ -438,7 +438,7 @@ forecast_data_hub <- flu_forecasts_raw |>
   )
   
 forecast_data_hub |>
-  dplyr::filter(location == "06") |>
+  dplyr::filter(unit == "06") |>
   head() |>
   knitr::kable()
 ```
@@ -473,6 +473,7 @@ source("as_covid_hub_forecasts.R")
 
 flu_truth_all <- readr::read_rds("data/flu_truth_all.rds")
 flu_files <- list.files(path="data", pattern="hub", full.names=TRUE)
+flu_forecasts_og <- purrr::map_dfr(flu_files, .f=readr::read_rds)
 flu_forecasts_all <- purrr::map_dfr(flu_files, .f=readr::read_rds) |>
   as_covid_hub_forecasts()
 
@@ -482,6 +483,7 @@ flu_scores_all <- rbind(flu_scores_ensembles, flu_scores_baseline)
 
 flu_dates_21_22 <- as.Date("2022-01-24") + weeks(0:21)
 flu_dates_22_23 <- as.Date("2022-10-17") + weeks(0:30)
+flu_dates_off_season <- as.Date("2022-06-27") + weeks(0:15)
 all_flu_dates <- c(flu_dates_21_22, flu_dates_22_23)
 ```
 
@@ -511,16 +513,15 @@ Plots of the models' forecasts can aid our understanding about the origin of the
 
 ```{r plot forecasts, echo = FALSE}
 flu_forecasts_wide <- flu_forecasts_all |>
-  dplyr::left_join(hub_locations_flusight, by = c("location" = "fips")) |>
+  dplyr::left_join(covidHubUtils::hub_locations_flusight, by = c("location" = "fips")) |>
   dplyr::mutate(horizon=as.character(horizon)) 
 
 select_dates <- all_flu_dates[seq(2, 53, 4)]
 
-
 forecasts_vt <- flu_forecasts_wide %>% 
   filter(location == "50", forecast_date %in% select_dates)
     
-vt_plot <- plot_forecasts(forecasts_vt, 
+vt_plot <- covidHubUtils::plot_forecasts(forecasts_vt, 
                     hub = "FluSight",
                     intervals = c(.50, .95),
                     truth_data = select(flu_truth_all, model, location, target_end_date, target_variable, value),
@@ -529,6 +530,8 @@ vt_plot <- plot_forecasts(forecasts_vt,
                     facet = model ~.,
                     facet_nrow = 5,
                     fill_by_model = TRUE, 
+                    fill_transparency = 0.75,
+                    top_layer = c("forecasts", "truth"),
                     title = "none",
                     subtitle = "none",
                     show_caption = FALSE,
@@ -547,9 +550,9 @@ vt_plot <- vt_plot +
           
 
 forecasts_ca <- flu_forecasts_wide %>% 
-  filter(location == "48", forecast_date %in% select_dates)
+  filter(location == "06", forecast_date %in% select_dates)
     
-ca_plot <- plot_forecasts(forecasts_ca, 
+ca_plot <- covidHubUtils::plot_forecasts(forecasts_ca, 
                     hub = "FluSight",
                     intervals = c(.50, .95),
                     truth_data = select(flu_truth_all, model, location, target_end_date, target_variable, value),
@@ -558,13 +561,15 @@ ca_plot <- plot_forecasts(forecasts_ca,
                     facet = model ~.,
                     facet_nrow = 5,
                     fill_by_model = TRUE, 
+#                    fill_transparency = 0.75,
+                    top_layer = c("forecasts", "truth"),
                     title = "none",
                     subtitle = "none",
                     show_caption = FALSE,
                     plot=FALSE)
 
-max_truth_ca <- max(filter(flu_truth_all, location=="48")$value)
-max_forecast_ca <- max(filter(forecasts_ca, location=="48")$value)
+max_truth_ca <- max(filter(flu_truth_all, location=="06")$value)
+max_forecast_ca <- max(filter(forecasts_ca, location=="06")$value)
   
 ca_plot <- ca_plot +
   scale_x_date(name=NULL, limits = c(as.Date("2022-01-01"), as.Date("2023-06-08")), date_breaks = "4 months", date_labels = "%b '%y") +
@@ -574,7 +579,6 @@ ca_plot <- ca_plot +
         axis.text.x = element_text(vjust = 7, hjust = -0.2),
         legend.position = "none")
           
-
 vt_plot + ca_plot +
   plot_layout(ncol = 2, guides='collect') &
   plot_annotation(
@@ -582,6 +586,44 @@ vt_plot + ca_plot +
     subtitle="Forecasts for Vermont and California, every 4 weeks",
   ) &
   theme(legend.position='none')
+```
+
+```{r}
+forecasts_ca <- flu_forecasts_og |> 
+  dplyr::filter(location == "06", forecast_date %in% select_dates) 
+#  dplyr::mutate(value = ifelse(forecast_date %in% select_dates, value, NA))
+
+truth_ca <- flu_truth_all |> 
+  dplyr::filter(location == "06")
+  
+ca_plot_new <- plot_step_ahead_model_output(
+  forecasts_ca,
+  truth_ca,
+  use_median_as_point=TRUE,
+  show_plot=FALSE,
+  x_col_name="target_end_date",
+  x_truth_col_name = "target_end_date",
+  show_legend=FALSE,
+  facet="model_id",
+  facet_nrow=3,
+  interactive=FALSE,
+  fill_transparency = 0.45,
+  intervals=c(0.5, 0.95),
+  title="Weekly Incident Hospitalizations for Influenza in California"
+)
+
+max_truth_ca <- max(filter(flu_truth_all, location=="06")$value)
+max_forecast_ca <- max(filter(forecasts_ca, location=="06")$value)
+  
+ca_plot_new <- ca_plot_new +
+  scale_x_date(name=NULL, limits = c(as.Date("2022-01-01"), as.Date("2023-06-08")), date_breaks = "4 months", date_labels = "%b '%y") +
+  coord_cartesian(ylim = c(0, max(25, min(max_truth_ca * 3.5, max_forecast_ca)))) +
+#  ggtitle("California") +
+  theme(axis.ticks.length.x = unit(0.5, "cm"),
+        axis.text.x = element_text(vjust = 7, hjust = -0.2),
+        legend.position = "none")
+
+ca_plot_new
 ```
 
 <!-- ELR similar to above, removing text that says "a figure exists" so that we can jump more directly to the results. Commented text: "We may also examine the scores grouped by forecast date and horizon. The three sets of plots show average WIS, MAE, and 95% PI coverage for these groupings (as well as by season for readability)." --> The ensemble models all have similar MAE during the entire time period for the one week ahead horizon, though the MAE values diverge at increased horizons [ref to figure]. However, the models show greater differences for the other two metrics, especially during times of rapid change [ref to figures]. Specifically, during ___, the linear pools have better WIS than the median ensemble at the one week ahead forecast horizon. The PI coverage rates for the linear pools were at least as large as the coverage rates of the other models throughout the entire period of analysis at both the 1 and 4 week ahead forecast horizons.
