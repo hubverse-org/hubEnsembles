@@ -416,7 +416,7 @@ plot_grid(p1, p2,
 
 To demonstrate the utility of the `hubEnsembles` package and the differences between the two ensembling functions, we examine the case of predicting weekly influenza hospitalizations in the US. 
 
-For over XX years, the US Center for Disease Control and Prevention (CDC) has been soliciting forecasts of seasonal influenza from modeling teams through a collaborative challenge called FluSight [REF]. Here we combine these forecasts using various aggregation methods to take advantage of the greater consistency [@hibon2005] and accuracy [@clemen1989; @timmermann2006b] of ensembles over individual models. In particular, we examine four equally-weighted ensembling methods implemented through `simple_ensemble()` and `linear_pool()`: a quantile (arithmetic) mean, a quantile median, a linear pool with normal tails, and a linear pool with lognormal tails.
+Since 2013 the US Center for Disease Control and Prevention (CDC) has been soliciting forecasts of seasonal influenza from modeling teams through a collaborative challenge called FluSight [@cdc_flusight]. Here we combine these forecasts using various aggregation methods to take advantage of the greater consistency [@hibon2005] and accuracy [@clemen1989; @timmermann2006b] of ensembles over individual models. In particular, we examine four equally-weighted ensembling methods implemented through `simple_ensemble()` and `linear_pool()`: a quantile (arithmetic) mean, a quantile median, a linear pool with normal tails, and a linear pool with lognormal tails.
 
 The component forecasts used to generate the ensembles consist of those submitted during influenza seasons 2021-2022 and 2022-2023, the only two complete seasons for which FluSight collected quantile forecasts for a target of weekly incident flu hospitalizations at the time of this writing. These predictions are not yet formatted according to hubverse standards but are easily transformed using the `as_model_out_tbl()` function from the `hubUtils` package. Below we print the first six rows of the transformed forecasts made on May 15, 2023 for California.
 
@@ -509,13 +509,11 @@ flu_overall_states |>
 knitr::kable(flu_overall_states, caption="Summary of overall model performance across both seasons, averaged over all locations except the US national location.")
 ```
 
-Plots of the models' forecasts can aid our understanding about the origin of these accuracy differences. For example, the linear opinion pools, which had the highest coverage rates, consistently had some of the widest prediction intervals. The median ensemble, which had the best WIS, seems to have best-balanced interval width overall, with narrower intervals than the linear pools that achieved near-nominal coverage on average across all time points. The quantile mean frequently suffered from narrow intervals, though at times it had intervals as wide or wider than those of the linear pools. <!-- ELR I deleted some stuff about point prediction accuracy in this paragraph. I think it could be worthwhile commenting on point prediction accuracy, but I wasn't really convinced by the claims that were being made. To my eye, a lot of the time the point predictions look similarly bad for all models (e.g. coming out of the peak of the 2022/2023 season, the point predictions from all methods look pretty similar).  One thing that does stand out is a failure of the mean point forecasts in HI in the first season. See comment below, but I wonder if we could find a more impactful (i.e. in a state with a larger population and therefore a larger contribution to WIS) example of that kind of failure? --> 
+Plots of the models' forecasts can aid our understanding about the origin of these accuracy differences. For example, the linear opinion pools, which had the highest coverage rates, consistently had some of the widest prediction intervals. The median ensemble, which had the best WIS, seems to have best-balanced interval width overall, with narrower intervals than the linear pools that achieved near-nominal coverage on average across all time points. The quantile mean's interval widths could vary, though it usually had narrower intervals than the linear pools. However, this model's point forecasts demonstrated a larger error margin compared to the other ensembles, especially at longer horizons. This can be seen in Figure 1 for the 4-week ahead forecast in California following the 2022-23 season peak on December 5, 2022. Here the quantile mean is predicting a continued increase in hospitalizations while the other models predict a flat or slightly downward trend.
 
 <!-- ELR: comments on the plot below:
- - consider using hubVis for the plot
  - can we get it so that there is not a line during the off season in this plot?
  - I don't think we need to color by model or have a legend for model color, since the model names are already in the facet labels.
- - From previous investigations, my understanding is that a problem with the quantile mean ensemble is that it can go off the rails when one forecast is very bad. You can see something like this happening in HI, in the beginning of the first season. That particular example is not going to impact MAE and WIS scores, though, because the counts in HI are small. Is there a chance that there is another location that has similar behavior that might be driving a part of this failure of the quantile mean ensemble?
 -->
 
 ```{r plot forecasts, echo = FALSE}
@@ -538,7 +536,7 @@ vt_plot <- covidHubUtils::plot_forecasts(forecasts_vt,
                     facet_nrow = 5,
                     fill_by_model = TRUE, 
                     fill_transparency = 0.75,
-                    top_layer = c("forecasts", "truth"),
+#                    top_layer = c("forecasts", "truth"),
                     title = "none",
                     subtitle = "none",
                     show_caption = FALSE,
@@ -569,7 +567,7 @@ ca_plot <- covidHubUtils::plot_forecasts(forecasts_ca,
                     facet_nrow = 5,
                     fill_by_model = TRUE, 
 #                    fill_transparency = 0.75,
-                    top_layer = c("forecasts", "truth"),
+#                    top_layer = c("forecasts", "truth"),
                     title = "none",
                     subtitle = "none",
                     show_caption = FALSE,
@@ -595,7 +593,8 @@ vt_plot + ca_plot +
   theme(legend.position='none')
 ```
 
-```{r}
+```{r plot forecasts hubVis, echo = FALSE}
+library(hubVis)
 forecasts_ca <- flu_forecasts_og |> 
   dplyr::filter(location == "06", forecast_date %in% select_dates) 
 #  dplyr::mutate(value = ifelse(forecast_date %in% select_dates, value, NA))
@@ -633,7 +632,7 @@ ca_plot_new <- ca_plot_new +
 ca_plot_new
 ```
 
-<!-- ELR similar to above, removing text that says "a figure exists" so that we can jump more directly to the results. Commented text: "We may also examine the scores grouped by forecast date and horizon. The three sets of plots show average WIS, MAE, and 95% PI coverage for these groupings (as well as by season for readability)." --> The ensemble models all have similar MAE during the entire time period for the one week ahead horizon, though the MAE values diverge at increased horizons [ref to figure]. However, the models show greater differences for the other two metrics, especially during times of rapid change [ref to figures]. Specifically, during ___, the linear pools have better WIS than the median ensemble at the one week ahead forecast horizon. The PI coverage rates for the linear pools were at least as large as the coverage rates of the other models throughout the entire period of analysis at both the 1 and 4 week ahead forecast horizons.
+<!-- ELR similar to above, removing text that says "a figure exists" so that we can jump more directly to the results. Commented text: "We may also examine the scores grouped by forecast date and horizon. The three sets of plots show average WIS, MAE, and 95% PI coverage for these groupings (as well as by season for readability)." --> When examining the forecasts week-by-week, the ensemble models all have similar MAE during the entire time period for the one week ahead horizon, though the MAE values diverge at increased horizons [ref to figure]. However, the models show greater differences for the other two metrics, especially during times of rapid change [ref to figures]. Specifically, during ___, the linear pools have better WIS than the median ensemble at the one week ahead forecast horizon. The PI coverage rates for the linear pools were at least as large as the coverage rates of the other models throughout the entire period of analysis at both the 1 and 4 week ahead forecast horizons.
 
 <!-- ELR: thoughts about the plot below:
  - I think it would be helpful to add panels that show the actual time series data, as a reference for claims about when incidence is rising.
