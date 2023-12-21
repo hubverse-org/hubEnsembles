@@ -650,17 +650,17 @@ flu_date_horizon_season_states <- flu_scores_all |>
 # WIS
 wis_date_plot_states1_2122 <- flu_date_horizon_season_states |>
   dplyr::filter(season == "2021-2022") |>
-  plot_evaluated_scores_forecast_date(model_names, model_colors, h=1, main="WIS 2021-2022, 1 week ahead")
+  plot_evaluated_scores_forecast_date(model_names, model_colors, h=1, main="WIS 2021-2022, 1 week ahead", truth_data=flu_truth_all)
 wis_date_plot_states4_2122 <- flu_date_horizon_season_states |>
   dplyr::filter(season == "2021-2022") |>
-  plot_evaluated_scores_forecast_date(model_names, model_colors, h=4, main="WIS 2021-2022, 4 week ahead")
+  plot_evaluated_scores_forecast_date(model_names, model_colors, h=4, main="WIS 2021-2022, 4 week ahead", truth_data=flu_truth_all)
   
 wis_date_plot_states1_2223 <- flu_date_horizon_season_states |>
   dplyr::filter(season == "2022-2023") |>
-  plot_evaluated_scores_forecast_date(model_names, model_colors, h=1, main="WIS 2022-2023, 1 week ahead")
+  plot_evaluated_scores_forecast_date(model_names, model_colors, h=1, main="WIS 2022-2023, 1 week ahead", truth_data=flu_truth_all)
 wis_date_plot_states4_2223 <- flu_date_horizon_season_states |>
   dplyr::filter(season == "2022-2023") |>
-  plot_evaluated_scores_forecast_date(model_names, model_colors, h=4, main="WIS 2022-2023, 4 week ahead")
+  plot_evaluated_scores_forecast_date(model_names, model_colors, h=4, main="WIS 2022-2023, 4 week ahead", truth_data=flu_truth_all)
 
 # MAE
 flu_date_horizon_season_states <- flu_scores_all |>
@@ -668,35 +668,35 @@ flu_date_horizon_season_states <- flu_scores_all |>
 
 mae_date_plot_states1_2122 <- flu_date_horizon_season_states |>
     dplyr::filter(season == "2021-2022") |>
-    plot_evaluated_scores_forecast_date(model_names, model_colors, h=1, y_var="mae", main="MAE 2021-2022, 1 week ahead")
+    plot_evaluated_scores_forecast_date(model_names, model_colors, h=1, y_var="mae", main="MAE 2021-2022, 1 week ahead", truth_data=flu_truth_all)
 mae_date_plot_states4_2122 <- flu_date_horizon_season_states |>
     dplyr::filter(season == "2021-2022") |>
-    plot_evaluated_scores_forecast_date(model_names, model_colors, h=4, y_var="mae", main="MAE 2021-2022, 4 week ahead")
+    plot_evaluated_scores_forecast_date(model_names, model_colors, h=4, y_var="mae", main="MAE 2021-2022, 4 week ahead", truth_data=flu_truth_all)
 
 mae_date_plot_states1_2223 <- flu_date_horizon_season_states |>
     dplyr::filter(season == "2022-2023") |>
-    plot_evaluated_scores_forecast_date(model_names, model_colors, h=1, y_var="mae", main="MAE 2022-2023, 1 week ahead")
+    plot_evaluated_scores_forecast_date(model_names, model_colors, h=1, y_var="mae", main="MAE 2022-2023, 1 week ahead", truth_data=flu_truth_all)
 mae_date_plot_states4_2223 <- flu_date_horizon_season_states |>
     dplyr::filter(season == "2022-2023") |>
-    plot_evaluated_scores_forecast_date(model_names, model_colors, h=4, y_var="mae", main="MAE 2022-2023, 4 week ahead")
+    plot_evaluated_scores_forecast_date(model_names, model_colors, h=4, y_var="mae", main="MAE 2022-2023, 4 week ahead", truth_data=flu_truth_all)
 
 # 95% Coverage
 cov95_date_plot_states1_2122 <- flu_date_horizon_season_states |>
   dplyr::filter(season == "2021-2022") |>
-  plot_evaluated_scores_forecast_date(model_names, model_colors, h=1, y_var="cov95", main="95% Coverage 2021-22, 1 week ahead") +
+  plot_evaluated_scores_forecast_date(model_names, model_colors, h=1, y_var="cov95", main="95% Coverage 2021-22, 1 week ahead", truth_data=flu_truth_all) +
   coord_cartesian(ylim = c(0, 1.05))
 cov95_date_plot_states4_2122 <- flu_date_horizon_season_states |>
   dplyr::filter(season == "2021-2022") |>
-  plot_evaluated_scores_forecast_date(model_names, model_colors, h=4, y_var="cov95", main="95% Coverage 2021-22, 4 week ahead") +
+  plot_evaluated_scores_forecast_date(model_names, model_colors, h=4, y_var="cov95", main="95% Coverage 2021-22, 4 week ahead", truth_data=flu_truth_all) +
   coord_cartesian(ylim = c(0, 1.05))
   
 cov95_date_plot_states1_2223 <- flu_date_horizon_season_states |>
   dplyr::filter(season == "2022-2023") |>
-  plot_evaluated_scores_forecast_date(model_names, model_colors, h=1, y_var="cov95", main="95% Coverage 2022-23, 1 week ahead") +
+  plot_evaluated_scores_forecast_date(model_names, model_colors, h=1, y_var="cov95", main="95% Coverage 2022-23, 1 week ahead", truth_data=flu_truth_all) +
   coord_cartesian(ylim = c(0, 1.05))
 cov95_date_plot_states4_2223 <- flu_date_horizon_season_states |>
   dplyr::filter(season == "2022-2023") |>
-  plot_evaluated_scores_forecast_date(model_names, model_colors, h=4, y_var="cov95", main="95% Coverage 2022-23, 4 week ahead") +
+  plot_evaluated_scores_forecast_date(model_names, model_colors, h=4, y_var="cov95", main="95% Coverage 2022-23, 4 week ahead", truth_data=flu_truth_all) +
   coord_cartesian(ylim = c(0, 1.05))
     
 

@@ -110,11 +110,30 @@ plot_evaluated_scores <- function(summarized_scores, model_names, model_colors, 
 #' @export
 #'
 #' @examples
-plot_evaluated_scores_forecast_date <- function(summarized_scores, model_names, model_colors, y_var="wis", h=1, main) {
+plot_evaluated_scores_forecast_date <- function(summarized_scores, model_names, model_colors, y_var="wis", h=1, main, truth_data=NULL, truth_scaling=c(0.1, 0.15)) {
 
   data_to_plot <- summarized_scores |>
     dplyr::filter(horizon == h)
     
+  if (!is.null(truth_data)) {
+    date_range <- interval(min(data_to_plot$forecast_date), max(data_to_plot$forecast_date))
+  
+    truth_to_plot <- truth_data |>
+      dplyr::mutate(target_end_date=target_end_date-days(5)) |>
+      dplyr::filter(target_end_date %within% date_range) |>
+      dplyr::group_by(model, target_end_date) |>
+      dplyr::summarize(value = mean(value)) 
+    
+    truth_to_plot <- truth_to_plot |>
+      dplyr::mutate(value=case_when(
+        y_var == "wis" ~ value *truth_scaling[1], 
+        y_var == "mae" ~ value*truth_scaling[2], 
+        (y_var == "cov95" | y_var == "cov50") & target_end_date < as.Date("2022-08-01") ~ -0.15*value/max(truth_to_plot$value) + 1, 
+        (y_var == "cov95" | y_var == "cov50") & target_end_date > as.Date("2022-08-01") ~ -0.5*value/max(truth_to_plot$value) + 1, 
+        .default = value*truth_scaling[1]
+      )) 
+  }
+  
   if (y_var == "wis") {
     gg <- ggplot(data_to_plot, mapping=aes(x=forecast_date, y=wis, group=model)) +
       coord_cartesian(ylim = c(0, sum(quantile(data_to_plot$wis, prob=c(0.25, 0.99)))))
@@ -132,14 +151,27 @@ plot_evaluated_scores_forecast_date <- function(summarized_scores, model_names, 
       coord_cartesian(ylim = c(0, 1.05)) +
       geom_hline(aes(yintercept=0.50))
   }
-
-  gg +
-    geom_point(mapping=aes(col=model), alpha = 0.8) +
-    geom_line(mapping=aes(col=model), alpha = 0.8) +
-    scale_x_date(name=NULL, date_breaks = "2 months", date_labels = "%b '%y") +
-    scale_color_manual(breaks = model_names, values = model_colors) +
-    labs(title=main, x="forecast date", y=paste("average", y_var)) +
-    theme_bw()
+  
+  if (!is.null(truth_data)) {
+    gg +
+      geom_point(truth_to_plot, mapping=aes(x=target_end_date, y=value, group=model), col="black", alpha = 0.8) +
+      geom_line(truth_to_plot, mapping=aes(x=target_end_date, y=value, group=model), col="black", alpha = 0.8) +
+      geom_point(mapping=aes(col=model)) +
+      geom_line(mapping=aes(col=model)) +
+      scale_x_date(name=NULL, date_breaks = "2 months", date_labels = "%b '%y") +
+      scale_color_manual(breaks = model_names, values = model_colors) +
+      labs(title=main, x="forecast date", y=paste("average", y_var)) +
+      theme_bw()
+    
+  } else {
+    gg +
+      geom_point(mapping=aes(col=model), alpha = 0.8) +
+      geom_line(mapping=aes(col=model), alpha = 0.8) +
+      scale_x_date(name=NULL, date_breaks = "2 months", date_labels = "%b '%y") +
+      scale_color_manual(breaks = model_names, values = model_colors) +
+      labs(title=main, x="forecast date", y=paste("average", y_var)) +
+      theme_bw()
+  }
 }
 
 
