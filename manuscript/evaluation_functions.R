@@ -176,6 +176,43 @@ plot_evaluated_scores_forecast_date <- function(summarized_scores, model_names, 
 
 
 
+#' Plot summarized metrics against forecast date
+#'
+#' @param truth_data A data frame of truth data. Must contain a target_end_date column
+#' @param date_range An ordered string vector giving the range of dates to plot
+#' @param plot_color A string specifying the color that the truth should be plotted as. Defaults to "black".
+#'
+#' @return A scatter plot (with observations connected by lines) of the truth data vs forecast date
+#' @export
+#'
+#' @examples
+plot_flu_truth <- function(truth_data, date_range=NULL, plot_color="black") {
+
+  truth_to_plot <- truth_data |>
+    dplyr::mutate(forecast_date=target_end_date-days(5))
+  
+  if (!is.null(date_range)) {
+    dates_to_plot <- interval(as.Date(date_range[1]), as.Date(date_range[2]))
+      
+    truth_to_plot <- truth_to_plot |>
+      dplyr::filter(forecast_date %within% dates_to_plot) 
+  }
+
+  truth_to_plot <- truth_to_plot |>
+    dplyr::group_by(forecast_date) |>
+    dplyr::summarize(value = mean(value)) 
+    
+  truth_to_plot |>
+    ggplot(mapping=aes(x=forecast_date, y=value), col=plot_color, alpha = 0.8) +
+    geom_point() +
+    geom_line() +
+    scale_x_date(name=NULL, date_breaks = "2 months", date_labels = "%b '%y") +
+    coord_cartesian(ylim = c(0, max(truth_to_plot$value)*1.1)) +
+    labs(title="truth data", x="forecast date", y="wk inc flu hosp") +
+    theme_bw()
+}
+
+
 ###################################################################################################
 # Helper functions
 

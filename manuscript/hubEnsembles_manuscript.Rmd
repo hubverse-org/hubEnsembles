@@ -683,6 +683,14 @@ mae_date_plot_states4_2223 <- flu_date_horizon_season_states |>
     dplyr::filter(season == "2022-2023") |>
     plot_evaluated_scores_forecast_date(model_names, model_colors, h=4, y_var="mae", main="MAE 2022-2023, 4 week ahead", truth_data=flu_truth_all)
 
+
+wis_date_plot_states1_2122 + mae_date_plot_states1_2122 + 
+  wis_date_plot_states4_2122 + mae_date_plot_states4_2122 + 
+  wis_date_plot_states1_2223 + mae_date_plot_states1_2223 + 
+  wis_date_plot_states4_2223 + mae_date_plot_states4_2223 + 
+  plot_layout(ncol=2, guides='collect') &
+  theme(legend.position='bottom')
+  
 # 95% Coverage
 cov95_date_plot_states1_2122 <- flu_date_horizon_season_states |>
   dplyr::filter(season == "2021-2022") |>
@@ -702,13 +710,13 @@ cov95_date_plot_states4_2223 <- flu_date_horizon_season_states |>
   plot_evaluated_scores_forecast_date(model_names, model_colors, h=4, y_var="cov95", main="95% Coverage 2022-23, 4 week ahead", truth_data=flu_truth_all) +
   coord_cartesian(ylim = c(0, 1.05))
     
+truth_states_2122 <- plot_flu_truth(flu_truth_all, date_range=flu_dates_21_22[c(1, 22)])
+truth_states_2223 <- plot_flu_truth(flu_truth_all, date_range=flu_dates_22_23[c(1, 31)])
 
-wis_date_plot_states1_2122 + mae_date_plot_states1_2122 + cov95_date_plot_states1_2122 + 
-  wis_date_plot_states4_2122 + mae_date_plot_states4_2122 + cov95_date_plot_states4_2122 + 
-  wis_date_plot_states1_2223 + mae_date_plot_states1_2223 + cov95_date_plot_states1_2223 + 
-  wis_date_plot_states4_2223 + mae_date_plot_states4_2223 + cov95_date_plot_states4_2223 + 
-  plot_layout(ncol=3, guides='collect') &
-  theme(legend.position='bottom')
+truth_states_2122 + truth_states_2223 + 
+  cov95_date_plot_states1_2122 + cov95_date_plot_states1_2223 + 
+  cov95_date_plot_states4_2122 + cov95_date_plot_states4_2223 + 
+  plot_layout(ncol=2, guides='collect') &
 ```
 
 <!-- ELR: I'm not getting much out of this paragraph.  Commenting out for now... "Grouping the scores by horizon on its own and horizon in conjunction with season reveal similar patterns in model rankings, with the quantile median achieving the lowest WIS except at the 1 week ahead horizon. When the scores are grouped by only location, the quantile median has the lowest relative WIS for all but three locations, two of which demonstrate inferior performance compared to the baseline and one which has worse performance than the quantile mean. The linear pools outperform the quantile mean ensemble for 75% of locations and perform the same for about 8%, each of these three models outperforming the baseline for approximately 75% of locations." -->
