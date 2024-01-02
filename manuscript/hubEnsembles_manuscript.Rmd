@@ -73,7 +73,7 @@ The model output representation includes the predicted values along with metadat
 Finally, the `model_id` column gives a unique identifier of the model that created the predictions. <!--#ELR: Note that I deleted some text here that implied that model_id was not a required column -- but currently, it looks like hubUtils::validate_model_out_tbl will throw an error if model_id is not in the tbl columns. -->
 
 | `output_type` | `output_type_id` | `value` |
-|:---|:-------------|:-----------------------|
+|:---|:------------|:------------------------|
 | `mean` | NA (not used for mean predictions) | Numeric: The mean of the predictive distribution |
 | `median` | NA (not used for median predictions) | Numeric: The median of the predictive distribution |
 | `quantile` | Numeric between 0.0 and 1.0: A probability level | Numeric: The quantile of the predictive distribution at the probability level specified by the output_type_id |
@@ -469,6 +469,7 @@ lp_lognormal <- forecast_data_hub |>
 ```{r read in forecasts and scores, echo=FALSE}
 library(lubridate)
 library(patchwork)
+library(RColorBrewer)
 source("evaluation_functions.R")
 source("as_covid_hub_forecasts.R")
 
@@ -643,7 +644,8 @@ When examining the forecasts week-by-week, the ensemble models tend to have simi
 
 ```{r scores-vs-forecast-date, message=FALSE, warning=FALSE, fig.cap='Average h-week ahead WIS, MAE, and 95% PI coverage by forecast date for each model for all locations (except the US national location), split by season for readability.', echo=FALSE}  
 model_names <- sort(c("Flusight-baseline", "mean-ensemble", "median-ensemble", "lp-normal", "lp-lognormal"))
-model_colors <- c("#6BAED6", "#FD8D3C", "#74C476", "#9E9AC8", "#FB6A4A")
+#model_colors <- c("#6BAED6", "#FD8D3C", "#74C476", "#9E9AC8", "#FB6A4A")
+model_colors = brewer.pal(5,'Set2');
 
 flu_date_horizon_season_states <- flu_scores_all |>
   evaluate_flu_scores(grouping_variables=c("horizon", "forecast_date", "season"), baseline_name="Flusight-baseline", us_only=FALSE)
