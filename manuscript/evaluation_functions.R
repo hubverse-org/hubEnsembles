@@ -97,7 +97,7 @@ plot_evaluated_scores <- function(summarized_scores, model_names, model_colors, 
 }
 
 
-#' Plot summarized metrics against forecast_date
+#' Plot summarized metrics against forecast_date, with option to plot averaged truth data on the same graph
 #'
 #' @param summarized_scores A data frame of summarized scores. Must contain one row per model and horizon week combination plus a `horizon` column
 #' @param model_names An ordered vector of model names
@@ -105,12 +105,14 @@ plot_evaluated_scores <- function(summarized_scores, model_names, model_colors, 
 #' @param y_var A string specifying which metric to plot as the y-variable
 #' @param horizon An integer specifying the horizon of the desired metric to plot
 #' @param main A string specifying the plot title
+#' @param truth_data A data frame of truth data to plot in the same figure. Defaults to NULL. If provided must contain target_end_date and value columns.
+#' @param truth_scaling A numeric specifying a multiplier for the truth values so that it fits nicely on the graph.
 #'
 #' @return A scatter plot (with observations connected by lines) of the specified summary metric vs forecast date
 #' @export
 #'
 #' @examples
-plot_evaluated_scores_forecast_date <- function(summarized_scores, model_names, model_colors, y_var="wis", h=1, main, truth_data=NULL, truth_scaling=c(0.1, 0.15)) {
+plot_evaluated_scores_forecast_date <- function(summarized_scores, model_names, model_colors, y_var="wis", h=1, main, truth_data=NULL, truth_scaling=0.125) {
 
   data_to_plot <- summarized_scores |>
     dplyr::filter(horizon == h)
@@ -126,26 +128,28 @@ plot_evaluated_scores_forecast_date <- function(summarized_scores, model_names, 
     
     truth_to_plot <- truth_to_plot |>
       dplyr::mutate(value=case_when(
-        y_var == "wis" ~ value *truth_scaling[1], 
-        y_var == "mae" ~ value*truth_scaling[2], 
+        y_var == "wis" ~ value*truth_scaling, 
+        y_var == "mae" ~ value*truth_scaling, 
         (y_var == "cov95" | y_var == "cov50") & target_end_date < as.Date("2022-08-01") ~ -0.15*value/max(truth_to_plot$value) + 1, 
         (y_var == "cov95" | y_var == "cov50") & target_end_date > as.Date("2022-08-01") ~ -0.5*value/max(truth_to_plot$value) + 1, 
-        .default = value*truth_scaling[1]
+        .default = value*truth_scaling
       )) 
   }
   
   if (y_var == "wis") {
     gg <- ggplot(data_to_plot, mapping=aes(x=forecast_date, y=wis, group=model)) +
-      coord_cartesian(ylim = c(0, sum(quantile(data_to_plot$wis, prob=c(0.25, 0.99)))))
+      coord_cartesian(ylim = c(0, sum(quantile(data_to_plot$wis, prob=c(0.5, 0.99)))))
   } else if (y_var == "mae") {
     gg <- ggplot(data_to_plot, mapping=aes(x=forecast_date, y=mae, group=model)) +
-      coord_cartesian(ylim = c(0, sum(quantile(data_to_plot$mae, prob=c(0.25, 0.99)))))
+      coord_cartesian(ylim = c(0, sum(quantile(data_to_plot$mae, prob=c(0.5, 0.99)))))
   } else if (y_var == "cov95") {
+    truth_data = NULL
     gg <- ggplot(data_to_plot, mapping=aes(x=forecast_date, y=cov95, group=model)) +
 #      geom_jitter(height=0.05, width=0, mapping=aes(color=model)) +
       coord_cartesian(ylim = c(0, 1.05)) +
       geom_hline(aes(yintercept=0.95))
   } else if (y_var == "cov50") {
+    truth_data = NULL
     gg <- ggplot(data_to_plot, mapping=aes(x=forecast_date, y=cov95, group=model)) +
 #      geom_jitter(height=0.05, width=0, mapping=aes(color=model)) +
       coord_cartesian(ylim = c(0, 1.05)) +
@@ -154,13 +158,17 @@ plot_evaluated_scores_forecast_date <- function(summarized_scores, model_names, 
   
   if (!is.null(truth_data)) {
     gg +
-      geom_point(truth_to_plot, mapping=aes(x=target_end_date, y=value, group=model), col="black", alpha = 0.8) +
-      geom_line(truth_to_plot, mapping=aes(x=target_end_date, y=value, group=model), col="black", alpha = 0.8) +
+      geom_point(truth_to_plot, mapping=aes(x=target_end_date, y=value, group=model), col="black") +
+      geom_line(truth_to_plot, mapping=aes(x=target_end_date, y=value, group=model), col="black") +
       geom_point(mapping=aes(col=model)) +
       geom_line(mapping=aes(col=model)) +
       scale_x_date(name=NULL, date_breaks = "2 months", date_labels = "%b '%y") +
+      scale_y_continuous(
+        name=paste("average", y_var),
+        sec.axis = sec_axis(trans=~./truth_scaling, name="average truth")
+      ) +
       scale_color_manual(breaks = model_names, values = model_colors) +
-      labs(title=main, x="forecast date", y=paste("average", y_var)) +
+      labs(title=main, x="forecast date") +
       theme_bw()
     
   } else {
@@ -186,7 +194,7 @@ plot_evaluated_scores_forecast_date <- function(summarized_scores, model_names, 
 #' @export
 #'
 #' @examples
-plot_flu_truth <- function(truth_data, date_range=NULL, plot_color="black") {
+plot_flu_truth <- function(truth_data, date_range=NULL, main="truth data", plot_color="black") {
 
   truth_to_plot <- truth_data |>
     dplyr::mutate(forecast_date=target_end_date-days(5))
@@ -208,7 +216,7 @@ plot_flu_truth <- function(truth_data, date_range=NULL, plot_color="black") {
     geom_line() +
     scale_x_date(name=NULL, date_breaks = "2 months", date_labels = "%b '%y") +
     coord_cartesian(ylim = c(0, max(truth_to_plot$value)*1.1)) +
-    labs(title="truth data", x="forecast date", y="wk inc flu hosp") +
+    labs(title=main, x="forecast date", y="average wk inc flu hosp") +
     theme_bw()
 }
 

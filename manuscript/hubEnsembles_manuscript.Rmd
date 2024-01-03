@@ -634,18 +634,12 @@ ca_plot_new <- ca_plot_new +
 ca_plot_new
 ```
 
-When examining the forecasts week-by-week, the ensemble models tend to have similar MAE values during the entire time period. This is especially prevalent at the one-week ahead horizon, with slight divergence in MAE values for certain weeks at the four week ahead horizon Figure \@ref(fig:scores-vs-forecast-date). However, the models show greater differences for the other two metrics, particularly during times of rapid change Figure \@ref(fig:scores-vs-forecast-date). In fact, the linear pools have a lower WIS than the median ensemble at the one week ahead forecast horizon for over a third of forecast dates (11 weeks) during the 2022-2023 season: from October 17, 2022 to December 12, 2022; January 2, 2023; and January 9, 2023. These dates span the rapid rise and fall of incident hospitalizations due to influenza surrounding the season's peak, with the largest differences in WIS occurring on November 28, December 5, December 12, January 2, and January 9. Additionally, the PI coverage rates for the linear pools were at least as large as the coverage rates of the other models throughout the entire period of analysis at both the 1 and 4 week ahead forecast horizons.
+When examining the forecasts week-by-week, the ensemble models tend to have similar MAE values during the entire time period. This is especially prevalent at the one-week ahead horizon, with slight divergence in MAE values for certain weeks at the four week ahead horizon Figure \@ref(fig:wis-mae-vs-forecast-date). However, the models show greater differences for the other two metrics, particularly during times of rapid change (Figure \@ref(fig:wis-mae-vs-forecast-date)), with the scores aligning near-perfectly with the true weekly incident hospitalizations. In fact, the linear pools have a lower WIS than the median ensemble at the one week ahead forecast horizon for over a third of forecast dates (11 weeks) during the 2022-2023 season: from October 17, 2022 to December 12, 2022; January 2, 2023; and January 9, 2023. These dates span the rapid rise and fall of incident hospitalizations due to influenza surrounding the season's peak, with the largest differences in WIS occurring on November 28, December 5, December 12, January 2, and January 9. Additionally, the PI coverage rates for the linear pools were at least as large as the coverage rates of the other models throughout the entire period of analysis at both the 1 and 4 week ahead forecast horizons (see Figure \@ref(fig:cov95-vs-forecast-date)).
 
-<!-- ELR: thoughts about the plot below:
- - I think it would be helpful to add panels that show the actual time series data, as a reference for claims about when incidence is rising.
- - But the challenge is that then, you'll have an unmanageable number of panels.... Maybe it would help to just split the figure into three different figures or subfigures, one for each of the three metrics (MAE, WIS, PI coverage)? With the seasons next to each other, i.e., column 1 for 2021-2022 and column 2 for 2022-2023. This could also help to just make the whole thing more readable. r.e. readability, see also Harry's comments in a github issue.
- - For the 4 week ahead results in the 2022-2023 season, it looks like at least one model is getting cut off.
--->
-
-```{r scores-vs-forecast-date, message=FALSE, warning=FALSE, fig.cap='Average h-week ahead WIS, MAE, and 95% PI coverage by forecast date for each model for all locations (except the US national location), split by season for readability.', echo=FALSE}  
-model_names <- sort(c("Flusight-baseline", "mean-ensemble", "median-ensemble", "lp-normal", "lp-lognormal"))
+```{r wis-mae-vs-forecast-date, message=FALSE, warning=FALSE, fig.cap='Average h-week ahead WIS and MAE by forecast date for each model for all locations (except the US national location), split by season for readability. Average truth data across all locations is plotted in black.', echo=FALSE}  
+model_names <- c("Flusight-baseline", "lp-lognormal", "lp-normal", "mean-ensemble", "median-ensemble", "average truth")
 #model_colors <- c("#6BAED6", "#FD8D3C", "#74C476", "#9E9AC8", "#FB6A4A")
-model_colors = brewer.pal(5,'Set2');
+model_colors = c(brewer.pal(5,'Set2'), "black");
 
 flu_date_horizon_season_states <- flu_scores_all |>
   evaluate_flu_scores(grouping_variables=c("horizon", "forecast_date", "season"), baseline_name="Flusight-baseline", us_only=FALSE)
@@ -653,17 +647,17 @@ flu_date_horizon_season_states <- flu_scores_all |>
 # WIS
 wis_date_plot_states1_2122 <- flu_date_horizon_season_states |>
   dplyr::filter(season == "2021-2022") |>
-  plot_evaluated_scores_forecast_date(model_names, model_colors, h=1, main="WIS 2021-2022, 1 week ahead", truth_data=flu_truth_all)
+  plot_evaluated_scores_forecast_date(model_names, model_colors, h=1, main="WIS 2021-2022, 1 week ahead", truth_data=flu_truth_all, truth_scaling=0.1)
 wis_date_plot_states4_2122 <- flu_date_horizon_season_states |>
   dplyr::filter(season == "2021-2022") |>
-  plot_evaluated_scores_forecast_date(model_names, model_colors, h=4, main="WIS 2021-2022, 4 week ahead", truth_data=flu_truth_all)
+  plot_evaluated_scores_forecast_date(model_names, model_colors, h=4, main="WIS 2021-2022, 4 week ahead", truth_data=flu_truth_all, truth_scaling=0.1)
   
 wis_date_plot_states1_2223 <- flu_date_horizon_season_states |>
   dplyr::filter(season == "2022-2023") |>
-  plot_evaluated_scores_forecast_date(model_names, model_colors, h=1, main="WIS 2022-2023, 1 week ahead", truth_data=flu_truth_all)
+  plot_evaluated_scores_forecast_date(model_names, model_colors, h=1, main="WIS 2022-2023, 1 week ahead", truth_data=flu_truth_all, truth_scaling=0.1)
 wis_date_plot_states4_2223 <- flu_date_horizon_season_states |>
   dplyr::filter(season == "2022-2023") |>
-  plot_evaluated_scores_forecast_date(model_names, model_colors, h=4, main="WIS 2022-2023, 4 week ahead", truth_data=flu_truth_all)
+  plot_evaluated_scores_forecast_date(model_names, model_colors, h=4, main="WIS 2022-2023, 4 week ahead", truth_data=flu_truth_all, truth_scaling=0.1)
 
 # MAE
 flu_date_horizon_season_states <- flu_scores_all |>
@@ -671,26 +665,28 @@ flu_date_horizon_season_states <- flu_scores_all |>
 
 mae_date_plot_states1_2122 <- flu_date_horizon_season_states |>
     dplyr::filter(season == "2021-2022") |>
-    plot_evaluated_scores_forecast_date(model_names, model_colors, h=1, y_var="mae", main="MAE 2021-2022, 1 week ahead", truth_data=flu_truth_all)
+    plot_evaluated_scores_forecast_date(model_names, model_colors, h=1, y_var="mae", main="MAE 2021-2022, 1 week ahead", truth_data=flu_truth_all, truth_scaling=0.15)
 mae_date_plot_states4_2122 <- flu_date_horizon_season_states |>
     dplyr::filter(season == "2021-2022") |>
-    plot_evaluated_scores_forecast_date(model_names, model_colors, h=4, y_var="mae", main="MAE 2021-2022, 4 week ahead", truth_data=flu_truth_all)
+    plot_evaluated_scores_forecast_date(model_names, model_colors, h=4, y_var="mae", main="MAE 2021-2022, 4 week ahead", truth_data=flu_truth_all, truth_scaling=0.15)
 
 mae_date_plot_states1_2223 <- flu_date_horizon_season_states |>
     dplyr::filter(season == "2022-2023") |>
-    plot_evaluated_scores_forecast_date(model_names, model_colors, h=1, y_var="mae", main="MAE 2022-2023, 1 week ahead", truth_data=flu_truth_all)
+    plot_evaluated_scores_forecast_date(model_names, model_colors, h=1, y_var="mae", main="MAE 2022-2023, 1 week ahead", truth_data=flu_truth_all, truth_scaling=0.15)
 mae_date_plot_states4_2223 <- flu_date_horizon_season_states |>
     dplyr::filter(season == "2022-2023") |>
-    plot_evaluated_scores_forecast_date(model_names, model_colors, h=4, y_var="mae", main="MAE 2022-2023, 4 week ahead", truth_data=flu_truth_all)
+    plot_evaluated_scores_forecast_date(model_names, model_colors, h=4, y_var="mae", main="MAE 2022-2023, 4 week ahead", truth_data=flu_truth_all, truth_scaling=0.15)
 
-
+# Figure
 wis_date_plot_states1_2122 + mae_date_plot_states1_2122 + 
   wis_date_plot_states4_2122 + mae_date_plot_states4_2122 + 
   wis_date_plot_states1_2223 + mae_date_plot_states1_2223 + 
   wis_date_plot_states4_2223 + mae_date_plot_states4_2223 + 
   plot_layout(ncol=2, guides='collect') &
   theme(legend.position='bottom')
-  
+```  
+
+```{r cov95-vs-forecast-date, message=FALSE, warning=FALSE, fig.cap='Average h-week ahead 95% PI coverage and truth by forecast date for each model for all locations (except the US national location), split by season for readability.', echo=FALSE}  
 # 95% Coverage
 cov95_date_plot_states1_2122 <- flu_date_horizon_season_states |>
   dplyr::filter(season == "2021-2022") |>
@@ -710,16 +706,17 @@ cov95_date_plot_states4_2223 <- flu_date_horizon_season_states |>
   plot_evaluated_scores_forecast_date(model_names, model_colors, h=4, y_var="cov95", main="95% Coverage 2022-23, 4 week ahead", truth_data=flu_truth_all) +
   coord_cartesian(ylim = c(0, 1.05))
     
-truth_states_2122 <- plot_flu_truth(flu_truth_all, date_range=flu_dates_21_22[c(1, 22)])
-truth_states_2223 <- plot_flu_truth(flu_truth_all, date_range=flu_dates_22_23[c(1, 31)])
+truth_states_2122 <- plot_flu_truth(flu_truth_all, date_range=flu_dates_21_22[c(1, 22)], main="truth data 2021-22")
+truth_states_2223 <- plot_flu_truth(flu_truth_all, date_range=flu_dates_22_23[c(1, 31)], main="truth data 2022-23")
 
 truth_states_2122 + truth_states_2223 + 
   cov95_date_plot_states1_2122 + cov95_date_plot_states1_2223 + 
   cov95_date_plot_states4_2122 + cov95_date_plot_states4_2223 + 
   plot_layout(ncol=2, guides='collect') &
+  theme(legend.position='bottom')
 ```
 
-<!-- ELR: I'm not getting much out of this paragraph.  Commenting out for now... "Grouping the scores by horizon on its own and horizon in conjunction with season reveal similar patterns in model rankings, with the quantile median achieving the lowest WIS except at the 1 week ahead horizon. When the scores are grouped by only location, the quantile median has the lowest relative WIS for all but three locations, two of which demonstrate inferior performance compared to the baseline and one which has worse performance than the quantile mean. The linear pools outperform the quantile mean ensemble for 75% of locations and perform the same for about 8%, each of these three models outperforming the baseline for approximately 75% of locations." -->
+<!-- # ELR: I'm not getting much out of this paragraph.  Commenting out for now... "Grouping the scores by horizon on its own and horizon in conjunction with season reveal similar patterns in model rankings, with the quantile median achieving the lowest WIS except at the 1 week ahead horizon. When the scores are grouped by only location, the quantile median has the lowest relative WIS for all but three locations, two of which demonstrate inferior performance compared to the baseline and one which has worse performance than the quantile mean. The linear pools outperform the quantile mean ensemble for 75% of locations and perform the same for about 8%, each of these three models outperforming the baseline for approximately 75% of locations." -->
 
 From these results, we can see that different ensembling methods perform best under different circumstances, though in this analysis all of the ensemble variations outperformed the baseline model. While the quantile median had the best overall results for WIS, MAE, 50% PI coverage, and 95% PI coverage, other models may perform better from week-to-week for each metric. For example, the linear pools achieved the lowest WIS during the period of rapid change in incident flu hospitalizations surrounding the season's peak in early December 2022.
 
