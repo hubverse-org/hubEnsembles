@@ -2,7 +2,7 @@
 title: "`hubEnsembles`: Ensembling Methods in R"
 output: 
   bookdown::html_document2
-bibliography: ../vignettes/references.bib
+bibliography: ../manuscript/references.bib
 ---
 
 ```{r, include = FALSE}
