@@ -45,14 +45,13 @@ F^{-1}_Q(\theta) = \sum_{i = 1}^Nw_iF^{-1}_i(\theta).
 $$
 This computes the average value of predictions across different models for each fixed quantile level $\theta$. It is also possible to use other combination functions, such as a weighted median, to combine quantile predictions.
 
-The probability average or linear pool is calculated by averaging probabilities across predictions for a fixed value of the target variable, $x$. This can be expressed in terms of either predictive CDFs or PMFs as follows:
+The probability average or linear pool is calculated by averaging probabilities across predictions for a fixed value of the target variable, $x$. This can be expressed in terms of either predictive CDFs or PDFs as follows:
 \begin{align*}
 F_{LOP}(x) &= \sum_{i = 1}^Nw_iF_i(x), \\
 f_{LOP}(x) &= \sum_{i = 1}^Nw_if_i(x).
 \end{align*}
 
-
-The different averaging methods for probabilistic predictions yield different properties of the resulting ensemble distribution. For example, the variance of the linear pool is $\sigma^2_{LOP} = \sum_{i=1}^Nw_i\sigma_i^2 + \sum_{i=1}^Nw_i(\mu_i-\mu_{LOP})^2$, where $\mu_i$ is the mean and $\sigma^2_i$ is the variance of individual prediction $i$, and although there is no closed-form variance for the quantile average, the variance of the quantile average will always be less than or equal to that of the linear pool [@lichtendahl2013]. The linear pool method preserves variation between individual models, whereas the quantile average cancels away this variation [@howerton2023]. Both methods generate distributions with the same mean, $\mu_Q = \mu_{LOP} = \sum_{i=1}^Nw_i\mu_i$, which is the mean of individual model means. <!--#ELR: I didn't know this result for \mu_Q! Can we add a citation or put a derivation in a supplement? -->
+The different averaging methods for probabilistic predictions yield different properties of the resulting ensemble distribution. For example, the variance of the linear pool is $\sigma^2_{LOP} = \sum_{i=1}^Nw_i\sigma_i^2 + \sum_{i=1}^Nw_i(\mu_i-\mu_{LOP})^2$, where $\mu_i$ is the mean and $\sigma^2_i$ is the variance of individual prediction $i$, and although there is no closed-form variance for the quantile average, the variance of the quantile average will always be less than or equal to that of the linear pool [@lichtendahl2013]. The linear pool method preserves variation between individual models, whereas the quantile average cancels away this variation [@howerton2023]. Both methods generate distributions with the same mean, $\mu_Q = \mu_{LOP} = \sum_{i=1}^Nw_i\mu_i$, which is the mean of individual model means [@lichtendahl2013]. 
 
 # Model implementation details
 
