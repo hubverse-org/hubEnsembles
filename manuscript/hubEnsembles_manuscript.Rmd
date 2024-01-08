@@ -61,11 +61,33 @@ To understand how these methods are implemented in `hubEnsembles`, we first must
 
 Model output is a central concept in the `hubEnsembles` package which generally refers to a specially formatted tabular representation of predictions produced by a modeling team. Each row represents a single, unique prediction with each column providing information about what is being predicted, its scope, and its value. Per hubverse convention, the columns may be broken down into task IDs, specification of the model output representation, and the model ID [@hubverse_docs]. <!--#ELR: or `model_id`, if we want to name the specific column -->
 
-At minimum the task IDs (also called task ID variables) together specify the desired outcome being predicted, but they may also include additional information, such as any conditions or assumptions that were used to generate the predictions [@hubverse_docs]. For example, short-term forecasts of incident influenza hospitalizations in the US at different locations and amounts of time in the future might represent this information using a `target` column with the value "incident flu hospitalizations", a `location` column identifying the location being predicted, a `reference_date` column with the "starting point" of the forecasts, and a `horizon` column with the number of steps ahead that the forecast is predicting relative to the `reference_date`. All of these are task ID columns [@hubverse_docs]. 
+At minimum the task IDs (also called task ID variables) together specify the desired outcome being predicted, but they may also include additional information, such as any conditions or assumptions that were used to generate the predictions [@hubverse_docs]. For example, short-term forecasts of incident influenza hospitalizations in the US at different locations and amounts of time in the future (see Table \@ref(tab:flu-forecasts) below) might represent this information using a `target` column with the value "wk ahead inc flu hosp", a `location` column identifying the location being predicted, a `reference_date` column with the "starting point" of the forecasts, and a `horizon` column with the number of steps ahead that the forecast is predicting relative to the `reference_date`. All these variables make up the task ID columns [@hubverse_docs]. 
+
+```{r flu-forecasts, echo=FALSE}
+library(hubUtils)
+readr::read_rds("data/flu_forecasts_raw.rds") |>
+  tidyr::separate(target, sep=" ", convert=TRUE, into=c("horizon", "target"), extra="merge") |>
+  as_model_out_tbl(
+    model_id_col = "model",
+    output_type_col = "class",
+    output_type_id_col = "quantile",
+    value_col = "value",
+    sep = "-",
+    trim_to_task_ids = FALSE,
+    hub_con = NULL,
+    task_id_cols = c("timezero", "location", "horizon", "target"),
+    remove_empty = TRUE
+  ) |>
+  dplyr::filter(unit == "US") |>
+  dplyr::rename(reference_date=timezero, location=unit) |>
+  dplyr::select(-season) |>
+  head() |>
+  knitr::kable(caption="Example of forecasts for weekly incident flu hospitalizations, formatted according to hubverse standards.")
+```
 
 Alternatively, longer-term scenario projections for incident COVID-19 hospitalizations in the US at different locations, amounts of time in the future, and under different assumed conditions may use the following task ID columns: a `target` of "incident COVID-19 hospitalizations", a `location` column specifying the location being predicted, an `origin_date` on which the projections were made, a `horizon` describing the number of steps ahead that the forecast is predicting relative to the `origin_date`, and a `scenario_id` denoting under what circumstances would likely result in the protected number of incident hospitalizations. Different modeling efforts may use different sets of task ID columns and values to specify their prediction goals. Additional examples of task ID variables are available on the [hubverse documentation website](https://hubdocs.readthedocs.io/en/latest/user-guide/tasks.html).
 
-The model output representation includes the predicted values along with metadata that specifies how the predictions are conveyed, and consists of three columns: (1) `output_type`, (2) `output_type_id`, and (3) `value`. Unlike for the task IDs, these three columns are required and their names are fixed [@hubverse_docs]. The `output_type` defines how the prediction is represented and may be one of `"mean"` or `"median"` (point forecasts), `"quantile"`, `"cdf"`, `"pmf"` (distributional forecasts), or `"sample"` (although this output type is not yet supported by the `hubEnsembles` package). The `output_type_id` provides more identifying information for a prediction and is specific to the particular `output_type` (see below). For quantile predictions, the `output_type_id` is a numeric value between 0 and 1 specifying the probability level for the quantile. In the notation we defined above, the `output_type_id` corresponds to $\theta$ and the `value` of the prediction is the quantile estimate $F^{-1}(\theta)$. For CDF or PMF predictions, the `output_type_id` is the value $x$ at which the cumulative distribution function or probability mass function for the predictive distribution should be evaluated, and the `value` column contains the estimate $F(x)$ or $f(x)$, respectively. Requirements for the values of the `output_type_id` and `value` columns associated with each valid output type are summarized on the [hubverse documentation website](https://hubdocs.readthedocs.io/en/latest/user-guide/model-output.html#formats-of-model-output) and in the table below.
+The model output representation includes the predicted values along with metadata that specifies how the predictions are conveyed, and consists of three columns: (1) `output_type`, (2) `output_type_id`, and (3) `value`. Unlike for the task IDs, these three columns are required and their names are fixed, as can be seen in Table \@ref(tab:flu-forecasts) [@hubverse_docs]. The `output_type` defines how the prediction is represented and may be one of `"mean"` or `"median"` (point forecasts), `"quantile"`, `"cdf"`, `"pmf"` (distributional forecasts), or `"sample"` (although this output type is not yet supported by the `hubEnsembles` package). The `output_type_id` provides more identifying information for a prediction and is specific to the particular `output_type` (see below). For quantile predictions, the `output_type_id` is a numeric value between 0 and 1 specifying the probability level for the quantile. In the notation we defined above, the `output_type_id` corresponds to $\theta$ and the `value` of the prediction is the quantile estimate $F^{-1}(\theta)$. For CDF or PMF predictions, the `output_type_id` is the value $x$ at which the cumulative distribution function or probability mass function for the predictive distribution should be evaluated, and the `value` column contains the estimate $F(x)$ or $f(x)$, respectively. Requirements for the values of the `output_type_id` and `value` columns associated with each valid output type are summarized on the [hubverse documentation website](https://hubdocs.readthedocs.io/en/latest/user-guide/model-output.html#formats-of-model-output) and in the table below.
 <!--#ELR: This kind of citation seems fine for an ordinary package vignette, but if we're aiming to directly turn this into a journal submission, we'll need to tidy this citation up a bit. -->
 <!--#ELR: I don't love the use of the word "estimate" that I introduced here -- noting that in much of statistics, a distinction is made between an estimate and a prediction, but I've used the two terms semi-interchangeably here. --> 
 Finally, the `model_id` column gives a unique identifier of the model that created the predictions.
@@ -95,7 +117,7 @@ The `linear_pool` function implements the linear opinion pool method for ensembl
 
 For the CDF, PMF, and mean output types, the linear pool method is equivalent to calling `simple_ensemble` with a mean aggregation function, since `simple_ensemble` produces a linear pool prediction for those output types. 
 
-However, implementation of LOP is less straightforward for the quantile output type. The reason for this is that LOP averages CDF values (probability) at each value of the target variable, but the predictions are quantiles (on the scale of the target variable) at fixed probability levels. The value for these quantile predictions will generally differ between models, and as a result we are typically not provided with CDF values at the same values of $x$ from all component predictions. The lack of alignment between CDF values for the same probability levels is illustrated in the figure below. 
+However, implementation of LOP is less straightforward for the quantile output type. The reason for this is that LOP averages CDF values (probability) at each value of the target variable, but the predictions are quantiles (on the scale of the target variable) at fixed probability levels. The value for these quantile predictions will generally differ between models, and as a result we are typically not provided with CDF values at the same values of $x$ from all component predictions. The lack of alignment between CDF values for the same probability levels is illustrated in Figure \@ref(linear-poole-from-quantils) below. 
 
 ```{r linear-pool-from-quantiles, echo=FALSE, fig.cap="The probabilities and associated values of two normal CDFs (N(100, 10) and N(110, 5)) for nine fixed quantiles {0.1, 0.2, ..., 0.9} are plotted as points. Vertical dashed lines show that the values of these distributions at the fixed probability levels do not align and thus can not be used to calculate LOP. However, the quantiles can be used to estimate the full CDFs, shown by the faint outline behind the points, which then can be used to calculate LOP."}
 library(distfromq)
@@ -421,6 +443,7 @@ The component forecasts used to generate the ensembles consist of those submitte
 flu_forecasts_raw <- readr::read_rds("data/flu_forecasts_raw.rds")
 
 forecast_data_hub <- flu_forecasts_raw |>
+  dplyr::rename(forecast_date=timezero, location=unit) |>
   tidyr::separate(target, sep=" ", convert=TRUE, into=c("horizon", "target"), extra="merge") |>
   as_model_out_tbl(
     model_id_col = "model",
@@ -435,7 +458,7 @@ forecast_data_hub <- flu_forecasts_raw |>
   )
   
 forecast_data_hub |>
-  dplyr::filter(unit == "06") |>
+  dplyr::filter(location == "06") |>
   head() |>
   knitr::kable()
 ```
