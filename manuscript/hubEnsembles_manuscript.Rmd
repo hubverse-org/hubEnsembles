@@ -35,9 +35,9 @@ $$
 p_E = C(p_i, w_i) 
 $$
 
-using any function $C$, and model-specific weights $w_i$. For example, an arithmetic average of predictions yields $x_E = \sum_{i=1}^Nx_iw_i$, where the weights are non-negative and sum to 1. If $w_i = 1/N$ for all $i$, all predictions will be equally weighted. This framework can also support more complex functions for aggregation, such as a (weighted) median or geometric mean.
+using any function $C$, and model-specific weights $w_i$. For example, an arithmetic average of predictions yields $p_E = \sum_{i=1}^Np_iw_i$, where the weights are non-negative and sum to 1. If $w_i = 1/N$ for all $i$, all predictions will be equally weighted. This framework can also support more complex functions for aggregation, such as a (weighted) median or geometric mean.
 
-For probabilistic predictions, there are two commonly used classes of methods to average or ensemble multiple predictions: quantile averaging [@lichtendahl2013] (also called a Vincent average [@vincent1912]) and probability averaging [@lichtendahl2013] (also called a distributional mixture or linear opinion pool [@stone1961]).  Let $F(x)$ be a cumulative density function (CDF) defined over values $x$ of the target variable for the prediction, and $F^{-1}(\theta)$ be the corresponding quantile function defined over quantile levels $\theta \in [0, 1]$. Additionally, we will use $f(x)$ to denote a probability mass function (PMF) for a prediction of a discrete variable or a discretization (such as binned values) of a continuous variable.
+For probabilistic predictions, there are two commonly used classes of methods to average or ensemble multiple predictions: quantile averaging (also called a Vincent average [@vincent1912]) and probability averaging (also called a distributional mixture or linear opinion pool [@stone1961]) [@lichtendahl2013].  To define these two classes of methods, let $F(x)$ be a cumulative density function (CDF) defined over values $x$ of the target variable for the prediction, and $F^{-1}(\theta)$ be the corresponding quantile function defined over quantile levels $\theta \in [0, 1]$. Additionally, we will use $f(x)$ to denote a probability mass function (PMF) for a prediction of a discrete variable or a discretization (such as binned values) of a continuous variable.
 
 The quantile average is calculated as
 $$
@@ -178,7 +178,7 @@ For step 1, functionality in the `distfromq` package uses a monotonic cubic spli
 
 # Demonstration of functionality
 
-In this section, we illustrate the two main functions in `hubEnsembles`, `simple_ensemble` and `linear_pool`. This vignette uses the following R packages:
+In this section, we illustrate the two main functions in `hubEnsembles`, `simple_ensemble` and `linear_pool`, which requires the following R packages:
 
 ```{r setup}
 library(dplyr)
@@ -193,7 +193,7 @@ library(hubEnsembles)
 
 ## Example data: a simple forecast hub
 
-The `example-simple-forecast-hub` has been created by the Consortium of Infectious Disease Modeling Hubs as a simple example hub to demonstrate the set up and functionality for the hubverse. The hub includes both example model output data and target data. The model output data includes `quantile`, `mean` and `median` forecasts of future incident hospitalizations, as well as `pmf` forecasts of the probability that the change in hospitalizations will be a "large decrease", "decrease", "stable", "increase", "large increase". 
+The `example-simple-forecast-hub` has been created by the Consortium of Infectious Disease Modeling Hubs as a simple example hub to demonstrate the set up and functionality for the hubverse. The hub includes both example model output data and target data. The model output data includes `quantile`, `mean` and `median` forecasts of future incident hospitalizations, and `pmf` forecasts of the probability that the change in hospitalizations will be a "large decrease", "decrease", "stable", "increase", "large increase". Each forecast is made for X task ID variables, including the date the forecast was made (`origin_date`), the number of steps ahead (`horizon`), the location for which the forecast was made (`location`), and the forecast target (`target`). 
 
 <!-- # EH: A few notes on this: 
 (1) I modified the example hub data to include mean and pmf output types. The mean output type was estimated from 1E4 samples (using distfromq package). The pmf output type was modeled after FluSight (probability of "large_decrease", "decrease", "stable", etc. but the values were randomly generated from a uniform distribution. Does this sound okay? Is it a problem that this won't match the example-hub directly?
