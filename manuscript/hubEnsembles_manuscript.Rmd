@@ -168,6 +168,298 @@ dplyr::bind_rows(
       theme_bw()
 ```
 
+```{r}
+quantile_probs <- c(0.01, seq(from = 0.1, to = 0.9, by = 0.2), 0.99)
+x <- seq(from = 0.0, to = 400.0, length = 1001)
+
+mean1 <- 100
+sd1 <- 10
+q_normal1 <- qnorm(quantile_probs, mean = mean1, sd = sd1)
+cdf_normal1 <- pnorm(x, mean = mean1, sd = sd1)
+
+mean2 <- 120
+sd2 <- 5
+q_normal2 <- qnorm(quantile_probs, mean = mean2, sd = sd2)
+cdf_normal2 <- pnorm(x, mean = mean2, sd = sd2)
+
+pA <- dplyr::bind_rows(
+    data.frame(q = q_normal1, p = quantile_probs, dist="N(100, 10)"),
+    data.frame(q = q_normal2, p = quantile_probs, dist="N(120, 5)")
+) |>
+    ggplot(aes(x = q, y = p, color = dist)) + 
+    geom_line(data = dplyr::bind_rows(
+        data.frame(x = x, y = cdf_normal1, dist = "N(100, 10)"),
+        data.frame(x = x, y = cdf_normal2,dist = "N(120, 5)"),
+    ),
+    mapping = aes(x = x, y = y),
+    linewidth = 0.8, alpha = 0.8) +
+    geom_segment(aes(x = q, xend = q, 
+                     y = 0, yend = p, 
+                     color = dist), 
+                 linetype = "dashed", alpha = 0.5) +
+    geom_point() + 
+    scale_x_continuous() + 
+    labs(x = "value", y = "cumulative probability (quantile)", 
+         subtitle = "quantile predictions from two models") +
+    scale_color_viridis_d(
+        "Distribution",
+        end = 0.9
+      )  +
+    coord_cartesian(xlim=c(75, 140)) +
+    scale_y_continuous(breaks = quantile_probs, 
+                       limits = c(0,1), 
+                       expand = c(0,0)) +
+    theme_bw() + 
+    theme(legend.position = "bottom", 
+          panel.grid.minor = element_blank(), 
+          panel.grid.major.x = element_blank())
+pA
+
+
+
+
+pA <- dplyr::bind_rows(
+    data.frame(q = q_normal1, p = quantile_probs, dist="N(100, 10)"),
+    data.frame(q = q_normal2, p = quantile_probs, dist="N(120, 5)")
+) |>
+    ggplot(aes(x = q, y = p, color = dist)) + 
+    geom_line(data = dplyr::bind_rows(
+        data.frame(x = x, y = cdf_normal1, dist = "N(100, 10)"),
+        data.frame(x = x, y = cdf_normal2,dist = "N(120, 5)")
+    ),
+    mapping = aes(x = x, y = y),
+    linewidth = 0.8, alpha = 0.3) +
+    geom_segment(aes(x = q, xend = q, 
+                     y = 0, yend = p, 
+                     color = dist), 
+                 alpha = 0.5) +
+    geom_point() + 
+    scale_x_continuous() + 
+    labs(x = "value", y = "cumulative probability (quantile)", 
+         subtitle = "quantile predictions") +
+    scale_color_viridis_d(
+        "Distribution",
+        end = 0.9
+      )  +
+    coord_cartesian(xlim=c(75, 140)) +
+    scale_y_continuous(breaks = quantile_probs, 
+                       limits = c(0,1), 
+                       expand = c(0,0)) +
+    theme_bw() + 
+    theme(legend.position = "bottom", 
+          panel.grid.minor = element_blank(), 
+          panel.grid.major.x = element_blank())
+pA
+
+example_LOP_lines <- seq(85, 135, 10)
+example_LOP_points <- data.frame(value = rep(example_LOP_lines,2), 
+                                 quantile = c(pnorm(example_LOP_lines, mean = mean1, sd = sd1), 
+                                              pnorm(example_LOP_lines, mean = mean2, sd = sd2)), 
+                                 dist = c(rep("A", length(example_LOP_lines)), 
+                                          rep("B", length(example_LOP_lines))))
+
+example_LOP <- data.frame(value = x, 
+                          quantile = rowMeans(cbind(cdf_normal1, cdf_normal2))
+                                              )
+
+example_quant_lines <- quantile_probs
+example_quant_points <- data.frame(quantile = rep(example_quant_lines,2), 
+                                 value = c(qnorm(example_quant_lines, mean = mean1, sd = sd1), 
+                                              qnorm(example_quant_lines, mean = mean2, sd = sd2)), 
+                                 dist = c(rep("A", length(example_quant_lines)), 
+                                          rep("B", length(example_quant_lines))))
+example_quant <- data.frame(value = x, 
+                            quantile = pnorm(x, mean = mean(c(mean1, mean2)),
+                                             sd = mean(c(sd1,sd2)))
+                                              )
+
+pB <- dplyr::bind_rows(
+    data.frame(x = x, y = cdf_normal1, dist = "A"),
+    data.frame(x = x, y = cdf_normal2,dist = "B")) |>
+    ggplot() +
+    geom_segment(
+        data = example_quant_points |>
+            reshape2::dcast(quantile ~ dist, value.var = "value"), 
+        mapping = aes(x = A, xend = B, 
+                      y = quantile, yend = quantile), 
+        color = "darkgray", linetype = "dashed") +
+    geom_line(
+        mapping = aes(x = x, y = y, color = dist),
+        linewidth = 0.8, alpha = 0.3) +
+    geom_point(
+        data = example_quant_points,
+        mapping = aes(x = value, y = quantile, color = dist),
+        size = 1.2
+    ) +
+    geom_line(
+        data = example_quant, 
+        mapping = aes(x = value, y = quantile), 
+        linewidth = 0.8
+    ) + 
+    geom_point(
+        data = example_quant_points |>
+            group_by(quantile) |>
+            summarize(value = mean(value)), 
+        mapping = aes(x = value, y = quantile),
+        size = 1.2
+    ) + 
+    labs(x = "value", y = "cumulative probability (quantile)", 
+         subtitle = "quantile average") +
+    scale_color_viridis_d(
+        "Distribution",
+        end = 0.9, 
+        labels = c("N(100, 10)"), "N(120, 5)"
+    ) +
+    scale_y_continuous(breaks = quantile_probs, 
+                       limits = c(0,1), 
+                       expand = c(0,0)) +
+    coord_cartesian(xlim=c(75, 135)) +
+    xlab("Value") + ylab("Probability") +
+    theme_bw() +
+    theme(axis.title.y = element_blank(), 
+          legend.position = "bottom", 
+          panel.grid.minor = element_blank(), 
+          panel.grid.major.x = element_blank())
+pB
+
+pdfs <- data.frame(value = rep(x, 4), 
+                   prob = c(dnorm(x, mean = mean1, sd = sd1), 
+                            dnorm(x, mean = mean2, sd = sd2), 
+                            rowMeans(cbind(dnorm(x, mean = mean1, sd = sd1), 
+                                           dnorm(x, mean = mean2, sd = sd2))), 
+                            dnorm(x, mean = mean(c(mean1, mean2)), 
+                                  sd = mean(c(sd1, sd2)))), 
+                   distribution = c(rep("A", length(x)), 
+                                    rep("B", length(x)), 
+                                    rep("LOP", length(x)), 
+                                    rep("Q", length(x))))
+
+pB_inset <- ggplot(data = pdfs |> 
+                       filter(distribution != "LOP"),
+                   mapping = aes(x = value, y = prob, 
+                                 color = distribution, 
+                                 linewidth = distribution)) + 
+    geom_line() + 
+    coord_cartesian(xlim=c(75, 135)) +
+    scale_color_manual(values = c(viridis::viridis(6)[c(3,6)], "black")) +
+    scale_linewidth_manual(values = c(0.8,0.8,1.2)) +
+    theme_bw() + 
+    theme(axis.text.y = element_blank(), 
+          axis.ticks.y = element_blank(), 
+          legend.position = "none",
+          panel.grid = element_blank())
+
+pC <- dplyr::bind_rows(
+    data.frame(x = x, y = cdf_normal1, dist = "A"),
+    data.frame(x = x, y = cdf_normal2,dist = "B"),
+) |>
+    ggplot() +
+    geom_segment(
+        data = example_LOP_points |>
+            reshape2::dcast(value ~ dist, value.var = "quantile"), 
+        mapping = aes(x = value, xend = value, 
+                      y = A, yend = B), 
+        color = "darkgray", linetype = "dashed") +
+    # geom_vline(
+    #     xintercept = example_LOP_lines, 
+    #     color = "gray", linetype = "dashed") +
+    geom_line(
+        mapping = aes(x = x, y = y, color = dist),
+        linewidth = 0.8) +
+    geom_point(
+        data = example_LOP_points,
+        mapping = aes(x = value, y = quantile, color = dist),
+        size = 1.2
+    ) +
+    geom_line(
+        data = example_LOP, 
+        mapping = aes(x = value, y = quantile), 
+        linewidth = 0.8
+    ) + 
+    geom_point(
+        data = example_LOP_points |>
+            group_by(value) |>
+            summarize(quantile = mean(quantile)), 
+        mapping = aes(x = value, y = quantile),
+        size = 1.2
+    ) + 
+    labs(x = "value", y = "cumulative probability (quantile)", 
+         subtitle = "linear pool average") +
+    scale_color_viridis_d(
+        "Distribution",
+        end = 0.9, 
+        labels = c("N(100, 10)"), "N(120, 5)"
+    ) +
+    scale_y_continuous(breaks = quantile_probs, 
+                       limits = c(0,1), 
+                       expand = c(0,0)) +
+    coord_cartesian(xlim=c(75, 135)) +
+    xlab("Value") + ylab("Probability") +
+    theme_bw() +
+    theme(axis.title.y = element_blank(), 
+          legend.position = "bottom", 
+          panel.grid.minor = element_blank(), 
+          panel.grid.major.x = element_blank())
+pC
+
+pC_inset <- ggplot(data = pdfs |> 
+                       filter(distribution != "Q"),
+                   mapping = aes(x = value, y = prob, 
+                                 color = distribution, 
+                                 linewidth = distribution)) + 
+    geom_line() + 
+    coord_cartesian(xlim=c(75, 135)) +
+    scale_color_manual(values = c(viridis::viridis(6)[c(3,6)], "black")) +
+    scale_linewidth_manual(values = c(0.8,0.8,1.2)) +
+    theme_bw() + 
+    theme(axis.text.y = element_blank(), 
+          axis.ticks.y = element_blank(), 
+          legend.position = "none",
+          panel.grid = element_blank()) 
+
+l <- get_legend(pA)
+    
+pC_fin <- ggdraw(pC) + 
+              draw_plot(pC_inset +
+                        theme(plot.margin = unit(0.01*c(1,1,1,1), "cm")),    
+                        .1, .6, .3, .3, 
+                        hjust = 0, vjust = 0)
+
+pB_fin <- ggdraw(pB) + 
+              draw_plot(pB_inset + 
+                            theme(plot.margin = unit(0.01*c(1,1,1,1), "cm")),  
+                        .1, .6, .3, .3, 
+                        hjust = 0, vjust = 0)
+
+plot_grid(
+    plot_grid(pA + theme(legend.position = "none"), 
+          pC, 
+          pB,
+          nrow = 1, 
+          rel_widths = c(0.34, 0.33, 0.33)), 
+    l, 
+    ncol = 1, rel_heights = c(0.95, 0.05))
+ggsave("test.pdf", width = 10, height = 4)
+
+plot_grid(
+    pA, 
+    plot_grid(pC, pB, pC_inset, pB_inset, nrow = 2)
+)
+ggsave("test2.pdf", width = 8, height = 4)
+
+plot_grid(
+    plot_grid(pA + theme(legend.position = "none"), 
+          pC_fin, 
+          pB_fin,
+          nrow = 1, 
+          rel_widths = c(0.34, 0.33, 0.33)), 
+    l, 
+    ncol = 1, rel_heights = c(0.95, 0.05))
+ggsave("test3.pdf", width = 10, height = 4)
+
+```
+
+
 Given that LOP cannot be directly calculated from quantile predictions, we must first obtain an estimate of the CDF for each component distribution using the provided quantiles, combine the CDFs, then calculate the quantiles from the ensemble's CDF. We perform this calculation in three main steps, assisted by the `distfromq` package [@distfromq] for the first two:
 
 1.  Interpolate and extrapolate from the provided quantiles for each component model to obtain an estimate of the CDF of that particular distribution.
