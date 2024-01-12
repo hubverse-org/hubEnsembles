@@ -305,7 +305,7 @@ ggplot(data = plt_all_point_ens) +
 
 ### Weighting model contributions
 
-In addition, we can weight the contributions of each model by providing a `data.frame` that specifies these weights. For example, if we wanted to include the baseline model in the ensemble, but give it less weight than the other forecasts, we would use the `weights = model_weights` argument, where `model_weights` is a `data.frame` with a `model_id` column containing each unique model_id and a `weight` column.
+In addition, we can weight the contributions of each model by providing a `data.frame` that specifies these weights. For example, if we wanted to include the baseline model in the ensemble, but give it less weight than the other forecasts, we would use the `weights = model_weights` argument, where `model_weights` is a `data.frame` with a `model_id` column containing each unique model_id and a `weight` column. The argument `weights_col_name` can optionally be used in the case where the `data.frame` defines model weights in a column named something other than `weight`. 
 
 ```{r}
 model_weights <- data.frame(model_id = c("UMass-ar", "UMass-gbq", "simple_hub-baseline"), 
@@ -313,18 +313,6 @@ model_weights <- data.frame(model_id = c("UMass-ar", "UMass-gbq", "simple_hub-ba
 
 weighted_mean_ens <- hubEnsembles::simple_ensemble(model_outputs, 
                                                    weights = model_weights, 
-                                                   model_id = "hub-ensemble-weighted-mean")
-head(weighted_mean_ens)
-```
-If the `data.frame` defines model weights in a column named something other than `weight`, we can specify this using the `weights_col_name` argument. <!-- ELR: describing this in the vignette feels low priority to me -- candidate for removal? -->
-
-```{r}
-model_weights <- data.frame(model_id = c("UMass-ar", "UMass-gbq", "simple_hub-baseline"), 
-                            w = c(0.4, 0.4, 0.2))
-
-weighted_mean_ens <- hubEnsembles::simple_ensemble(model_outputs, 
-                                                   weights = model_weights, 
-                                                   weights_col_name = "w",
                                                    model_id = "hub-ensemble-weighted-mean")
 head(weighted_mean_ens)
 ```
