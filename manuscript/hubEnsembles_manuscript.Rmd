@@ -330,8 +330,6 @@ head(linear_pool_ens)
 
 As described above, for `quantile` model outputs, the `linear_pool` function approximates the full probability distribution for each component prediction using the value-quantile pairs provided by that model model, and then obtains quasi-random samples from that distributional estimate. The number of samples drawn from the distribution of each component model defaults to `1e4`, but this can be changed using the `n_samples` argument. 
 
-For the `mean`, `cdf` and `pmf` output types, the linear pool is equivalent to using a mean `simple_ensemble` (see [Mathematical definitions and properties of ensemble methods] for explanation). For `quantile` output types, the `linear_pool` function yields an ensemble with wider prediction intervals than `simple_ensemble`. <!-- ELR: consider dropping this paragraph since it duplicates stuff that's been said before? -->
-
 ```{r}
 plt_model_outputs = model_outputs %>%
     filter(location == "US", 
