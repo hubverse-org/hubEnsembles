@@ -117,131 +117,80 @@ The `linear_pool` function implements the linear opinion pool method for ensembl
 
 For the CDF, PMF, and mean output types, the linear pool method is equivalent to calling `simple_ensemble` with a mean aggregation function, since `simple_ensemble` produces a linear pool prediction for those output types. 
 
-However, implementation of LOP is less straightforward for the quantile output type. The reason for this is that LOP averages CDF values (probability) at each value of the target variable, but the predictions are quantiles (on the scale of the target variable) at fixed probability levels. The value for these quantile predictions will generally differ between models, and as a result we are typically not provided with CDF values at the same values of $x$ from all component predictions. The lack of alignment between CDF values for the same probability levels is illustrated in Figure \@ref(linear-poole-from-quantils) below. 
+However, implementation of LOP is less straightforward for the quantile output type. The reason for this is that LOP averages CDF values (probability) at each value of the target variable, but the predictions are quantiles (on the scale of the target variable) at fixed probability levels. The value for these quantile predictions will generally differ between models, and as a result we are typically not provided with CDF values at the same values of $x$ from all component predictions. The lack of alignment between CDF values for the same probability levels is illustrated in Figure \@ref(fig:example-quantile-average-and-linear-pool) below. 
 
-```{r linear-pool-from-quantiles, echo=FALSE, fig.cap="The probabilities and associated values of two normal CDFs (N(100, 10) and N(110, 5)) for nine fixed quantiles {0.1, 0.2, ..., 0.9} are plotted as points. Vertical dashed lines show that the values of these distributions at the fixed probability levels do not align and thus can not be used to calculate LOP. However, the quantiles can be used to estimate the full CDFs, shown by the faint outline behind the points, which then can be used to calculate LOP."}
-library(distfromq)
+
+```{r example-quantile-average-and-linear-pool, echo=FALSE, fig.width = 10, fig.height = 4, fig.cap="(panel A) Example of quantile output type predictions. In this example, points show model output collected for seven fixed quantiles {0.01, 0.1, 0.3, 0.5, 0.7, 0.9, and 0.99} from two distributions ($N(100, 10)$ in purple and $N(120, 5)$ in green, both with underlying cumulative distribution functions, CDFs, shown with light lines). The associated values for each fixed quantile do not align across distributions (vertical lines). (panel B) Quantile average ensemble, which is calculated by averaging values for each fixed quantile (represented by horizontal dashed gray lines). The distributions from panel A are re-plotted and the black line shows the resulting quantile average ensemble. Inset shows corresponding probability density functions (PDFs). (panel C) Linear pool ensemble, which is calculated by averaging cumulative probabilities (i.e., quantiles) for each fixed value (represented by vertical dashed gray lines). To calculate the linear pool when model output is not defined for the same values (i.e., for quantile output type), model output is used to estimate the full CDFs for each distribution (solid lines), which are then used to define new quantile-value pairs that are defined for the same values. Thus, the points in panel C differ from those in panels A and B. The distributions from panel A are re-plotted and the black line shows the resulting linear pool ensemble. Inset shows corresponding PDFs."}
+
 library(ggplot2)
-quantile_probs <- seq(from = 0.1, to = 0.9, by = 0.1)
-x <- seq(from = 0.0, to = 400.0, length = 1001)
 
-mean1 <- 100
-sd1 <- 10
-q_normal1 <- qnorm(quantile_probs, mean = mean1, sd = sd1)
-cdf_normal1 <- pnorm(x, mean = mean1, sd = sd1)
-
-mean2 <- 120
-sd2 <- 5
-q_normal2 <- qnorm(quantile_probs, mean = mean2, sd = sd2)
-cdf_normal2 <- pnorm(x, mean = mean2, sd = sd2)
-
-dplyr::bind_rows(
-  data.frame(x = x, y = cdf_normal1, dist = "N(100, 10)"),
-  data.frame(x = x, y = cdf_normal2,dist = "N(120, 5)"),
-) |>
-    ggplot() +
-      geom_line(
-        mapping = aes(x = x, y = y, color = dist),
-        linewidth = 0.8, alpha = 0.15) +
-      geom_point(
-        data = dplyr::bind_rows(
-          data.frame(q = q_normal1, p = quantile_probs, dist="N(100, 10)"),
-          data.frame(q = q_normal2, p = quantile_probs, dist="N(120, 5)")
-        ),
-        mapping = aes(x = q, y = p, color = dist),
-        size = 1.2
-      ) +
-      geom_vline(
-        data = dplyr::bind_rows(
-          data.frame(q = q_normal1, dist="N(100, 10)"),
-          data.frame(q = q_normal2, dist="N(120, 5)")
-        ),
-        mapping = aes(xintercept = q, color = dist),
-        linewidth = 0.5, alpha = 0.9, linetype = 2
-      ) +
-      scale_color_viridis_d(
-        "Distribution",
-        end = 0.9
-      ) +
-      coord_cartesian(xlim=c(75, 140)) +
-      xlab("Value") + ylab("Probability") +
-      theme_bw()
-```
-
-```{r}
+# set quantiles and values over which to define distributions
 quantile_probs <- c(0.01, seq(from = 0.1, to = 0.9, by = 0.2), 0.99)
-x <- seq(from = 0.0, to = 400.0, length = 1001)
+lop_example_x <- seq(85, 135, 10)
+x <- c(seq(from = 0.0, to = 400.0, length = 1001), lop_example_x)
 
+
+# distribution1 ~ N(100, 10)
 mean1 <- 100
 sd1 <- 10
-q_normal1 <- qnorm(quantile_probs, mean = mean1, sd = sd1)
-cdf_normal1 <- pnorm(x, mean = mean1, sd = sd1)
-
+# distribution2 ~ N(120, 5)
 mean2 <- 120
 sd2 <- 5
-q_normal2 <- qnorm(quantile_probs, mean = mean2, sd = sd2)
-cdf_normal2 <- pnorm(x, mean = mean2, sd = sd2)
+# distribution colors
+dist_colors <- viridisLite::viridis(2, end = 0.9)
 
-pA <- dplyr::bind_rows(
-    data.frame(q = q_normal1, p = quantile_probs, dist="N(100, 10)"),
-    data.frame(q = q_normal2, p = quantile_probs, dist="N(120, 5)")
-) |>
-    ggplot(aes(x = q, y = p, color = dist)) + 
-    geom_line(data = dplyr::bind_rows(
-        data.frame(x = x, y = cdf_normal1, dist = "N(100, 10)"),
-        data.frame(x = x, y = cdf_normal2,dist = "N(120, 5)"),
-    ),
-    mapping = aes(x = x, y = y),
-    linewidth = 0.8, alpha = 0.8) +
-    geom_segment(aes(x = q, xend = q, 
-                     y = 0, yend = p, 
-                     color = dist), 
-                 linetype = "dashed", alpha = 0.5) +
-    geom_point() + 
-    scale_x_continuous() + 
-    labs(x = "value", y = "cumulative probability (quantile)", 
-         subtitle = "quantile predictions from two models") +
-    scale_color_viridis_d(
-        "Distribution",
-        end = 0.9
-      )  +
-    coord_cartesian(xlim=c(75, 140)) +
-    scale_y_continuous(breaks = quantile_probs, 
-                       limits = c(0,1), 
-                       expand = c(0,0)) +
-    theme_bw() + 
-    theme(legend.position = "bottom", 
-          panel.grid.minor = element_blank(), 
-          panel.grid.major.x = element_blank())
-pA
+# cdfs defined for fixed quantiles
+cdf_defined_on_quantiles <- data.frame(quantile = rep(quantile_probs, 3), 
+                                       value = c(qnorm(quantile_probs, mean1, sd1), 
+                                                 qnorm(quantile_probs, mean2, sd2), 
+                                                 qnorm(quantile_probs, mean(c(mean1,mean2)), mean(c(sd1, sd2)))),
+                                       distribution = c(rep("A", length(quantile_probs)), 
+                                                        rep("B", length(quantile_probs)), 
+                                                        rep("Q", length(quantile_probs))))
 
+# cdfs defined for fixed values
+cdf_defined_on_values <- data.frame(value = rep(x, 4), 
+                                    quantile = c(pnorm(x, mean1, sd1), 
+                                                 pnorm(x, mean2, sd2), 
+                                                 rowMeans(cbind(pnorm(x, mean1, sd1), 
+                                                                pnorm(x, mean2, sd2))), 
+                                                 pnorm(x, mean(c(mean1, mean2)), mean(c(sd1, sd2)))), 
+                                    distribution = c(rep("A", length(x)), 
+                                                     rep("B", length(x)),
+                                                     rep("LOP", length(x)),
+                                                     rep("Q", length(x))))
 
+# pdfs for all distributions
+pdfs_defined_on_values <- data.frame(value = rep(x, 4), 
+                                     prob = c(dnorm(x, mean = mean1, sd = sd1), 
+                                              dnorm(x, mean = mean2, sd = sd2), 
+                                              rowMeans(cbind(dnorm(x, mean = mean1, sd = sd1), 
+                                                             dnorm(x, mean = mean2, sd = sd2))), 
+                                              dnorm(x, mean = mean(c(mean1, mean2)), 
+                                                    sd = mean(c(sd1, sd2)))), 
+                                     distribution = c(rep("A", length(x)), 
+                                                      rep("B", length(x)), 
+                                                      rep("LOP", length(x)), 
+                                                      rep("Q", length(x))))
 
-
-pA <- dplyr::bind_rows(
-    data.frame(q = q_normal1, p = quantile_probs, dist="N(100, 10)"),
-    data.frame(q = q_normal2, p = quantile_probs, dist="N(120, 5)")
-) |>
-    ggplot(aes(x = q, y = p, color = dist)) + 
-    geom_line(data = dplyr::bind_rows(
-        data.frame(x = x, y = cdf_normal1, dist = "N(100, 10)"),
-        data.frame(x = x, y = cdf_normal2,dist = "N(120, 5)")
-    ),
-    mapping = aes(x = x, y = y),
-    linewidth = 0.8, alpha = 0.3) +
-    geom_segment(aes(x = q, xend = q, 
-                     y = 0, yend = p, 
-                     color = dist), 
+### panel A
+pA <- ggplot(data = cdf_defined_on_values |>
+                 dplyr::filter(distribution %in% c("A", "B")),
+             aes(x = value, y = quantile, color = distribution)) + 
+    geom_line(linewidth = 0.8, alpha = 0.3) +
+    geom_segment(data = cdf_defined_on_quantiles |>
+                     dplyr::filter(distribution %in% c("A", "B")), 
+                 aes(x = value, xend = value, 
+                     y = 0, yend = quantile), 
                  alpha = 0.5) +
-    geom_point() + 
-    scale_x_continuous() + 
-    labs(x = "value", y = "cumulative probability (quantile)", 
-         subtitle = "quantile predictions") +
-    scale_color_viridis_d(
-        "Distribution",
-        end = 0.9
-      )  +
+    geom_point(data = cdf_defined_on_quantiles |>
+                   dplyr::filter(distribution %in% c("A", "B"))) + 
     coord_cartesian(xlim=c(75, 140)) +
+    labs(x = "value", y = "cumulative probability (quantile)", 
+         subtitle = "quantile predictions from two distributions") +
+    scale_color_manual(name = "distributions", 
+                       labels = c("N(100, 10)", "N(120, 5)"),
+                       values = dist_colors) +
     scale_y_continuous(breaks = quantile_probs, 
                        limits = c(0,1), 
                        expand = c(0,0)) +
@@ -249,213 +198,136 @@ pA <- dplyr::bind_rows(
     theme(legend.position = "bottom", 
           panel.grid.minor = element_blank(), 
           panel.grid.major.x = element_blank())
-pA
 
-example_LOP_lines <- seq(85, 135, 10)
-example_LOP_points <- data.frame(value = rep(example_LOP_lines,2), 
-                                 quantile = c(pnorm(example_LOP_lines, mean = mean1, sd = sd1), 
-                                              pnorm(example_LOP_lines, mean = mean2, sd = sd2)), 
-                                 dist = c(rep("A", length(example_LOP_lines)), 
-                                          rep("B", length(example_LOP_lines))))
-
-example_LOP <- data.frame(value = x, 
-                          quantile = rowMeans(cbind(cdf_normal1, cdf_normal2))
-                                              )
-
-example_quant_lines <- quantile_probs
-example_quant_points <- data.frame(quantile = rep(example_quant_lines,2), 
-                                 value = c(qnorm(example_quant_lines, mean = mean1, sd = sd1), 
-                                              qnorm(example_quant_lines, mean = mean2, sd = sd2)), 
-                                 dist = c(rep("A", length(example_quant_lines)), 
-                                          rep("B", length(example_quant_lines))))
-example_quant <- data.frame(value = x, 
-                            quantile = pnorm(x, mean = mean(c(mean1, mean2)),
-                                             sd = mean(c(sd1,sd2)))
-                                              )
-
-pB <- dplyr::bind_rows(
-    data.frame(x = x, y = cdf_normal1, dist = "A"),
-    data.frame(x = x, y = cdf_normal2,dist = "B")) |>
-    ggplot() +
+### panel B
+pB <- ggplot(data = cdf_defined_on_values |>
+                 dplyr::filter(distribution != "LOP"), 
+             mapping = aes(x = value, y = quantile)) +
     geom_segment(
-        data = example_quant_points |>
-            reshape2::dcast(quantile ~ dist, value.var = "value"), 
+        data = cdf_defined_on_quantiles |>
+            dplyr::filter(distribution != "LOP") |>
+            reshape2::dcast(quantile ~ distribution, value.var = "value"), 
         mapping = aes(x = A, xend = B, 
                       y = quantile, yend = quantile), 
         color = "darkgray", linetype = "dashed") +
     geom_line(
-        mapping = aes(x = x, y = y, color = dist),
-        linewidth = 0.8, alpha = 0.3) +
+        mapping = aes(alpha = distribution, 
+                      color = distribution, 
+                      linewidth = distribution)) +
     geom_point(
-        data = example_quant_points,
-        mapping = aes(x = value, y = quantile, color = dist),
-        size = 1.2
-    ) +
-    geom_line(
-        data = example_quant, 
-        mapping = aes(x = value, y = quantile), 
-        linewidth = 0.8
-    ) + 
-    geom_point(
-        data = example_quant_points |>
-            group_by(quantile) |>
-            summarize(value = mean(value)), 
-        mapping = aes(x = value, y = quantile),
-        size = 1.2
-    ) + 
-    labs(x = "value", y = "cumulative probability (quantile)", 
-         subtitle = "quantile average") +
-    scale_color_viridis_d(
-        "Distribution",
-        end = 0.9, 
-        labels = c("N(100, 10)"), "N(120, 5)"
-    ) +
+        data = cdf_defined_on_quantiles |>
+            dplyr::filter(distribution != "LOP"), 
+        mapping = aes(color = distribution, 
+                      size = distribution)) +
+    coord_cartesian(xlim=c(75, 135)) +
+    labs(x = "value", y = "", 
+         subtitle = "quantile average ensemble") +
+    scale_alpha_manual(values = c(0.3, 0.3, 1)) + 
+    scale_color_manual(values = c(dist_colors, "black")) +
+    scale_linewidth_manual(values = c(0.8, 0.8, 1.2)) +
+    scale_size_manual(values = c(1.2, 1.2, 1.7)) +
     scale_y_continuous(breaks = quantile_probs, 
                        limits = c(0,1), 
                        expand = c(0,0)) +
-    coord_cartesian(xlim=c(75, 135)) +
-    xlab("Value") + ylab("Probability") +
     theme_bw() +
-    theme(axis.title.y = element_blank(), 
-          legend.position = "bottom", 
+    theme(legend.position = "none", 
           panel.grid.minor = element_blank(), 
           panel.grid.major.x = element_blank())
-pB
 
-pdfs <- data.frame(value = rep(x, 4), 
-                   prob = c(dnorm(x, mean = mean1, sd = sd1), 
-                            dnorm(x, mean = mean2, sd = sd2), 
-                            rowMeans(cbind(dnorm(x, mean = mean1, sd = sd1), 
-                                           dnorm(x, mean = mean2, sd = sd2))), 
-                            dnorm(x, mean = mean(c(mean1, mean2)), 
-                                  sd = mean(c(sd1, sd2)))), 
-                   distribution = c(rep("A", length(x)), 
-                                    rep("B", length(x)), 
-                                    rep("LOP", length(x)), 
-                                    rep("Q", length(x))))
-
-pB_inset <- ggplot(data = pdfs |> 
-                       filter(distribution != "LOP"),
-                   mapping = aes(x = value, y = prob, 
-                                 color = distribution, 
-                                 linewidth = distribution)) + 
-    geom_line() + 
+pB_inset <- ggplot(data = pdfs_defined_on_values |>
+                       dplyr::filter(distribution != "LOP"),
+                   mapping = aes(x = value, y = prob,
+                                 color = distribution)) +
+    geom_line(aes(alpha = distribution,
+                  linewidth = distribution)) +
     coord_cartesian(xlim=c(75, 135)) +
-    scale_color_manual(values = c(viridis::viridis(6)[c(3,6)], "black")) +
-    scale_linewidth_manual(values = c(0.8,0.8,1.2)) +
-    theme_bw() + 
-    theme(axis.text.y = element_blank(), 
-          axis.ticks.y = element_blank(), 
+    scale_alpha_manual(values = c(0.8, 0.8, 1)) +
+    scale_color_manual(values = c(dist_colors, "black")) +
+    scale_linewidth_manual(values = c(0.8, 0.8, 1.2)) +
+    theme_bw() +
+    theme(axis.text.y = element_blank(),
+          axis.ticks.y = element_blank(),
+          axis.title = element_blank(),
           legend.position = "none",
           panel.grid = element_blank())
 
-pC <- dplyr::bind_rows(
-    data.frame(x = x, y = cdf_normal1, dist = "A"),
-    data.frame(x = x, y = cdf_normal2,dist = "B"),
-) |>
-    ggplot() +
+pB_fin <- cowplot::ggdraw(pB) + 
+    cowplot::draw_plot(pB_inset + 
+                           theme(plot.margin = unit(0.01*c(1,1,1,1), "cm")),  
+                       .19, .6, .3, .3, 
+                       hjust = 0, vjust = 0)
+
+
+### panel C
+pC <- ggplot(data = cdf_defined_on_values |>
+                 dplyr::filter(distribution != "Q"), 
+             mapping = aes(x = value, y = quantile)) +
     geom_segment(
-        data = example_LOP_points |>
-            reshape2::dcast(value ~ dist, value.var = "quantile"), 
+        data = cdf_defined_on_values |>
+            dplyr::filter(distribution != "Q", 
+                          value %in% lop_example_x) |>
+            reshape2::dcast(value ~ distribution, value.var = "quantile"), 
         mapping = aes(x = value, xend = value, 
                       y = A, yend = B), 
         color = "darkgray", linetype = "dashed") +
-    # geom_vline(
-    #     xintercept = example_LOP_lines, 
-    #     color = "gray", linetype = "dashed") +
     geom_line(
-        mapping = aes(x = x, y = y, color = dist),
-        linewidth = 0.8) +
+        mapping = aes(color = distribution, 
+                      linewidth = distribution)) +
     geom_point(
-        data = example_LOP_points,
-        mapping = aes(x = value, y = quantile, color = dist),
-        size = 1.2
-    ) +
-    geom_line(
-        data = example_LOP, 
-        mapping = aes(x = value, y = quantile), 
-        linewidth = 0.8
-    ) + 
-    geom_point(
-        data = example_LOP_points |>
-            group_by(value) |>
-            summarize(quantile = mean(quantile)), 
-        mapping = aes(x = value, y = quantile),
-        size = 1.2
-    ) + 
-    labs(x = "value", y = "cumulative probability (quantile)", 
-         subtitle = "linear pool average") +
-    scale_color_viridis_d(
-        "Distribution",
-        end = 0.9, 
-        labels = c("N(100, 10)"), "N(120, 5)"
-    ) +
+        data = cdf_defined_on_values |>
+            dplyr::filter(distribution != "Q", 
+                          value %in% lop_example_x), 
+        mapping = aes(color = distribution, 
+                      size = distribution)) +
+    coord_cartesian(xlim=c(75, 135)) +
+    labs(x = "value", y = "", 
+         subtitle = "linear pool ensemble") +
+    scale_color_manual(values = c(dist_colors, "black")) +
+    scale_linewidth_manual(values = c(0.8, 0.8, 1.2)) +
+    scale_size_manual(values = c(1.2, 1.2, 1.7)) +
     scale_y_continuous(breaks = quantile_probs, 
                        limits = c(0,1), 
                        expand = c(0,0)) +
-    coord_cartesian(xlim=c(75, 135)) +
-    xlab("Value") + ylab("Probability") +
     theme_bw() +
-    theme(axis.title.y = element_blank(), 
-          legend.position = "bottom", 
+    theme(legend.position = "none", 
           panel.grid.minor = element_blank(), 
           panel.grid.major.x = element_blank())
-pC
 
-pC_inset <- ggplot(data = pdfs |> 
-                       filter(distribution != "Q"),
-                   mapping = aes(x = value, y = prob, 
-                                 color = distribution, 
-                                 linewidth = distribution)) + 
-    geom_line() + 
+pC_inset <- ggplot(data = pdfs_defined_on_values |>
+                       dplyr::filter(distribution != "Q"),
+                   mapping = aes(x = value, y = prob,
+                                 color = distribution)) +
+    geom_line(aes(alpha = distribution,
+                  linewidth = distribution)) +
     coord_cartesian(xlim=c(75, 135)) +
-    scale_color_manual(values = c(viridis::viridis(6)[c(3,6)], "black")) +
-    scale_linewidth_manual(values = c(0.8,0.8,1.2)) +
-    theme_bw() + 
-    theme(axis.text.y = element_blank(), 
-          axis.ticks.y = element_blank(), 
+    scale_alpha_manual(values = c(0.8, 0.8, 1)) +
+    scale_color_manual(values = c(dist_colors, "black")) +
+    scale_linewidth_manual(values = c(0.8, 0.8, 1.2)) +
+    theme_bw() +
+    theme(axis.text.y = element_blank(),
+          axis.ticks.y = element_blank(),
+          axis.title = element_blank(),
           legend.position = "none",
-          panel.grid = element_blank()) 
+          panel.grid = element_blank())
 
-l <- get_legend(pA)
-    
-pC_fin <- ggdraw(pC) + 
-              draw_plot(pC_inset +
-                        theme(plot.margin = unit(0.01*c(1,1,1,1), "cm")),    
-                        .1, .6, .3, .3, 
-                        hjust = 0, vjust = 0)
+pC_fin <- cowplot::ggdraw(pC) + 
+    cowplot::draw_plot(pC_inset +
+                           theme(plot.margin = unit(0.01*c(1,1,1,1), "cm")),    
+                       .19, .6, .3, .3, 
+                       hjust = 0, vjust = 0)
 
-pB_fin <- ggdraw(pB) + 
-              draw_plot(pB_inset + 
-                            theme(plot.margin = unit(0.01*c(1,1,1,1), "cm")),  
-                        .1, .6, .3, .3, 
-                        hjust = 0, vjust = 0)
+# combine into final figure
+l <- cowplot::get_legend(pA)
 
-plot_grid(
-    plot_grid(pA + theme(legend.position = "none"), 
-          pC, 
-          pB,
-          nrow = 1, 
-          rel_widths = c(0.34, 0.33, 0.33)), 
+cowplot::plot_grid(
+    cowplot::plot_grid(pA + theme(legend.position = "none"), 
+                       pB_fin,
+                       pC_fin, 
+                       labels = LETTERS[1:3],
+                       nrow = 1, 
+                       rel_widths = c(0.34, 0.33, 0.33)), 
     l, 
     ncol = 1, rel_heights = c(0.95, 0.05))
-ggsave("test.pdf", width = 10, height = 4)
-
-plot_grid(
-    pA, 
-    plot_grid(pC, pB, pC_inset, pB_inset, nrow = 2)
-)
-ggsave("test2.pdf", width = 8, height = 4)
-
-plot_grid(
-    plot_grid(pA + theme(legend.position = "none"), 
-          pC_fin, 
-          pB_fin,
-          nrow = 1, 
-          rel_widths = c(0.34, 0.33, 0.33)), 
-    l, 
-    ncol = 1, rel_heights = c(0.95, 0.05))
-ggsave("test3.pdf", width = 10, height = 4)
 
 ```
 
