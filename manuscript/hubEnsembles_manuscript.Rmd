@@ -347,31 +347,15 @@ In this section, we illustrate the two main functions in `hubEnsembles`, `simple
 ```{r setup}
 library(dplyr)
 library(tidyr)
-library(ggplot2)
-library(scales)
-library(cowplot)
 library(hubUtils)
+library(hubVis)
 library(hubEnsembles)
 ```
 
 
 ## Example data: a simple forecast hub
 
-The `example-simple-forecast-hub` has been created by the Consortium of Infectious Disease Modeling Hubs as a simple example hub to demonstrate the set up and functionality for the hubverse. The hub includes both example model output data and target data. The model output data includes `quantile`, `mean` and `median` forecasts of future incident hospitalizations, and `pmf` forecasts of the probability that the change in hospitalizations will be a "large decrease", "decrease", "stable", "increase", "large increase". Each forecast is made for X task ID variables, including the date the forecast was made (`origin_date`), the number of steps ahead (`horizon`), the location for which the forecast was made (`location`), and the forecast target (`target`). 
-
-<!-- # EH: A few notes on this: 
-(1) I modified the example hub data to include mean and pmf output types. The mean output type was estimated from 1E4 samples (using distfromq package). The pmf output type was modeled after FluSight (probability of "large_decrease", "decrease", "stable", etc. but the values were randomly generated from a uniform distribution. Does this sound okay? Is it a problem that this won't match the example-hub directly?
-
-(2) As of now, I have not included the cdf output type for inc hosp forecasts because it is difficult to define standard bins. I do, however, see value in including an example with cdf output type. So two potential options for that: 
-    (a) include another target (e.g., peak timing) of cdf output type in this example hub 
-    (b) create a very simple example, say with normal distributions, that will illustrate the fundamental differences between quantile average and linear pool (similar to Fig 2 in my paper, https://royalsocietypublishing.org/doi/10.1098/rsif.2022.0659) I have always found this figure useful, but maybe it is just me! I also think this option could help reinforce the connection between the methods described in the Mathematical Definitions section, and the implementation of each function (i.e., simple_ensemble() applied to quantile is a different method than simple_ensemble() applied to cdf/pmf).
-) -->
-
-<!-- # ELR:
-(1) I think this is OK. We could grab updates forecasts (including categorical targets) from the new flu forecast hub if we wanted to, though. This would not be hard, but would require re-working some aspects of this set up?
-
-(2) Your suggestion makes sense to me. We actually already have an example like this as part of the unit tests for the linear pool, here: https://github.com/Infectious-Disease-Modeling-Hubs/hubEnsembles/blob/80517854361312b81bce43dddf4d767d3a793b45/tests/testthat/test-linear_pool.R#L167.  I also find that plot helpful, and we might also be able to use it to help illustrate the issue with creating a linear pool based on quantile forecasts that I noted above.
--->
+The `example-simple-forecast-hub` has been created by the Consortium of Infectious Disease Modeling Hubs as a simple example hub to demonstrate the set up and functionality for the hubverse. The hub includes both example model output data and target data. The model output data includes `quantile`, `mean` and `median` forecasts of future incident hospitalizations, and `pmf` forecasts of the probability that the change in hospitalizations will be a "large decrease", "decrease", "stable", "increase", "large increase". Each forecast is made for 4 task ID variables, including the date the forecast was made (`origin_date`), the number of steps ahead (`horizon`), the location for which the forecast was made (`location`), and the forecast target (`target`).  
 
 First we load the example model output data and the target data using the `connect_hub()` function from `hubUtils`, another package developed by the Consortium of Infectious Disease Modeling Hubs. 
 
@@ -388,6 +372,32 @@ target_data <- read.csv(target_data_path) %>%
     mutate(time_idx = as.Date(time_idx))
 head(target_data)
 ```
+
+We can plot these forecasts and the target data using the `plot_step_ahead_model_output()` function from `hubVis`, another hubverse package that visualizes model outputs.
+
+```{r plot-ex-mods, fig.width = 8, fig.height = 4, fig.cap = "Sample model output from the example hub. One example forecast of daily US incident COVID-19 hospitalizations is shown for each three models (panels). Forecasts are represented by a median (line) and 50% prediction interval (Q25-Q75)."}
+hubVis::plot_step_ahead_model_output(model_output_data = model_outputs |>
+                                                  dplyr::filter(location == "US",
+                                                                output_type %in% c("median", "mean", "quantile"),
+                                                                origin_date == "2022-12-12") |>
+                                                  dplyr::mutate(target_date =  origin_date + horizon, 
+                                                                output_type_id = as.double(output_type_id)),
+                                              truth_data = target_data |>
+                                                  dplyr::filter(location == "US",
+                                                                time_idx >= "2022-11-01",
+                                                                time_idx <= "2023-03-01"),
+                                              facet = "model_id", 
+                                              facet_nrow = 1, 
+                                              interactive = FALSE,
+                                              intervals = 0.5,
+                                              one_color = "black",
+                                              pal_color = NULL, 
+                                              show_legend = FALSE, 
+                                              use_median_as_point = TRUE,) +
+    theme_bw() +
+    labs(y = "US incident hospitalizations")
+```
+
 
 ## Creating ensembles with `simple_ensemble`
 
@@ -422,47 +432,27 @@ geometric_mean_ens <-  hubEnsembles::simple_ensemble(model_outputs,
 head(geometric_mean_ens)
 ```
 
-As expected, the mean, median, and geometric mean each give us slightly different resulting ensembles. The median point estimates in Figure \@ref(fig:plot-ensembles) demonstrate this. 
+As expected, the mean, median, and geometric mean each give us slightly different resulting ensembles. The median point estimates and 50% prediction intervals (i.e., 25th and 75th quantiles) in Figure \@ref(fig:plot-ensembles) demonstrate this. 
 
-```{r plot-ensembles, fig.cap = 'Plot of three different ensembles (arithmetic mean, geometric mean, and median) for daily COVID-19 incident hospitalizations combining three existing models: simple_hub-baseline (black), UMass-ar (dark gray), and UMass-gbq (light gray). Truth data is plotted in black with daily values shown as points.'}
-plt_all_point_ens <- bind_rows(mean_ens, 
-                               median_ens, 
-                               geometric_mean_ens) %>% 
-    filter(location == "US", 
-           origin_date == "2022-12-12", 
-           output_type == "median") %>%
-    mutate(target_date =  origin_date + horizon, 
-           ens_flag = model_id)
-
-plt_all_point_mod <- model_outputs %>% 
-    filter(location == "US", 
-           origin_date == "2022-12-12", 
-           output_type == "median") %>%
-    mutate(target_date =  origin_date + horizon)
-
-ggplot(data = plt_all_point_ens) + 
-    geom_point(data = target_data %>%
-                   filter(location == "US", 
-                          time_idx >= "2022-10-01",
-                          time_idx <= "2023-03-01"),
-               aes(x = time_idx, y = value)) +
-    geom_line(data = target_data %>%
-                   filter(location == "US", 
-                          time_idx >= "2022-10-01",
-                          time_idx <= "2023-03-01"),
-               aes(x = time_idx, y = value)) +
-    geom_vline(aes(xintercept = as.Date("2022-12-06"))) +
-    geom_line(data = plt_all_point_mod, 
-              aes(x = target_date, y = value, color = model_id), linewidth = 0.9) + 
-    geom_line(aes(x = target_date, y = value, color = model_id), linewidth = 0.9) + 
-    facet_grid(rows = vars(ens_flag)) +
-    scale_color_manual(values = c(rainbow(3), gray(seq(0.2, 0.8,length.out = 3)))) +
-    scale_y_continuous(labels = comma, 
-                       name = "US incident hospitalizations") +
-    theme_bw() + 
-    theme(axis.title.x = element_blank(), 
-          legend.position = "bottom", 
-          legend.title = element_blank())
+```{r plot-ensembles, fig.height = 4, fig.width = 6, fig.cap = 'Three different ensembles for daily US incident COVID-19 hospitalizations. Ensembles combine individual models from the example hub (Fig \\@ref(fig:plot-ex-mods)) using three methods: arithmetic mean (green), geometric mean (purple), and median(orange). All methods correspond to variations of the quantile average approach.'}
+hubVis::plot_step_ahead_model_output(model_output_data = dplyr::bind_rows(mean_ens,
+                                                                          median_ens,
+                                                                          geometric_mean_ens) |>
+                                         dplyr::filter(location == "US",
+                                                       output_type %in% c("median", "mean", "quantile"),
+                                                       origin_date == "2022-12-12") |>
+                                         dplyr::mutate(target_date =  origin_date + horizon, 
+                                                       output_type_id = as.double(output_type_id)),
+                                     truth_data = target_data |>
+                                         dplyr::filter(location == "US",
+                                                       time_idx >= "2022-11-01",
+                                                       time_idx <= "2023-03-01"),
+                                     use_median_as_point = TRUE,
+                                     interactive = FALSE,
+                                     intervals = 0.5,
+                                     show_legend = TRUE) +
+    theme_bw() +
+    labs(y = "US incident hospitalizations")
 ```
 
 <!-- # EH: I don't love the color scheme here... it's especially hard to see the baseline model. -->
@@ -483,101 +473,42 @@ head(weighted_mean_ens)
 
 ## Creating ensembles with `linear_pool`
 
-We can also generate a linear pool ensemble, or distributional mixture, using the `linear_pool()` function; this function can only be applied to predictions with an `output_type` of `mean`, `quantile`, `cdf`, or `pmf`. Our example hub includes `median` output type, so we exclude it from the calculation. 
+We can also generate a linear pool ensemble, or distributional mixture, using the `linear_pool()` function; this function can only be applied to predictions with an `output_type` of `mean`, `quantile`, `cdf`, or `pmf`. Our example hub includes `median` output type, so we exclude it from the calculation; however we can add it back using Q50.  
 
 ```{r}
 linear_pool_ens <- hubEnsembles::linear_pool(model_outputs %>%
                                                  filter(output_type != "median"), 
                                              model_id = "hub-ensemble-linear-pool")
 head(linear_pool_ens)
+
+linear_pool_ens <- linear_pool_ens |>
+    bind_rows(linear_pool_ens |>
+                  filter(output_type_id == 0.5) |>
+                  mutate(output_type = "median", 
+                         output_type_id = NA))
 ```
 
 As described above, for `quantile` model outputs, the `linear_pool` function approximates the full probability distribution for each component prediction using the value-quantile pairs provided by that model model, and then obtains quasi-random samples from that distributional estimate. The number of samples drawn from the distribution of each component model defaults to `1e4`, but this can be changed using the `n_samples` argument. 
 
-```{r}
-plt_model_outputs = model_outputs %>%
-    filter(location == "US", 
-           origin_date == "2022-12-12", 
-           output_type == "quantile", 
-           output_type_id %in% c(0.05, 0.25, 0.5, 0.75, 0.95)) %>%
-    mutate(target_date =  origin_date + horizon, 
-           output_type_id = paste0("Q", as.numeric(output_type_id)*100)) %>%
-    spread(output_type_id, value)
-    
-plt_ens_outputs <- bind_rows(
-    mean_ens %>% 
-        filter(location == "US", 
-               origin_date == "2022-12-12", 
-               output_type == "quantile", 
-               output_type_id %in% c(0.05, 0.25, 0.5, 0.75, 0.95)) %>%
-        mutate(target_date =  origin_date + horizon, 
-               output_type_id = paste0("Q", as.numeric(output_type_id)*100), 
-               ens_fn = "simple_ensemble"), 
-    linear_pool_ens %>% 
-        filter(location == "US", 
-               origin_date == "2022-12-12", 
-               output_type == "quantile", 
-               output_type_id %in% c(0.05, 0.25, 0.5, 0.75, 0.95)) %>%
-        mutate(target_date =  origin_date + horizon, 
-               output_type_id = paste0("Q", as.numeric(output_type_id)*100), 
-               ens_fn = "linear_pool")
-) %>%
-    spread(output_type_id, value)
-
-lims = c(min(c(plt_model_outputs$Q5, plt_ens_outputs$Q5)), 
-         max(c(plt_model_outputs$Q95, plt_ens_outputs$Q95)))
-
-p1 = ggplot(data = plt_model_outputs, 
-            aes(x = target_date)) + 
-    geom_point(data = target_data %>%
-                   filter(location == "US", 
-                          time_idx >= "2022-10-01",
-                          time_idx <= "2023-03-01"),
-               aes(x = time_idx, y = value)) +
-    geom_line(data = target_data %>%
-                  filter(location == "US", 
-                         time_idx >= "2022-10-01",
-                         time_idx <= "2023-03-01"),
-              aes(x = time_idx, y = value)) +
-    geom_vline(aes(xintercept = as.Date("2022-12-06"))) +
-    geom_ribbon(aes(ymin = Q5, ymax = Q95), alpha = 0.2) + 
-    geom_ribbon(aes(ymin = Q25, ymax = Q75), alpha = 0.2) + 
-    geom_line(aes(y = Q50), size = 0.9) +
-    facet_wrap(vars(model_id), ncol = 1)+
-    scale_y_continuous(labels = comma, 
-                       limits = lims,
-                       name = "US incident hospitalizations") +
+```{r plot-ex-quantile-and-linear-pool, fig.width = 6, fig.height = 4, fig.cap = "Comparison of quantile average (red) and linear pool (blue) ensembles for daily US incident COVID-19 hospitalizations. Ensmebles combine individual models from the example hub (Fig \\@ref(fig:plot-ex-mods))."}
+hubVis::plot_step_ahead_model_output(model_output_data = dplyr::bind_rows(mean_ens,
+                                                                          linear_pool_ens) |>
+                                         dplyr::filter(location == "US",
+                                                       output_type %in% c("median", "mean", "quantile"),
+                                                       origin_date == "2022-12-12") |>
+                                         dplyr::mutate(target_date =  origin_date + horizon, 
+                                                       output_type_id = as.double(output_type_id)),
+                                     truth_data = target_data |>
+                                         dplyr::filter(location == "US",
+                                                       time_idx >= "2022-11-01",
+                                                       time_idx <= "2023-03-01"),
+                                     use_median_as_point = TRUE,
+                                     interactive = FALSE,
+                                     intervals = 0.5,
+                                     pal_color = "Set1",
+                                     show_legend = TRUE) +
     theme_bw() +
-    theme(axis.title.x = element_blank(), 
-          legend.position = "none", 
-          legend.title = element_blank())
-    
-p2 = ggplot(data = plt_ens_outputs, 
-            aes(x = target_date)) + 
-    geom_point(data = target_data %>%
-                   filter(location == "US", 
-                          time_idx >= "2022-10-01",
-                          time_idx <= "2023-03-01"),
-               aes(x = time_idx, y = value)) +
-    geom_line(data = target_data %>%
-                   filter(location == "US", 
-                          time_idx >= "2022-10-01",
-                          time_idx <= "2023-03-01"),
-               aes(x = time_idx, y = value)) +
-    geom_vline(aes(xintercept = as.Date("2022-12-06"))) +
-    geom_ribbon(aes(ymin = Q5, ymax = Q95, fill = model_id), alpha = 0.2) + 
-    geom_ribbon(aes(ymin = Q25, ymax = Q75, fill = model_id), alpha = 0.2) + 
-    geom_line(aes(y = Q50, color = model_id), size = 0.9) +
-    scale_y_continuous(labels = comma, 
-                       limits = lims,
-                       name = "US incident hospitalizations") +
-    theme_bw() +
-    theme(axis.title.x = element_blank(), 
-          legend.position = "bottom", 
-          legend.title = element_blank())
-
-plot_grid(p1, p2, 
-          align = "h", axis = "b")
+    labs(y = "US incident hospitalizations")
 ```
 
 
