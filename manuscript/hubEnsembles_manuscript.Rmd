@@ -423,10 +423,11 @@ hubVis::plot_step_ahead_model_output(model_output_data = model_outputs |>
 We can generate an equally weighted mean ensemble for each unique combination of values for the task ID variables (here, `origin_date`, `horizon`, `location`, and `target`), the `output_type` and the `output_type_id`. Note that this means that different ensemble methods are used for different output types: for the `quantile` output type in our example data, the resulting ensemble is a quantile average, while for the `pmf` output type, the ensemble is a linear pool.
 
 ```{r}
-mean_ens <- hubEnsembles::simple_ensemble(model_outputs)
+mean_ens <- hubEnsembles::simple_ensemble(model_outputs, 
+                                            model_id = "simple-ensemble-mean")
 ```
 
-The resulting model output has the same structure as the original model output data, with columns for the model ID, task ID variables, output type, output type ID, and value.
+The resulting model output has the same structure as the original model output data, with columns for the model ID, task ID variables, output type, output type ID, and value. We will also use `model_id = "simple-ensemble` to change the name of this ensemble in the resulting data frame; if not specified, the default will be "hub-ensemble".
 ```{r}
 head(mean_ens |>
          dplyr::filter(output_type %in% c("quantile","median"), 
@@ -438,16 +439,12 @@ head(mean_ens |>
 
 ### Changing the aggregation function
 
-We can change the function that is used to aggregate model outputs. For example, we may want to calculate a median of component model submitted values for each quantile. We do so by specifying `agg_fun = median`. We will also use `model_id = "hub-ensemble-median` to change the name of this ensemble in the resulting data frame.
+We can change the function that is used to aggregate model outputs. For example, we may want to calculate a median of component model submitted values for each quantile. We do so by specifying `agg_fun = median`. 
 
 ```{r}
 median_ens <- hubEnsembles::simple_ensemble(model_outputs, 
                                             agg_fun = median, 
-                                            model_id = "hub-ensemble-median")
-
-median_ens |>
-    pull(model_id) |>
-    unique()
+                                            model_id = "simple-ensemble-median")
 ```
 Custom functions can also be passed into the `agg_fun` argument. For example, in some circumstances a geometric mean may be a more appropriate way to combine component model outputs; here we define a custom function `geometric_mean()` to do so. Any custom function to be used requires an argument `x` for the vector of numeric values to summarize, and if relevant, an argument `w` of numeric weights. Then, we can use this custom function to ensemble the component model outputs, again using `agg_fun = geometric_mean`.
 
@@ -459,12 +456,12 @@ geometric_mean <- function(x){
 
 geometric_mean_ens <-  hubEnsembles::simple_ensemble(model_outputs, 
                                                      agg_fun = geometric_mean, 
-                                                     model_id = "hub-ensemble-geometric")
+                                                     model_id = "simple-ensemble-geometric")
 ```
 
 As expected, the mean, median, and geometric mean each give us slightly different resulting ensembles. The median point estimates and 50% prediction intervals in Figure \@ref(fig:plot-ensembles) demonstrate this. 
 
-```{r plot-ensembles, fig.height = 4, fig.width = 6, fig.cap = 'Three different ensembles for daily US incident COVID-19 hospitalizations. Each ensemble combines individual predictions from the example hub (Fig \\@ref(fig:plot-ex-mods)) using three methods: arithmetic mean (green), geometric mean (purple), and median(orange). All methods correspond to variations of the quantile average approach.'}
+```{r plot-ensembles, fig.height = 4, fig.width = 6, fig.cap = 'Three different ensembles for daily US incident COVID-19 hospitalizations. Each ensemble combines individual predictions from the example hub (Fig \\@ref(fig:plot-ex-mods)) using three methods: arithmetic mean (green), geometric mean (purple), and median (orange). All methods correspond to variations of the quantile average approach.'}
 hubVis::plot_step_ahead_model_output(model_output_data = dplyr::bind_rows(mean_ens,
                                                                           median_ens,
                                                                           geometric_mean_ens) |>
@@ -495,7 +492,7 @@ model_weights <- data.frame(model_id = c("UMass-ar", "UMass-gbq", "simple_hub-ba
 
 weighted_mean_ens <- hubEnsembles::simple_ensemble(model_outputs, 
                                                    weights = model_weights, 
-                                                   model_id = "hub-ensemble-weighted-mean")
+                                                   model_id = "simple-ensemble-weighted-mean")
 ```
 
 ## Creating ensembles with `linear_pool`
@@ -505,13 +502,38 @@ We can also generate a linear pool ensemble, or distributional mixture, using th
 ```{r}
 linear_pool_ens <- hubEnsembles::linear_pool(model_outputs |>
                                                  dplyr::filter(output_type != "median"), 
-                                             model_id = "hub-ensemble-linear-pool")
+                                             model_id = "linear-pool")
 ```
 
-As described above, for `quantile` model outputs, the `linear_pool` function approximates the full probability distribution for each component prediction using the value-quantile pairs provided by that model model, and then obtains quasi-random samples from that distributional estimate. The number of samples drawn from the distribution of each component model defaults to `1e4`, but this can be changed using the `n_samples` argument. 
+As described above, for `quantile` model outputs, the `linear_pool` function approximates the full probability distribution for each component prediction using the value-quantile pairs provided by that model, and then obtains quasi-random samples from that distributional estimate. The number of samples drawn from the distribution of each component model defaults to `1e4`, but this can be changed using the `n_samples` argument.
 
-```{r plot-ex-quantile-and-linear-pool, fig.width = 6, fig.height = 4, fig.cap = "Comparison of quantile average (red) and linear pool (blue) ensembles for daily US incident COVID-19 hospitalizations. Ensmebles combine individual models from the example hub (Fig \\@ref(fig:plot-ex-mods))."}
-hubVis::plot_step_ahead_model_output(model_output_data = dplyr::bind_rows(mean_ens,
+In Figure \@ref(fig:plot-ex-quantile-and-linear-pool), we compare ensemble results generated by `simple_ensemble` and `linear_pool` for model outputs of type PMF and quantile. As expected, the results from the two functions are equivalent for the PMF output type (because averaging probability bins is the definition of the linear pool method). This is not the case for the quantile output type, because the simple_ensemble is computing a quantile average.
+
+```{r plot-ex-quantile-and-linear-pool, echo = FALSE, fig.width = 10, fig.height = 4, fig.cap = "Comparison of results from `simple_ensemble` (blue) and `linear pool` (red). (Panel A) Ensemble predictions of 1-week change in US incident hospitalizations (classified as large decrease, decrease, stable, increase, large increase), which provide an example of PMF output type. (Panel B) Ensemble predictions of daily US incident COVID-19 hospitalizations, which provide an example of quantile output type. Note, for quantile output type, `simple_ensemble` corresponds to a quantile average.  Ensembles combine individual models from the example hub (Fig \\@ref(fig:plot-ex-mods))."}
+
+p1 <- dplyr::bind_rows(mean_ens,
+                       linear_pool_ens) |>
+    dplyr::filter(output_type == "pmf", 
+                  origin_date == "2022-12-12", 
+                  horizon == 7,
+                  location == "US") |>
+    dplyr::mutate(output_type_id = gsub("_", " ", output_type_id)) |>
+    dplyr::mutate(output_type_id = factor(output_type_id,
+                                          levels = c("large decrease", 
+                                                     "decrease", 
+                                                     "stable", 
+                                                     "increase", 
+                                                     "large increase"))) |>
+    ggplot(aes(x = output_type_id, y = value, fill = model_id)) + 
+    geom_bar(stat="identity", position = "dodge") + 
+    labs(x = "1-week change in US incident hospitalizations", 
+         y = "probability") + 
+    scale_fill_brewer(palette = "Set1") +
+    theme_bw() + 
+    theme(legend.position = "bottom", 
+          legend.title = element_blank())
+
+p2 <- hubVis::plot_step_ahead_model_output(model_output_data = dplyr::bind_rows(mean_ens,
                                                                           linear_pool_ens |>
                                                                               dplyr::bind_rows(linear_pool_ens |>
                                                                                                    dplyr::filter(output_type_id == 0.5) |>
@@ -533,6 +555,21 @@ hubVis::plot_step_ahead_model_output(model_output_data = dplyr::bind_rows(mean_e
                                      show_legend = TRUE) +
     theme_bw() +
     labs(y = "US incident hospitalizations")
+
+
+
+l <- cowplot::get_legend(p1)
+
+cowplot::plot_grid(
+    cowplot::plot_grid(p1 + 
+                           labs(subtitle = "example PMF output type") +
+                           theme(legend.position = "none"), 
+                       p2 + 
+                           labs(subtitle = "example quantile output type") + 
+                           theme(legend.position = "none"),
+                       labels = LETTERS[1:2]),
+    l, ncol = 1,rel_heights = c(0.95, 0.05)
+)
 ```
 
 
