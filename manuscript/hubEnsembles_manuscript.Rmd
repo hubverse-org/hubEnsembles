@@ -78,11 +78,12 @@ readr::read_rds("data/flu_forecasts_raw.rds") |>
     task_id_cols = c("timezero", "location", "horizon", "target"),
     remove_empty = TRUE
   ) |>
-  dplyr::filter(unit == "US") |>
+  dplyr::filter(unit == "US", 
+                  output_type_id %in% c(0.01, 0.1, 0.25, 0.5, 0.75, 0.9, 0.99)) |>
   dplyr::rename(reference_date=timezero, location=unit) |>
   dplyr::select(-season) |>
   head() |>
-  knitr::kable(caption="Example of forecasts for weekly incident flu hospitalizations, formatted according to hubverse standards.")
+  knitr::kable(caption="Example of forecasts for weekly incident flu hospitalizations, formatted according to hubverse standards. Forecast median and 50%, 80%, and 98% prediction intervals are shown.")
 ```
 
 Alternatively, longer-term scenario projections for incident COVID-19 hospitalizations in the US at different locations, amounts of time in the future, and under different assumed conditions may use the following task ID columns: a `target` of "incident COVID-19 hospitalizations", a `location` column specifying the location being predicted, an `origin_date` on which the projections were made, a `horizon` describing the number of steps ahead that the projection is predicting relative to the `origin_date`, and a `scenario_id` denoting under what circumstances would likely result in the protected number of incident hospitalizations. Different modeling efforts may use different sets of task ID columns and values to specify their prediction goals. Additional examples of task ID variables are available on the [hubverse documentation website](https://hubdocs.readthedocs.io/en/latest/user-guide/tasks.html).

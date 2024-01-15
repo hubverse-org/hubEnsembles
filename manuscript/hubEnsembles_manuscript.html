@@ -397,8 +397,8 @@ f_{LOP}(x) &amp;= \sum_{i = 1}^Nw_if_i(x).
 <h2><span class="header-section-number">3.1</span> Hubverse terminology and conventions</h2>
 <p>Model output is a central concept in the <code>hubEnsembles</code> package which generally refers to a specially formatted tabular representation of predictions produced by a modeling team. Each row represents a single, unique prediction with each column providing information about what is being predicted, its scope, and its value. Per hubverse convention, the columns may be broken down into task IDs, specification of the model output representation, and the model ID <span class="citation">(Infectious Disease Modeling Hubs 2022)</span>. <!--#ELR: or `model_id`, if we want to name the specific column --></p>
 <p>At minimum the task IDs (also called task ID variables) together specify the desired outcome being predicted, but they may also include additional information, such as any conditions or assumptions that were used to generate the predictions <span class="citation">(Infectious Disease Modeling Hubs 2022)</span>. For example, short-term forecasts of incident influenza hospitalizations in the US at different locations and amounts of time in the future (see Table <a href="#tab:flu-forecasts">3.1</a> below) might represent this information using a <code>target</code> column with the value “wk ahead inc flu hosp”, a <code>location</code> column identifying the location being predicted, a <code>reference_date</code> column with the “starting point” of the forecasts, and a <code>horizon</code> column with the number of steps ahead that the forecast is predicting relative to the <code>reference_date</code>. All these variables make up the task ID columns <span class="citation">(Infectious Disease Modeling Hubs 2022)</span>.</p>
-<table>
-<caption><span id="tab:flu-forecasts">Table 3.1: </span>Example of forecasts for weekly incident flu hospitalizations, formatted according to hubverse standards.</caption>
+<table style="width:100%;">
+<caption><span id="tab:flu-forecasts">Table 3.1: </span>Example of forecasts for weekly incident flu hospitalizations, formatted according to hubverse standards. Forecast median and 50%, 80%, and 98% prediction intervals are shown.</caption>
 <colgroup>
 <col width="14%" />
 <col width="14%" />
@@ -407,7 +407,7 @@ f_{LOP}(x) &amp;= \sum_{i = 1}^Nw_if_i(x).
 <col width="20%" />
 <col width="11%" />
 <col width="14%" />
-<col width="8%" />
+<col width="9%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -429,7 +429,7 @@ f_{LOP}(x) &amp;= \sum_{i = 1}^Nw_if_i(x).
 <td align="right">1</td>
 <td align="left">wk ahead inc flu hosp</td>
 <td align="left">quantile</td>
-<td align="right">0.010</td>
+<td align="right">0.01</td>
 <td align="right">161.7159</td>
 </tr>
 <tr class="even">
@@ -439,27 +439,7 @@ f_{LOP}(x) &amp;= \sum_{i = 1}^Nw_if_i(x).
 <td align="right">1</td>
 <td align="left">wk ahead inc flu hosp</td>
 <td align="left">quantile</td>
-<td align="right">0.025</td>
-<td align="right">271.6114</td>
-</tr>
-<tr class="odd">
-<td align="left">CMU-TimeSeries</td>
-<td align="left">2023-05-15</td>
-<td align="left">US</td>
-<td align="right">1</td>
-<td align="left">wk ahead inc flu hosp</td>
-<td align="left">quantile</td>
-<td align="right">0.050</td>
-<td align="right">408.8449</td>
-</tr>
-<tr class="even">
-<td align="left">CMU-TimeSeries</td>
-<td align="left">2023-05-15</td>
-<td align="left">US</td>
-<td align="right">1</td>
-<td align="left">wk ahead inc flu hosp</td>
-<td align="left">quantile</td>
-<td align="right">0.100</td>
+<td align="right">0.10</td>
 <td align="right">551.9048</td>
 </tr>
 <tr class="odd">
@@ -469,8 +449,8 @@ f_{LOP}(x) &amp;= \sum_{i = 1}^Nw_if_i(x).
 <td align="right">1</td>
 <td align="left">wk ahead inc flu hosp</td>
 <td align="left">quantile</td>
-<td align="right">0.150</td>
-<td align="right">642.7793</td>
+<td align="right">0.25</td>
+<td align="right">770.3606</td>
 </tr>
 <tr class="even">
 <td align="left">CMU-TimeSeries</td>
@@ -479,8 +459,28 @@ f_{LOP}(x) &amp;= \sum_{i = 1}^Nw_if_i(x).
 <td align="right">1</td>
 <td align="left">wk ahead inc flu hosp</td>
 <td align="left">quantile</td>
-<td align="right">0.200</td>
-<td align="right">712.5255</td>
+<td align="right">0.50</td>
+<td align="right">982.6212</td>
+</tr>
+<tr class="odd">
+<td align="left">CMU-TimeSeries</td>
+<td align="left">2023-05-15</td>
+<td align="left">US</td>
+<td align="right">1</td>
+<td align="left">wk ahead inc flu hosp</td>
+<td align="left">quantile</td>
+<td align="right">0.75</td>
+<td align="right">1258.2589</td>
+</tr>
+<tr class="even">
+<td align="left">CMU-TimeSeries</td>
+<td align="left">2023-05-15</td>
+<td align="left">US</td>
+<td align="right">1</td>
+<td align="left">wk ahead inc flu hosp</td>
+<td align="left">quantile</td>
+<td align="right">0.90</td>
+<td align="right">1637.5332</td>
 </tr>
 </tbody>
 </table>
