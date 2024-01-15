@@ -573,35 +573,47 @@ library(hubVis)
 library(hubEnsembles)</code></pre>
 <div id="example-data-a-simple-forecast-hub" class="section level2" number="4.1">
 <h2><span class="header-section-number">4.1</span> Example data: a simple forecast hub</h2>
-<p>The <code>example-simple-forecast-hub</code> has been created by the Consortium of Infectious Disease Modeling Hubs as a simple example hub to demonstrate the set up and functionality for the hubverse. The hub includes both example model output data and target data. The model output data includes <code>quantile</code>, <code>mean</code> and <code>median</code> forecasts of future incident hospitalizations, and <code>pmf</code> forecasts of the probability that the change in hospitalizations will be a “large decrease”, “decrease”, “stable”, “increase”, “large increase”. Each forecast is made for 4 task ID variables, including the date the forecast was made (<code>origin_date</code>), the number of steps ahead (<code>horizon</code>), the location for which the forecast was made (<code>location</code>), and the forecast target (<code>target</code>).</p>
+<p>The <code>example-simple-forecast-hub</code> has been created by the Consortium of Infectious Disease Modeling Hubs as a simple example hub to demonstrate the set up and functionality for the hubverse. The hub includes both example model output data and target data. The model output data includes <code>quantile</code>, <code>mean</code> and <code>median</code> forecasts of future incident hospitalizations, and <code>pmf</code> forecasts of the probability that the change in hospitalizations will be a “large decrease”, “decrease”, “stable”, “increase”, “large increase”.</p>
 <p>First we load the example model output data and the target data using the <code>connect_hub()</code> function from <code>hubUtils</code>, another package developed by the Consortium of Infectious Disease Modeling Hubs.</p>
 <pre class="r"><code>hub_path &lt;- system.file(&quot;example-data/example-simple-forecast-hub&quot;,
                         package = &quot;hubEnsembles&quot;)
 
 model_outputs &lt;- hubUtils::connect_hub(hub_path) |&gt;
-    dplyr::collect()
-head(model_outputs)
-## # A tibble: 6 × 8
-##   origin_date horizon location target  output_type output_type_id value model_id
-##   &lt;date&gt;        &lt;int&gt; &lt;chr&gt;    &lt;chr&gt;   &lt;chr&gt;       &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt;   
-## 1 2022-12-05       -6 20       inc co… quantile    0.01              22 UMass-ar
-## 2 2022-12-05       -6 20       inc co… quantile    0.025             24 UMass-ar
-## 3 2022-12-05       -6 20       inc co… quantile    0.05              26 UMass-ar
-## 4 2022-12-05       -6 20       inc co… quantile    0.1               28 UMass-ar
-## 5 2022-12-05       -6 20       inc co… quantile    0.15              30 UMass-ar
-## 6 2022-12-05       -6 20       inc co… quantile    0.2               32 UMass-ar
+  dplyr::collect()
 
 target_data_path &lt;- file.path(hub_path, &quot;target-data&quot;, &quot;covid-hospitalizations.csv&quot;)
+
 target_data &lt;- read.csv(target_data_path) |&gt;
-    mutate(time_idx = as.Date(time_idx))
-head(target_data)
+    dplyr::mutate(time_idx = as.Date(time_idx))</code></pre>
+<p>Each forecast is made for four task ID variables, including the date the forecast was made (<code>origin_date</code>), the number of steps ahead (<code>horizon</code>), the location for which the forecast was made (<code>location</code>), and the forecast target (<code>target</code>). Below is an example from a single model, UMass-ar, for the 1-week ahead forecast of US incident hospitalizations made on December 12, 2022. We print only the median and the 50%, 80%, and 98% prediction intervals, though other intervals and output types are included.</p>
+<pre class="r"><code>head(model_outputs|&gt;
+         dplyr::filter(output_type %in% c(&quot;quantile&quot;,&quot;median&quot;), 
+                       output_type_id %in% c(0.01, 0.1, 0.25, 0.75, 0.9, 0.99, NA),
+                       origin_date == &quot;2022-12-12&quot;, 
+                       location == &quot;US&quot;,
+                       horizon == 7), 
+     n = 7L)
+## # A tibble: 7 × 8
+##   origin_date horizon location target  output_type output_type_id value model_id
+##   &lt;date&gt;        &lt;int&gt; &lt;chr&gt;    &lt;chr&gt;   &lt;chr&gt;       &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt;   
+## 1 2022-12-12        7 US       inc co… quantile    0.01            4205 UMass-ar
+## 2 2022-12-12        7 US       inc co… quantile    0.1             5599 UMass-ar
+## 3 2022-12-12        7 US       inc co… quantile    0.25            6378 UMass-ar
+## 4 2022-12-12        7 US       inc co… quantile    0.75            8533 UMass-ar
+## 5 2022-12-12        7 US       inc co… quantile    0.9             9539 UMass-ar
+## 6 2022-12-12        7 US       inc co… quantile    0.99           11801 UMass-ar
+## 7 2022-12-12        7 US       inc co… median      &lt;NA&gt;            7403 UMass-ar</code></pre>
+<p>The target data provides the observed value (<code>value</code>) for the forecast target (<code>target</code>) on a given single day (<code>time_idx</code>) and in a given location (<code>location</code>).</p>
+<pre class="r"><code>head(target_data |&gt; 
+         dplyr::filter(location == &quot;US&quot;, 
+                       time_idx &gt;= &quot;2022-12-12&quot;))
 ##     time_idx location value         target
-## 1 2021-03-21       46    12 inc covid hosp
-## 2 2021-03-04       45    82 inc covid hosp
-## 3 2021-02-26       46     7 inc covid hosp
-## 4 2021-02-20       44    21 inc covid hosp
-## 5 2021-02-09       44    19 inc covid hosp
-## 6 2021-01-25       25   224 inc covid hosp</code></pre>
+## 1 2022-12-12       US  5629 inc covid hosp
+## 2 2022-12-13       US  5556 inc covid hosp
+## 3 2022-12-14       US  5799 inc covid hosp
+## 4 2022-12-15       US  5680 inc covid hosp
+## 5 2022-12-16       US  5570 inc covid hosp
+## 6 2022-12-17       US  5034 inc covid hosp</code></pre>
 <p>We can plot these forecasts and the target data using the <code>plot_step_ahead_model_output()</code> function from <code>hubVis</code>, another hubverse package that visualizes model outputs.</p>
 <pre class="r"><code>hubVis::plot_step_ahead_model_output(model_output_data = model_outputs |&gt;
                                                   dplyr::filter(location == &quot;US&quot;,
@@ -633,33 +645,29 @@ Figure 4.1: Sample model output from the example hub. One example forecast of da
 <div id="creating-ensembles-with-simple_ensemble" class="section level2" number="4.2">
 <h2><span class="header-section-number">4.2</span> Creating ensembles with <code>simple_ensemble</code></h2>
 <p>We can generate an equally weighted mean ensemble for each unique combination of values for the task ID variables (here, <code>origin_date</code>, <code>horizon</code>, <code>location</code>, and <code>target</code>), the <code>output_type</code> and the <code>output_type_id</code>. Note that this means that different ensemble methods are used for different output types: for the <code>quantile</code> output type in our example data, the resulting ensemble is a quantile average, while for the <code>pmf</code> output type, the ensemble is a linear pool.</p>
-<pre class="r"><code>mean_ens &lt;- hubEnsembles::simple_ensemble(model_outputs)
-head(mean_ens)
+<pre class="r"><code>mean_ens &lt;- hubEnsembles::simple_ensemble(model_outputs)</code></pre>
+<p>The resulting model output has the same structure as the original model output data, with columns for the task ID variables, output type, output type ID, and the model ID.</p>
+<pre class="r"><code>head(mean_ens |&gt;
+         dplyr::filter(output_type %in% c(&quot;quantile&quot;,&quot;median&quot;), 
+                       output_type_id %in% c(0.01, 0.1, 0.25, 0.75, 0.9, 0.99, NA),
+                       origin_date == &quot;2022-12-12&quot;, 
+                       location == &quot;US&quot;,
+                       horizon == 7))
 ## # A tibble: 6 × 8
-##   model_id origin_date horizon location target output_type output_type_id  value
-##   &lt;chr&gt;    &lt;date&gt;        &lt;int&gt; &lt;chr&gt;    &lt;chr&gt;  &lt;chr&gt;       &lt;chr&gt;           &lt;dbl&gt;
-## 1 hub-ens… 2022-12-05       -6 20       inc c… mean        &lt;NA&gt;           38.1  
-## 2 hub-ens… 2022-12-05       -6 20       inc c… median      &lt;NA&gt;           37.3  
-## 3 hub-ens… 2022-12-05       -6 20       inc c… pmf         decrease        0.181
-## 4 hub-ens… 2022-12-05       -6 20       inc c… pmf         increase        0.307
-## 5 hub-ens… 2022-12-05       -6 20       inc c… pmf         large_decrease  0.219
-## 6 hub-ens… 2022-12-05       -6 20       inc c… pmf         large_increase  0.197</code></pre>
+##   model_id  origin_date horizon location target output_type output_type_id value
+##   &lt;chr&gt;     &lt;date&gt;        &lt;int&gt; &lt;chr&gt;    &lt;chr&gt;  &lt;chr&gt;       &lt;chr&gt;          &lt;dbl&gt;
+## 1 hub-ense… 2022-12-12        7 US       inc c… median      &lt;NA&gt;           6604.
+## 2 hub-ense… 2022-12-12        7 US       inc c… quantile    0.01           2291.
+## 3 hub-ense… 2022-12-12        7 US       inc c… quantile    0.1            4224.
+## 4 hub-ense… 2022-12-12        7 US       inc c… quantile    0.25           5415.
+## 5 hub-ense… 2022-12-12        7 US       inc c… quantile    0.75           7846.
+## 6 hub-ense… 2022-12-12        7 US       inc c… quantile    0.9            9189</code></pre>
 <div id="changing-the-aggregation-function" class="section level3" number="4.2.1">
 <h3><span class="header-section-number">4.2.1</span> Changing the aggregation function</h3>
 <p>We can change the function that is used to aggregate model outputs. For example, we may want to calculate a median of component model submitted values for each quantile. We do so by specifying <code>agg_fun = median</code>. We will also use <code>model_id = &quot;hub-ensemble-median</code> to change the name of this ensemble in the resulting data frame.</p>
 <pre class="r"><code>median_ens &lt;- hubEnsembles::simple_ensemble(model_outputs, 
                                             agg_fun = median, 
-                                            model_id = &quot;hub-ensemble-median&quot;)
-head(median_ens)
-## # A tibble: 6 × 8
-##   model_id origin_date horizon location target output_type output_type_id  value
-##   &lt;chr&gt;    &lt;date&gt;        &lt;int&gt; &lt;chr&gt;    &lt;chr&gt;  &lt;chr&gt;       &lt;chr&gt;           &lt;dbl&gt;
-## 1 hub-ens… 2022-12-05       -6 20       inc c… mean        &lt;NA&gt;           37.5  
-## 2 hub-ens… 2022-12-05       -6 20       inc c… median      &lt;NA&gt;           37    
-## 3 hub-ens… 2022-12-05       -6 20       inc c… pmf         decrease        0.146
-## 4 hub-ens… 2022-12-05       -6 20       inc c… pmf         increase        0.341
-## 5 hub-ens… 2022-12-05       -6 20       inc c… pmf         large_decrease  0.230
-## 6 hub-ens… 2022-12-05       -6 20       inc c… pmf         large_increase  0.202</code></pre>
+                                            model_id = &quot;hub-ensemble-median&quot;)</code></pre>
 <p>Custom functions can also be passed into the <code>agg_fun</code> argument. For example, in some circumstances a geometric mean may be a more appropriate way to combine component model outputs; here we define a custom function <code>geometric_mean()</code> to do so. Any custom function to be used requires an argument <code>x</code> for the vector of numeric values to summarize, and if relevant, an argument <code>w</code> of numeric weights. Then, we can use this custom function to ensemble the component model outputs, again using <code>agg_fun = geometric_mean</code>.</p>
 <pre class="r"><code>geometric_mean &lt;- function(x){
     n &lt;- length(x)
@@ -668,17 +676,7 @@ head(median_ens)
 
 geometric_mean_ens &lt;-  hubEnsembles::simple_ensemble(model_outputs, 
                                                      agg_fun = geometric_mean, 
-                                                     model_id = &quot;hub-ensemble-geometric&quot;)
-head(geometric_mean_ens)
-## # A tibble: 6 × 8
-##   model_id origin_date horizon location target output_type output_type_id  value
-##   &lt;chr&gt;    &lt;date&gt;        &lt;int&gt; &lt;chr&gt;    &lt;chr&gt;  &lt;chr&gt;       &lt;chr&gt;           &lt;dbl&gt;
-## 1 hub-ens… 2022-12-05       -6 20       inc c… mean        &lt;NA&gt;           38.1  
-## 2 hub-ens… 2022-12-05       -6 20       inc c… median      &lt;NA&gt;           37.3  
-## 3 hub-ens… 2022-12-05       -6 20       inc c… pmf         decrease        0.173
-## 4 hub-ens… 2022-12-05       -6 20       inc c… pmf         increase        0.298
-## 5 hub-ens… 2022-12-05       -6 20       inc c… pmf         large_decrease  0.217
-## 6 hub-ens… 2022-12-05       -6 20       inc c… pmf         large_increase  0.192</code></pre>
+                                                     model_id = &quot;hub-ensemble-geometric&quot;)</code></pre>
 <p>As expected, the mean, median, and geometric mean each give us slightly different resulting ensembles. The median point estimates and 50% prediction intervals (i.e., 25th and 75th quantiles) in Figure <a href="#fig:plot-ensembles">4.2</a> demonstrate this.</p>
 <pre class="r"><code>hubVis::plot_step_ahead_model_output(model_output_data = dplyr::bind_rows(mean_ens,
                                                                           median_ens,
@@ -704,7 +702,6 @@ head(geometric_mean_ens)
 Figure 4.2: Three different ensembles for daily US incident COVID-19 hospitalizations. Ensembles combine individual models from the example hub (Fig <a href="#fig:plot-ex-mods">4.1</a>) using three methods: arithmetic mean (green), geometric mean (purple), and median(orange). All methods correspond to variations of the quantile average approach.
 </p>
 </div>
-<!-- # EH: I don't love the color scheme here... it's especially hard to see the baseline model. -->
 </div>
 <div id="weighting-model-contributions" class="section level3" number="4.2.2">
 <h3><span class="header-section-number">4.2.2</span> Weighting model contributions</h3>
@@ -714,44 +711,22 @@ Figure 4.2: Three different ensembles for daily US incident COVID-19 hospitaliza
 
 weighted_mean_ens &lt;- hubEnsembles::simple_ensemble(model_outputs, 
                                                    weights = model_weights, 
-                                                   model_id = &quot;hub-ensemble-weighted-mean&quot;)
-head(weighted_mean_ens)
-## # A tibble: 6 × 8
-##   model_id origin_date horizon location target output_type output_type_id  value
-##   &lt;chr&gt;    &lt;date&gt;        &lt;int&gt; &lt;chr&gt;    &lt;chr&gt;  &lt;chr&gt;       &lt;chr&gt;           &lt;dbl&gt;
-## 1 hub-ens… 2022-12-05       -6 20       inc c… mean        &lt;NA&gt;           38.3  
-## 2 hub-ens… 2022-12-05       -6 20       inc c… median      &lt;NA&gt;           37.6  
-## 3 hub-ens… 2022-12-05       -6 20       inc c… pmf         decrease        0.190
-## 4 hub-ens… 2022-12-05       -6 20       inc c… pmf         increase        0.326
-## 5 hub-ens… 2022-12-05       -6 20       inc c… pmf         large_decrease  0.213
-## 6 hub-ens… 2022-12-05       -6 20       inc c… pmf         large_increase  0.197</code></pre>
+                                                   model_id = &quot;hub-ensemble-weighted-mean&quot;)</code></pre>
 </div>
 </div>
 <div id="creating-ensembles-with-linear_pool" class="section level2" number="4.3">
 <h2><span class="header-section-number">4.3</span> Creating ensembles with <code>linear_pool</code></h2>
 <p>We can also generate a linear pool ensemble, or distributional mixture, using the <code>linear_pool()</code> function; this function can only be applied to predictions with an <code>output_type</code> of <code>mean</code>, <code>quantile</code>, <code>cdf</code>, or <code>pmf</code>. Our example hub includes <code>median</code> output type, so we exclude it from the calculation; however we can add it back using Q50.</p>
-<pre class="r"><code>linear_pool_ens &lt;- hubEnsembles::linear_pool(model_outputs %&gt;%
-                                                 filter(output_type != &quot;median&quot;), 
-                                             model_id = &quot;hub-ensemble-linear-pool&quot;)
-head(linear_pool_ens)
-## # A tibble: 6 × 8
-##   model_id origin_date horizon location target output_type output_type_id  value
-##   &lt;chr&gt;    &lt;date&gt;        &lt;int&gt; &lt;chr&gt;    &lt;chr&gt;  &lt;chr&gt;       &lt;chr&gt;           &lt;dbl&gt;
-## 1 hub-ens… 2022-12-05       -6 20       inc c… mean        &lt;NA&gt;             38.1
-## 2 hub-ens… 2022-12-05       -6 25       inc c… mean        &lt;NA&gt;             91.8
-## 3 hub-ens… 2022-12-05       -6 US       inc c… mean        &lt;NA&gt;           4141. 
-## 4 hub-ens… 2022-12-05       -5 20       inc c… mean        &lt;NA&gt;             38.6
-## 5 hub-ens… 2022-12-05       -5 25       inc c… mean        &lt;NA&gt;             92.3
-## 6 hub-ens… 2022-12-05       -5 US       inc c… mean        &lt;NA&gt;           4123.
-
-linear_pool_ens &lt;- linear_pool_ens |&gt;
-    bind_rows(linear_pool_ens |&gt;
-                  filter(output_type_id == 0.5) |&gt;
-                  mutate(output_type = &quot;median&quot;, 
-                         output_type_id = NA))</code></pre>
+<pre class="r"><code>linear_pool_ens &lt;- hubEnsembles::linear_pool(model_outputs |&gt;
+                                                 dplyr::filter(output_type != &quot;median&quot;), 
+                                             model_id = &quot;hub-ensemble-linear-pool&quot;)</code></pre>
 <p>As described above, for <code>quantile</code> model outputs, the <code>linear_pool</code> function approximates the full probability distribution for each component prediction using the value-quantile pairs provided by that model model, and then obtains quasi-random samples from that distributional estimate. The number of samples drawn from the distribution of each component model defaults to <code>1e4</code>, but this can be changed using the <code>n_samples</code> argument.</p>
 <pre class="r"><code>hubVis::plot_step_ahead_model_output(model_output_data = dplyr::bind_rows(mean_ens,
-                                                                          linear_pool_ens) |&gt;
+                                                                          linear_pool_ens |&gt;
+                                                                              dplyr::bind_rows(linear_pool_ens |&gt;
+                                                                                                   dplyr::filter(output_type_id == 0.5) |&gt;
+                                                                                                   dplyr::mutate(output_type = &quot;median&quot;, 
+                                                                                                                 output_type_id = NA))) |&gt;
                                          dplyr::filter(location == &quot;US&quot;,
                                                        output_type %in% c(&quot;median&quot;, &quot;mean&quot;, &quot;quantile&quot;),
                                                        origin_date == &quot;2022-12-12&quot;) |&gt;

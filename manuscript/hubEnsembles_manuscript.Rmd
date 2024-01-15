@@ -355,7 +355,7 @@ library(hubEnsembles)
 
 ## Example data: a simple forecast hub
 
-The `example-simple-forecast-hub` has been created by the Consortium of Infectious Disease Modeling Hubs as a simple example hub to demonstrate the set up and functionality for the hubverse. The hub includes both example model output data and target data. The model output data includes `quantile`, `mean` and `median` forecasts of future incident hospitalizations, and `pmf` forecasts of the probability that the change in hospitalizations will be a "large decrease", "decrease", "stable", "increase", "large increase". Each forecast is made for 4 task ID variables, including the date the forecast was made (`origin_date`), the number of steps ahead (`horizon`), the location for which the forecast was made (`location`), and the forecast target (`target`).  
+The `example-simple-forecast-hub` has been created by the Consortium of Infectious Disease Modeling Hubs as a simple example hub to demonstrate the set up and functionality for the hubverse. The hub includes both example model output data and target data. The model output data includes `quantile`, `mean` and `median` forecasts of future incident hospitalizations, and `pmf` forecasts of the probability that the change in hospitalizations will be a "large decrease", "decrease", "stable", "increase", "large increase". 
 
 First we load the example model output data and the target data using the `connect_hub()` function from `hubUtils`, another package developed by the Consortium of Infectious Disease Modeling Hubs. 
 
@@ -363,14 +363,32 @@ First we load the example model output data and the target data using the `conne
 hub_path <- system.file("example-data/example-simple-forecast-hub",
                         package = "hubEnsembles")
 
-model_outputs <- hubUtils::connect_hub(hub_path) %>%
+model_outputs <- hubUtils::connect_hub(hub_path) |>
   dplyr::collect()
-head(model_outputs)
 
 target_data_path <- file.path(hub_path, "target-data", "covid-hospitalizations.csv")
-target_data <- read.csv(target_data_path) %>%
-    mutate(time_idx = as.Date(time_idx))
-head(target_data)
+
+target_data <- read.csv(target_data_path) |>
+    dplyr::mutate(time_idx = as.Date(time_idx))
+```
+
+Each forecast is made for four task ID variables, including the date the forecast was made (`origin_date`), the number of steps ahead (`horizon`), the location for which the forecast was made (`location`), and the forecast target (`target`). Below is an example from a single model, UMass-ar, for the 1-week ahead forecast of US incident hospitalizations made on December 12, 2022. We print only the median and the 50%, 80%, and 98% prediction intervals, though other intervals and output types are included.
+
+```{r}
+head(model_outputs|>
+         dplyr::filter(output_type %in% c("quantile","median"), 
+                       output_type_id %in% c(0.01, 0.1, 0.25, 0.75, 0.9, 0.99, NA),
+                       origin_date == "2022-12-12", 
+                       location == "US",
+                       horizon == 7), 
+     n = 7L)
+```
+
+The target data provides the observed value (`value`) for the forecast target (`target`) on a given single day (`time_idx`) and in a given location (`location`).
+```{r}
+head(target_data |> 
+         dplyr::filter(location == "US", 
+                       time_idx >= "2022-12-12"))
 ```
 
 We can plot these forecasts and the target data using the `plot_step_ahead_model_output()` function from `hubVis`, another hubverse package that visualizes model outputs.
@@ -405,7 +423,16 @@ We can generate an equally weighted mean ensemble for each unique combination of
 
 ```{r}
 mean_ens <- hubEnsembles::simple_ensemble(model_outputs)
-head(mean_ens)
+```
+
+The resulting model output has the same structure as the original model output data, with columns for the task ID variables, output type, output type ID, and the model ID.
+```{r}
+head(mean_ens |>
+         dplyr::filter(output_type %in% c("quantile","median"), 
+                       output_type_id %in% c(0.01, 0.1, 0.25, 0.75, 0.9, 0.99, NA),
+                       origin_date == "2022-12-12", 
+                       location == "US",
+                       horizon == 7))
 ```
 
 ### Changing the aggregation function
@@ -416,7 +443,6 @@ We can change the function that is used to aggregate model outputs. For example,
 median_ens <- hubEnsembles::simple_ensemble(model_outputs, 
                                             agg_fun = median, 
                                             model_id = "hub-ensemble-median")
-head(median_ens)
 ```
 Custom functions can also be passed into the `agg_fun` argument. For example, in some circumstances a geometric mean may be a more appropriate way to combine component model outputs; here we define a custom function `geometric_mean()` to do so. Any custom function to be used requires an argument `x` for the vector of numeric values to summarize, and if relevant, an argument `w` of numeric weights. Then, we can use this custom function to ensemble the component model outputs, again using `agg_fun = geometric_mean`.
 
@@ -429,7 +455,6 @@ geometric_mean <- function(x){
 geometric_mean_ens <-  hubEnsembles::simple_ensemble(model_outputs, 
                                                      agg_fun = geometric_mean, 
                                                      model_id = "hub-ensemble-geometric")
-head(geometric_mean_ens)
 ```
 
 As expected, the mean, median, and geometric mean each give us slightly different resulting ensembles. The median point estimates and 50% prediction intervals (i.e., 25th and 75th quantiles) in Figure \@ref(fig:plot-ensembles) demonstrate this. 
@@ -455,8 +480,6 @@ hubVis::plot_step_ahead_model_output(model_output_data = dplyr::bind_rows(mean_e
     labs(y = "US incident hospitalizations")
 ```
 
-<!-- # EH: I don't love the color scheme here... it's especially hard to see the baseline model. -->
-
 ### Weighting model contributions
 
 In addition, we can weight the contributions of each model by providing a `data.frame` that specifies these weights. For example, if we wanted to include the baseline model in the ensemble, but give it less weight than the other forecasts, we would use the `weights = model_weights` argument, where `model_weights` is a `data.frame` with a `model_id` column containing each unique model_id and a `weight` column. The argument `weights_col_name` can optionally be used in the case where the `data.frame` defines model weights in a column named something other than `weight`. 
@@ -468,7 +491,6 @@ model_weights <- data.frame(model_id = c("UMass-ar", "UMass-gbq", "simple_hub-ba
 weighted_mean_ens <- hubEnsembles::simple_ensemble(model_outputs, 
                                                    weights = model_weights, 
                                                    model_id = "hub-ensemble-weighted-mean")
-head(weighted_mean_ens)
 ```
 
 ## Creating ensembles with `linear_pool`
@@ -476,23 +498,20 @@ head(weighted_mean_ens)
 We can also generate a linear pool ensemble, or distributional mixture, using the `linear_pool()` function; this function can only be applied to predictions with an `output_type` of `mean`, `quantile`, `cdf`, or `pmf`. Our example hub includes `median` output type, so we exclude it from the calculation; however we can add it back using Q50.  
 
 ```{r}
-linear_pool_ens <- hubEnsembles::linear_pool(model_outputs %>%
-                                                 filter(output_type != "median"), 
+linear_pool_ens <- hubEnsembles::linear_pool(model_outputs |>
+                                                 dplyr::filter(output_type != "median"), 
                                              model_id = "hub-ensemble-linear-pool")
-head(linear_pool_ens)
-
-linear_pool_ens <- linear_pool_ens |>
-    bind_rows(linear_pool_ens |>
-                  filter(output_type_id == 0.5) |>
-                  mutate(output_type = "median", 
-                         output_type_id = NA))
 ```
 
 As described above, for `quantile` model outputs, the `linear_pool` function approximates the full probability distribution for each component prediction using the value-quantile pairs provided by that model model, and then obtains quasi-random samples from that distributional estimate. The number of samples drawn from the distribution of each component model defaults to `1e4`, but this can be changed using the `n_samples` argument. 
 
 ```{r plot-ex-quantile-and-linear-pool, fig.width = 6, fig.height = 4, fig.cap = "Comparison of quantile average (red) and linear pool (blue) ensembles for daily US incident COVID-19 hospitalizations. Ensmebles combine individual models from the example hub (Fig \\@ref(fig:plot-ex-mods))."}
 hubVis::plot_step_ahead_model_output(model_output_data = dplyr::bind_rows(mean_ens,
-                                                                          linear_pool_ens) |>
+                                                                          linear_pool_ens |>
+                                                                              dplyr::bind_rows(linear_pool_ens |>
+                                                                                                   dplyr::filter(output_type_id == 0.5) |>
+                                                                                                   dplyr::mutate(output_type = "median", 
+                                                                                                                 output_type_id = NA))) |>
                                          dplyr::filter(location == "US",
                                                        output_type %in% c("median", "mean", "quantile"),
                                                        origin_date == "2022-12-12") |>
