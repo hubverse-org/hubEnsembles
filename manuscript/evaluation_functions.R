@@ -165,7 +165,7 @@ plot_evaluated_scores_forecast_date <- function(summarized_scores, model_names, 
       scale_x_date(name=NULL, date_breaks = "2 months", date_labels = "%b '%y") +
       scale_y_continuous(
         name=paste("average", y_var),
-        sec.axis = sec_axis(trans=~./truth_scaling, name="average truth")
+        sec.axis = sec_axis(trans=~./truth_scaling, name="avg target data")
       ) +
       scale_color_manual(breaks = model_names, values = model_colors) +
       labs(title=main, x="forecast date") +
