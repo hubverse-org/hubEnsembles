@@ -348,6 +348,7 @@ In this section, we provide a simple example to illustrate the two main function
 ```{r setup}
 library(dplyr)
 library(tidyr)
+library(ggplot2)
 library(hubUtils)
 library(hubVis)
 library(hubEnsembles)
