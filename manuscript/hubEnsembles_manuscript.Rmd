@@ -27,7 +27,7 @@ The `hubEnsembles` package is part of the "hubverse" collection of open-source s
 
 # Mathematical definitions and properties of ensemble methods
 
-The `hubEnsembles` package supports both point predictions and probabilistic predictions of different formats. A point prediction gives a single estimate of a future outcome while a probabilistic prediction provides an estimated probability distribution over a future outcome. We use $N$ to denote the total number of individual predictions that the ensemble will combine. For example, these predictions will often be produced by different statistical or mathematical models, and $N$ is the total number of models. Individual predictions will be indexed by the subscript $i$. Optionally, the package allows for calculating ensembles that use a weight $w_i$ for each prediction. Informally, predictions with a larger weight have a greater influence on the value of the ensemble prediction, though the details of this depend on the ensemble method (described further below). 
+The `hubEnsembles` package supports both point predictions and probabilistic predictions of different formats. A point prediction gives a single estimate of a future outcome while a probabilistic prediction provides an estimated probability distribution over a future outcome. We use $N$ to denote the total number of individual predictions that the ensemble will combine. For example, these predictions will often be produced by different statistical or mathematical models, and $N$ is the total number of models that have provided predictions. Individual predictions will be indexed by the subscript $i$. Optionally, the package allows for calculating ensembles that use a weight $w_i$ for each prediction. Informally, predictions with a larger weight have a greater influence on the value of the ensemble prediction, though the details of this depend on the ensemble method (described further below). 
 
 For a set of point predictions, $p_i$, each from a distinct model $i$, the `hubEnsembles` package can compute an ensemble of these predictions
 
@@ -60,6 +60,8 @@ To understand how these methods are implemented in `hubEnsembles`, we first must
 ## Hubverse terminology and conventions
 
 Model output is a central concept in the `hubEnsembles` package which generally refers to a specially formatted tabular representation of predictions produced by a modeling team. Each row represents a single, unique prediction with each column providing information about what is being predicted, its scope, and its value. Per hubverse convention, the columns may be broken down into task IDs, specification of the model output representation, and the model ID [@hubverse_docs]. <!--#ELR: or `model_id`, if we want to name the specific column -->
+This representation of predictive model output is codified by the `model_out_tbl` S3 class in the `hubUtils` package, one of the foundational hubverse packages. 
+<!-- NGR: may need to change package name listed above once packages are split.-->
 
 At minimum the task IDs (also called task ID variables) together specify the desired outcome being predicted, but they may also include additional information, such as any conditions or assumptions that were used to generate the predictions [@hubverse_docs]. For example, short-term forecasts of incident influenza hospitalizations in the US at different locations and amounts of time in the future (see Table \@ref(tab:flu-forecasts) below) might represent this information using a `target` column with the value "wk ahead inc flu hosp", a `location` column identifying the location being predicted, a `reference_date` column with the "starting point" of the forecasts, and a `horizon` column with the number of steps ahead that the forecast is predicting relative to the `reference_date`. All these variables make up the task ID columns [@hubverse_docs]. 
 
@@ -85,6 +87,7 @@ readr::read_rds("data/flu_forecasts_raw.rds") |>
     head(n = 7L) |>
     knitr::kable(caption="Example of forecasts for weekly incident flu hospitalizations, formatted according to hubverse standards. Quantile forecasts for the median and 50%, 80%, and 98% prediction intervals are shown.")
 ```
+
 
 Alternatively, longer-term scenario projections for incident COVID-19 hospitalizations in the US at different locations, amounts of time in the future, and under different assumed conditions may use the following task ID columns: a `target` of "incident COVID-19 hospitalizations", a `location` column specifying the location being predicted, an `origin_date` on which the projections were made, a `horizon` describing the number of steps ahead that the projection is predicting relative to the `origin_date`, and a `scenario_id` denoting the future conditions that were modeled and are projected to result in the specified number of incident hospitalizations. Different modeling efforts may use different sets of task ID columns and values to specify their prediction goals. Additional examples of task ID variables are available on the [hubverse documentation website](https://hubdocs.readthedocs.io/en/latest/user-guide/tasks.html).
 
