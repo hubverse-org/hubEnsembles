@@ -346,7 +346,7 @@ For step 1, functionality in the `distfromq` package uses a monotonic cubic spli
 
 # Demonstration of functionality
 
-In this section, we provide a simple example to illustrate the two main functions in `hubEnsembles`, `simple_ensemble` and `linear_pool`. We will use the following R packages:
+In this section, we provide a simple example to illustrate the two main functions in `hubEnsembles`, `simple_ensemble()` and `linear_pool()`. We will use the following R packages:
 
 ```{r setup}
 library(dplyr)
@@ -360,7 +360,7 @@ library(hubEnsembles)
 
 ## Example data: a simple forecast hub
 
-We will use the `example-simple-forecast-hub`, which has been created by the Consortium of Infectious Disease Modeling Hubs as a simple example hub to demonstrate the set up and functionality for the hubverse. The hub includes both example model output data and target data (sometimes known as "truth" data). The model output data includes `quantile`, `mean` and `median` forecasts of future incident COVID-19 hospitalizations, and `pmf` forecasts of the probability that the change in hospitalizations will be a "large decrease", "decrease", "stable", "increase", "large increase". 
+We will use the `example-simple-forecast-hub`, which has been created by the hubverse team as a simple example hub to demonstrate the set up and functionality for the hubverse (https://github.com/Infectious-Disease-Modeling-Hubs/example-simple-forecast-hub). The hub includes both example model output data and target data (sometimes known as "truth" data). The model output data includes `quantile`, `mean` and `median` forecasts of future incident COVID-19 hospitalizations, and `pmf` forecasts of the probability that the change in hospitalizations will be a "large decrease", "decrease", "stable", "increase", "large increase". 
 
 First we load the example model output data and the target data using the `connect_hub()` function from `hubUtils`, a package containing various utility functions for use with other hubverse tools. 
 
@@ -404,7 +404,7 @@ hubVis::plot_step_ahead_model_output(model_output_data = model_outputs |>
                                                                 output_type %in% c("median", "mean", "quantile"),
                                                                 origin_date == "2022-12-12") |>
                                                   dplyr::mutate(target_date =  origin_date + horizon, 
-                                                                output_type_id = as.double(output_type_id)),
+                                                                output_type_id = output_type_id),
                                               truth_data = target_data |>
                                                   dplyr::filter(location == "US",
                                                                 time_idx >= "2022-11-01",
@@ -421,7 +421,9 @@ hubVis::plot_step_ahead_model_output(model_output_data = model_outputs |>
     labs(y = "US incident hospitalizations")
 ```
 
-<!-- # LS: Even though we got some comments that different colors (with an accompanying legend) for the models are unnecessary if the facets are already labeled, I personally find the figures easier to read at a glance with multiple colors. I've left them in in my figures later in the paper but removed the legends since those are redundant. We should choose one approach and standardize, so let me know thoughts on which approach is better -->
+<!-- # LS: Even though we got some comments that different colors (with an accompanying legend) for the models are unnecessary if the facets are already labeled, I personally find the figures easier to read at a glance with multiple colors. I've left them in in my figures later in the paper but removed the legends since those are redundant. We should choose one approach and standardize, so let me know thoughts on which approach is better 
+# NGR: I don't have a strong feeling on this either way. I think it's ok to have colors, even if a bit redundant. but am also ok with grayscale.
+-->
 
 ## Creating ensembles with `simple_ensemble`
 
