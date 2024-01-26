@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.450">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Li Shandross">
+<meta name="author" content="Emily Howerton">
+<meta name="author" content="Evan Ray">
+<meta name="keywords" content="Ensembles, Infectious Disease Modeling Hubs, Research Software">
+
+<title>The hubEnsembles package</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="hubEnsembles_manuscript-quarto_files/libs/clipboard/clipboard.min.js"></script>
+<script src="hubEnsembles_manuscript-quarto_files/libs/quarto-html/quarto.js"></script>
+<script src="hubEnsembles_manuscript-quarto_files/libs/quarto-html/popper.min.js"></script>
+<script src="hubEnsembles_manuscript-quarto_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="hubEnsembles_manuscript-quarto_files/libs/quarto-html/anchor.min.js"></script>
+<link href="hubEnsembles_manuscript-quarto_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="hubEnsembles_manuscript-quarto_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="hubEnsembles_manuscript-quarto_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="hubEnsembles_manuscript-quarto_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="hubEnsembles_manuscript-quarto_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">The <code>hubEnsembles</code> package</h1>
+</div>
+
+
+<div class="quarto-title-meta-author">
+  <div class="quarto-title-meta-heading">Authors</div>
+  <div class="quarto-title-meta-heading">Affiliations</div>
+  
+    <div class="quarto-title-meta-contents">
+    <p class="author">Li Shandross <a href="https://orcid.org/0000-0002-1825-0097" class="quarto-title-author-orcid"> <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo1N0NEMjA4MDI1MjA2ODExOTk0QzkzNTEzRjZEQTg1NyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDozM0NDOEJGNEZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDozM0NDOEJGM0ZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1IE1hY2ludG9zaCI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkZDN0YxMTc0MDcyMDY4MTE5NUZFRDc5MUM2MUUwNEREIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjU3Q0QyMDgwMjUyMDY4MTE5OTRDOTM1MTNGNkRBODU3Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+84NovQAAAR1JREFUeNpiZEADy85ZJgCpeCB2QJM6AMQLo4yOL0AWZETSqACk1gOxAQN+cAGIA4EGPQBxmJA0nwdpjjQ8xqArmczw5tMHXAaALDgP1QMxAGqzAAPxQACqh4ER6uf5MBlkm0X4EGayMfMw/Pr7Bd2gRBZogMFBrv01hisv5jLsv9nLAPIOMnjy8RDDyYctyAbFM2EJbRQw+aAWw/LzVgx7b+cwCHKqMhjJFCBLOzAR6+lXX84xnHjYyqAo5IUizkRCwIENQQckGSDGY4TVgAPEaraQr2a4/24bSuoExcJCfAEJihXkWDj3ZAKy9EJGaEo8T0QSxkjSwORsCAuDQCD+QILmD1A9kECEZgxDaEZhICIzGcIyEyOl2RkgwAAhkmC+eAm0TAAAAABJRU5ErkJggg=="></a></p>
+  </div>
+    <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            <a href="https://reichlab.io/">
+            University of Massachusetts Amherst
+            </a>
+          </p>
+      </div>
+      <div class="quarto-title-meta-contents">
+    <p class="author">Emily Howerton <a href="https://orcid.org/0000-0002-1825-0097" class="quarto-title-author-orcid"> <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo1N0NEMjA4MDI1MjA2ODExOTk0QzkzNTEzRjZEQTg1NyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDozM0NDOEJGNEZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDozM0NDOEJGM0ZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1IE1hY2ludG9zaCI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkZDN0YxMTc0MDcyMDY4MTE5NUZFRDc5MUM2MUUwNEREIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjU3Q0QyMDgwMjUyMDY4MTE5OTRDOTM1MTNGNkRBODU3Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+84NovQAAAR1JREFUeNpiZEADy85ZJgCpeCB2QJM6AMQLo4yOL0AWZETSqACk1gOxAQN+cAGIA4EGPQBxmJA0nwdpjjQ8xqArmczw5tMHXAaALDgP1QMxAGqzAAPxQACqh4ER6uf5MBlkm0X4EGayMfMw/Pr7Bd2gRBZogMFBrv01hisv5jLsv9nLAPIOMnjy8RDDyYctyAbFM2EJbRQw+aAWw/LzVgx7b+cwCHKqMhjJFCBLOzAR6+lXX84xnHjYyqAo5IUizkRCwIENQQckGSDGY4TVgAPEaraQr2a4/24bSuoExcJCfAEJihXkWDj3ZAKy9EJGaEo8T0QSxkjSwORsCAuDQCD+QILmD1A9kECEZgxDaEZhICIzGcIyEyOl2RkgwAAhkmC+eAm0TAAAAABJRU5ErkJggg=="></a></p>
+  </div>
+    <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            <a href="https://www.psu.edu/">
+            Department of Biology and Center for Infectious Disease Dynamics, Pennsylvania State University, University Park
+            </a>
+          </p>
+      </div>
+      <div class="quarto-title-meta-contents">
+    <p class="author">Evan Ray <a href="https://orcid.org/0000-0002-1825-0097" class="quarto-title-author-orcid"> <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo1N0NEMjA4MDI1MjA2ODExOTk0QzkzNTEzRjZEQTg1NyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDozM0NDOEJGNEZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDozM0NDOEJGM0ZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1IE1hY2ludG9zaCI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkZDN0YxMTc0MDcyMDY4MTE5NUZFRDc5MUM2MUUwNEREIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjU3Q0QyMDgwMjUyMDY4MTE5OTRDOTM1MTNGNkRBODU3Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+84NovQAAAR1JREFUeNpiZEADy85ZJgCpeCB2QJM6AMQLo4yOL0AWZETSqACk1gOxAQN+cAGIA4EGPQBxmJA0nwdpjjQ8xqArmczw5tMHXAaALDgP1QMxAGqzAAPxQACqh4ER6uf5MBlkm0X4EGayMfMw/Pr7Bd2gRBZogMFBrv01hisv5jLsv9nLAPIOMnjy8RDDyYctyAbFM2EJbRQw+aAWw/LzVgx7b+cwCHKqMhjJFCBLOzAR6+lXX84xnHjYyqAo5IUizkRCwIENQQckGSDGY4TVgAPEaraQr2a4/24bSuoExcJCfAEJihXkWDj3ZAKy9EJGaEo8T0QSxkjSwORsCAuDQCD+QILmD1A9kECEZgxDaEZhICIzGcIyEyOl2RkgwAAhkmC+eAm0TAAAAABJRU5ErkJggg=="></a></p>
+  </div>
+    <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            <a href="https://reichlab.io/">
+            University of Massachusetts Amherst
+            </a>
+          </p>
+      </div>
+    </div>
+
+<div class="quarto-title-meta">
+
+      
+  
+    
+  </div>
+  
+<div>
+  <div class="abstract">
+    <div class="abstract-title">Abstract</div>
+    <p>Predictions of future outcomes are essential to planning and decision making, yet generating reliable predictions of the future is challenging. One method for overcoming this challenge is combining predictions across multiple, independent models.</p>
+  </div>
+</div>
+
+</header>
+
+<section id="introduction" class="level1">
+<h1>Introduction</h1>
+<p>Predictions of future outcomes are essential to planning and decision making, yet generating reliable predictions of the future is challenging. One method for overcoming this challenge is combining predictions across multiple, independent models. These combination methods (also called aggregation or ensembling) have been repeatedly shown to produce predictions that are more accurate <span class="citation" data-cites="clemen1989 timmermann2006b">(<a href="#ref-clemen1989" role="doc-biblioref">Clemen 1989</a>; <a href="#ref-timmermann2006b" role="doc-biblioref">Timmermann 2006</a>)</span> and more consistent <span class="citation" data-cites="hibon2005">(<a href="#ref-hibon2005" role="doc-biblioref">Hibon and Evgeniou 2005</a>)</span> than individual models. Because of the clear performance benefits, multi-model ensembles are commonplace across fields, including weather <span class="citation" data-cites="alley2019">(<a href="#ref-alley2019" role="doc-biblioref">Alley, Emanuel, and Zhang 2019</a>)</span>, climate <span class="citation" data-cites="tebaldi2007">(<a href="#ref-tebaldi2007" role="doc-biblioref">Tebaldi and Knutti 2007</a>)</span>, and economics <span class="citation" data-cites="aastveit2018">(<a href="#ref-aastveit2018" role="doc-biblioref">Aastveit et al. 2018</a>)</span>. More recently, multi-model ensembles have been used to improve predictions of infectious disease outbreaks <span class="citation" data-cites="viboud2018 johansson2019 mcgowan2019 cramer2022">(<a href="#ref-viboud2018" role="doc-biblioref">Viboud et al. 2018</a>; <a href="#ref-johansson2019" role="doc-biblioref">Johansson et al. 2019</a>; <a href="#ref-mcgowan2019" role="doc-biblioref">McGowan et al. 2019</a>; <a href="#ref-cramer2022" role="doc-biblioref">Cramer et al. 2022</a>)</span>.</p>
+<p>Across this vast literature, there are many proposed methods for generating ensembles. Generally, these methods differ in at least one of two ways: (1) the function used to combine or “average” predictions, and (2) how predictions are weighted when performing the combination. No one method is universally “the best”; a simple average of predictions works surprisingly well across a range of settings <span class="citation" data-cites="winkler2015">(<a href="#ref-winkler2015" role="doc-biblioref">Winkler 2015</a>)</span>, but more complex approaches have also been shown to have benefits <span class="citation" data-cites="mcandrew_aggregating_2021">(<a href="#ref-mcandrew_aggregating_2021" role="doc-biblioref">McAndrew et al. 2021</a>)</span>. Here, we present the <code>hubEnsembles</code> package, which provides a flexible framework for generating ensemble predictions from multiple models. Complementing other software for combining predictions from multiple models (e.g., <span class="citation" data-cites="pedregosa_scikit-learn_2011 weiss2019 bosse_stackr_2023 couch_stacks_2023">(<a href="#ref-pedregosa_scikit-learn_2011" role="doc-biblioref">Pedregosa et al. 2011</a>; <a href="#ref-weiss2019" role="doc-biblioref">Weiss, Raviv, and Roetzer 2019</a>; <a href="#ref-bosse_stackr_2023" role="doc-biblioref">Bosse et al. 2023</a>; <a href="#ref-couch_stacks_2023" role="doc-biblioref">Couch and Kuhn 2023</a>)</span>), <code>hubEnsembles</code> supports multiple types of predictions, from point estimates to probabilistic predictions. Throughout, we will use the term “prediction” to refer to any kind of model output that may be combined including a forecast, a scenario projection, or a parameter estimate.</p>
+<p>The <code>hubEnsembles</code> package is part of a larger collection of open-source software and data tools that enables collaborative modelling exercises called the “hubverse” (https://hubdocs.readthedocs.io/en/latest/index.html). The broader “hubverse” initiative is motivated by the demonstrated benefits of collaborative hubs <span class="citation" data-cites="reich2022">(<a href="#ref-reich2022" role="doc-biblioref">Reich et al. 2022</a>)</span>, including performance improvements of multi-model ensembles and the desire for standardization across such hubs. In this paper, we focus specifically on the functionality encompassed in <code>hubEnsembles</code>. We provide an overview of the methods implemented, including mathematical definitions and properties (Section 2) as well as implementation details (Section 3); we give simple examples to demonstrate the functionality (Section 4) and a more complex case study (Section 5) that motivates a discussion and comparison of the various methods (Section 6).</p>
+<!--#EH GENERAL COMMENT: IF YOU HAVE BETTER REFERENCES ANYWHERE, LET ME KNOW.-->
+</section>
+<section id="mathematical-definitions-and-properties-of-ensemble-methods" class="level1">
+<h1>Mathematical definitions and properties of ensemble methods</h1>
+<p>The <code>hubEnsembles</code> package supports both point predictions and probabilistic predictions of different formats. A point prediction gives a single estimate of a future outcome while a probabilistic prediction provides an estimated probability distribution over a future outcome. We use <span class="math inline">\(N\)</span> to denote the total number of individual predictions that the ensemble will combine. For example, these predictions will often be produced by different statistical or mathematical models, and <span class="math inline">\(N\)</span> is the total number of models. Individual predictions will be indexed by the subscript <span class="math inline">\(i\)</span>. Optionally, the package allows for calculating ensembles that use a weight <span class="math inline">\(w_i\)</span> for each prediction. Informally, predictions with a larger weight have a greater influence on the value of the ensemble prediction, though the details of this depend on the ensemble method (described further below).</p>
+<p>For a set of point predictions, <span class="math inline">\(p_i\)</span>, each from a distinct model <span class="math inline">\(i\)</span>, the <code>hubEnsembles</code> package can compute an ensemble of these predictions</p>
+<p><span class="math display">\[
+p_E = C(p_i, w_i)
+\]</span></p>
+<p>using any function <span class="math inline">\(C\)</span>, and model-specific weights <span class="math inline">\(w_i\)</span>. For example, an arithmetic average of predictions yields <span class="math inline">\(p_E = \sum_{i=1}^Np_iw_i\)</span>, where the weights are non-negative and sum to 1. If <span class="math inline">\(w_i = 1/N\)</span> for all <span class="math inline">\(i\)</span>, all predictions will be equally weighted. This framework can also support more complex functions for aggregation, such as a (weighted) median or geometric mean.</p>
+<p>For probabilistic predictions, there are two commonly used classes of methods to average or ensemble multiple predictions: quantile averaging (also called a Vincent average <span class="citation" data-cites="vincent1912">(<a href="#ref-vincent1912" role="doc-biblioref">Vincent 1912</a>)</span>) and probability averaging (also called a distributional mixture or linear opinion pool <span class="citation" data-cites="stone1961">(<a href="#ref-stone1961" role="doc-biblioref">Stone 1961</a>)</span>) <span class="citation" data-cites="lichtendahl2013">(<a href="#ref-lichtendahl2013" role="doc-biblioref">Lichtendahl, Grushka-Cockayne, and Winkler 2013</a>)</span>. To define these two classes of methods, let <span class="math inline">\(F(x)\)</span> be a cumulative density function (CDF) defined over values <span class="math inline">\(x\)</span> of the target variable for the prediction, and <span class="math inline">\(F^{-1}(\theta)\)</span> be the corresponding quantile function defined over quantile levels <span class="math inline">\(\theta \in [0, 1]\)</span>. Additionally, we will use <span class="math inline">\(f(x)\)</span> to denote a probability mass function (PMF) for a prediction of a discrete variable or a discretization (such as binned values) of a continuous variable.</p>
+<p>The quantile average is calculated as <span class="math display">\[
+F^{-1}_Q(\theta) = \sum_{i = 1}^Nw_iF^{-1}_i(\theta).
+\]</span> This computes the average value of predictions across different models for each fixed quantile level <span class="math inline">\(\theta\)</span>. It is also possible to use other combination functions, such as a weighted median, to combine quantile predictions.</p>
+<p>The probability average or linear pool is calculated by averaging probabilities across predictions for a fixed value of the target variable, <span class="math inline">\(x\)</span>. This can be expressed in terms of either predictive CDFs or PDFs as follows: <span class="math display">\[\begin{align*}
+F_{LOP}(x) &amp;= \sum_{i = 1}^Nw_iF_i(x), \\
+f_{LOP}(x) &amp;= \sum_{i = 1}^Nw_if_i(x).
+\end{align*}\]</span></p>
+<p>The different averaging methods for probabilistic predictions yield different properties of the resulting ensemble distribution. For example, the variance of the linear pool is <span class="math inline">\(\sigma^2_{LOP} = \sum_{i=1}^Nw_i\sigma_i^2 + \sum_{i=1}^Nw_i(\mu_i-\mu_{LOP})^2\)</span>, where <span class="math inline">\(\mu_i\)</span> is the mean and <span class="math inline">\(\sigma^2_i\)</span> is the variance of individual prediction <span class="math inline">\(i\)</span>, and although there is no closed-form variance for the quantile average, the variance of the quantile average will always be less than or equal to that of the linear pool <span class="citation" data-cites="lichtendahl2013">(<a href="#ref-lichtendahl2013" role="doc-biblioref">Lichtendahl, Grushka-Cockayne, and Winkler 2013</a>)</span>. Both methods generate distributions with the same mean, <span class="math inline">\(\mu_Q = \mu_{LOP} = \sum_{i=1}^Nw_i\mu_i\)</span>, which is the mean of individual model means <span class="citation" data-cites="lichtendahl2013">(<a href="#ref-lichtendahl2013" role="doc-biblioref">Lichtendahl, Grushka-Cockayne, and Winkler 2013</a>)</span>. The linear pool method preserves variation between individual models, whereas the quantile average cancels away this variation under the assumption it constitutes sampling error <span class="citation" data-cites="howerton2023">(<a href="#ref-howerton2023" role="doc-biblioref">Howerton et al. 2023</a>)</span>.</p>
+</section>
+<section id="model-implementation-details" class="level1">
+<h1>Model implementation details</h1>
+<p>To understand how these methods are implemented in <code>hubEnsembles</code>, we first must define the conventions employed by the hubverse and its packages for representing and working with model predictions. We begin with a short overview of concepts and conventions needed to utilize the <code>hubEnsembles</code> package, then explain the implementation of the two ensembling functions provided by the package, <code>simple_ensemble</code> and <code>linear_pool</code>.</p>
+<section id="hubverse-terminology-and-conventions" class="level2">
+<h2 class="anchored" data-anchor-id="hubverse-terminology-and-conventions">Hubverse terminology and conventions</h2>
+<p>Model output is a central concept in the <code>hubEnsembles</code> package which generally refers to a specially formatted tabular representation of predictions produced by a modeling team. Each row represents a single, unique prediction with each column providing information about what is being predicted, its scope, and its value. Per hubverse convention, the columns may be broken down into task IDs, specification of the model output representation, and the model ID <span class="citation" data-cites="hubverse_docs">(<a href="#ref-hubverse_docs" role="doc-biblioref">Infectious Disease Modeling Hubs 2022</a>)</span>. <!--#ELR: or `model_id`, if we want to name the specific column --></p>
+<p>At minimum the task IDs (also called task ID variables) together specify the desired outcome being predicted, but they may also include additional information, such as any conditions or assumptions that were used to generate the predictions <span class="citation" data-cites="hubverse_docs">(<a href="#ref-hubverse_docs" role="doc-biblioref">Infectious Disease Modeling Hubs 2022</a>)</span>. For example, short-term forecasts of incident influenza hospitalizations in the US at different locations and amounts of time in the future (see Table <a href="#tbl-flu-forecasts">Table&nbsp;1</a> below) might represent this information using a <code>target</code> column with the value “wk ahead inc flu hosp”, a <code>location</code> column identifying the location being predicted, a <code>reference_date</code> column with the “starting point” of the forecasts, and a <code>horizon</code> column with the number of steps ahead that the forecast is predicting relative to the <code>reference_date</code>. All these variables make up the task ID columns <span class="citation" data-cites="hubverse_docs">(<a href="#ref-hubverse_docs" role="doc-biblioref">Infectious Disease Modeling Hubs 2022</a>)</span>.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="tbl-flu-forecasts" class="anchored">
+<table class="table table-sm table-striped small">
+<caption>Table&nbsp;1: Example of forecasts for weekly incident flu hospitalizations, formatted according to hubverse standards. Quantile forecasts for the median and 50%, 80%, and 98% prediction intervals are shown.</caption>
+<colgroup>
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 8%">
+<col style="width: 7%">
+<col style="width: 20%">
+<col style="width: 11%">
+<col style="width: 14%">
+<col style="width: 9%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">model_id</th>
+<th style="text-align: left;">reference_date</th>
+<th style="text-align: left;">location</th>
+<th style="text-align: right;">horizon</th>
+<th style="text-align: left;">target</th>
+<th style="text-align: left;">output_type</th>
+<th style="text-align: right;">output_type_id</th>
+<th style="text-align: right;">value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">CMU-TimeSeries</td>
+<td style="text-align: left;">2023-05-15</td>
+<td style="text-align: left;">US</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">wk ahead inc flu hosp</td>
+<td style="text-align: left;">quantile</td>
+<td style="text-align: right;">0.01</td>
+<td style="text-align: right;">161.7159</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">CMU-TimeSeries</td>
+<td style="text-align: left;">2023-05-15</td>
+<td style="text-align: left;">US</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">wk ahead inc flu hosp</td>
+<td style="text-align: left;">quantile</td>
+<td style="text-align: right;">0.10</td>
+<td style="text-align: right;">551.9048</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">CMU-TimeSeries</td>
+<td style="text-align: left;">2023-05-15</td>
+<td style="text-align: left;">US</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">wk ahead inc flu hosp</td>
+<td style="text-align: left;">quantile</td>
+<td style="text-align: right;">0.25</td>
+<td style="text-align: right;">770.3606</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">CMU-TimeSeries</td>
+<td style="text-align: left;">2023-05-15</td>
+<td style="text-align: left;">US</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">wk ahead inc flu hosp</td>
+<td style="text-align: left;">quantile</td>
+<td style="text-align: right;">0.50</td>
+<td style="text-align: right;">982.6212</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">CMU-TimeSeries</td>
+<td style="text-align: left;">2023-05-15</td>
+<td style="text-align: left;">US</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">wk ahead inc flu hosp</td>
+<td style="text-align: left;">quantile</td>
+<td style="text-align: right;">0.75</td>
+<td style="text-align: right;">1258.2589</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">CMU-TimeSeries</td>
+<td style="text-align: left;">2023-05-15</td>
+<td style="text-align: left;">US</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">wk ahead inc flu hosp</td>
+<td style="text-align: left;">quantile</td>
+<td style="text-align: right;">0.90</td>
+<td style="text-align: right;">1637.5332</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">CMU-TimeSeries</td>
+<td style="text-align: left;">2023-05-15</td>
+<td style="text-align: left;">US</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">wk ahead inc flu hosp</td>
+<td style="text-align: left;">quantile</td>
+<td style="text-align: right;">0.99</td>
+<td style="text-align: right;">3550.7687</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<p>Alternatively, longer-term scenario projections for incident COVID-19 hospitalizations in the US at different locations, amounts of time in the future, and under different assumed conditions may use the following task ID columns: a <code>target</code> of “incident COVID-19 hospitalizations”, a <code>location</code> column specifying the location being predicted, an <code>origin_date</code> on which the projections were made, a <code>horizon</code> describing the number of steps ahead that the projection is predicting relative to the <code>origin_date</code>, and a <code>scenario_id</code> denoting the future conditions that were modeled and are projected to result in the specified number of incident hospitalizations. Different modeling efforts may use different sets of task ID columns and values to specify their prediction goals. Additional examples of task ID variables are available on the <a href="https://hubdocs.readthedocs.io/en/latest/user-guide/tasks.html">hubverse documentation website</a>.</p>
+<p>The model output representation includes the predicted values along with metadata that specifies how the predictions are conveyed, and consists of three columns: (1) <code>output_type</code>, (2) <code>output_type_id</code>, and (3) <code>value</code>. Unlike for the task IDs, these three columns are required and their names are fixed <span class="citation" data-cites="hubverse_docs">(<a href="#ref-hubverse_docs" role="doc-biblioref">Infectious Disease Modeling Hubs 2022</a>)</span>. The <code>output_type</code> defines how the prediction is represented and may be one of <code>"mean"</code> or <code>"median"</code> (point prediction), <code>"quantile"</code>, <code>"cdf"</code>, <code>"pmf"</code> (distributional prediction), or <code>"sample"</code> (although this output type is not yet supported by the <code>hubEnsembles</code> package). The <code>output_type_id</code> provides more identifying information for a prediction and is specific to the particular <code>output_type</code> (see Table <a href="#tbl-flu-forecasts">Table&nbsp;1</a>). For quantile predictions, the <code>output_type_id</code> is a numeric value between 0 and 1 specifying the probability level for the quantile. In the notation we defined above, the <code>output_type_id</code> corresponds to <span class="math inline">\(\theta\)</span> and the <code>value</code> of the prediction is the quantile estimate <span class="math inline">\(F^{-1}(\theta)\)</span>. For CDF or PMF predictions, the <code>output_type_id</code> is the value <span class="math inline">\(x\)</span> at which the cumulative distribution function or probability mass function for the predictive distribution should be evaluated, and the <code>value</code> column contains the estimate <span class="math inline">\(F(x)\)</span> or <span class="math inline">\(f(x)\)</span>, respectively. Requirements for the values of the <code>output_type_id</code> and <code>value</code> columns associated with each valid output type are summarized on the <a href="https://hubdocs.readthedocs.io/en/latest/user-guide/model-output.html#formats-of-model-output">hubverse documentation website</a> and in Table <a href="#tbl-flu-forecasts">Table&nbsp;1</a> below. <!--#ELR: This kind of citation seems fine for an ordinary package vignette, but if we're aiming to directly turn this into a journal submission, we'll need to tidy this citation up a bit. --> <!--#ELR: I don't love the use of the word "estimate" that I introduced here -- noting that in much of statistics, a distinction is made between an estimate and a prediction, but I've used the two terms semi-interchangeably here. --> Finally, the <code>model_id</code> column gives a unique identifier of the model that created the predictions.</p>
+<div id="tbl-model-out" class="anchored">
+<table class="table">
+<caption>Table&nbsp;2: A table summarizing how the model output representation columns are used for predictions of different output types. Adapted from <span class="citation" data-cites="hubverse_docs">(<a href="#ref-hubverse_docs" role="doc-biblioref">Infectious Disease Modeling Hubs 2022</a>)</span>.</caption>
+<colgroup>
+<col style="width: 25%">
+<col style="width: 26%">
+<col style="width: 48%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"><code>output_type</code></th>
+<th style="text-align: left;"><code>output_type_id</code></th>
+<th style="text-align: left;"><code>value</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>mean</code></td>
+<td style="text-align: left;">NA (not used for mean predictions)</td>
+<td style="text-align: left;">Numeric: The mean of the predictive distribution</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>median</code></td>
+<td style="text-align: left;">NA (not used for median predictions)</td>
+<td style="text-align: left;">Numeric: The median of the predictive distribution</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>quantile</code></td>
+<td style="text-align: left;">Numeric between 0.0 and 1.0: A probability level</td>
+<td style="text-align: left;">Numeric: The quantile of the predictive distribution at the probability level specified by the <code>output_type_id</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>cdf</code></td>
+<td style="text-align: left;">Numeric within the support of the outcome variable: a possible value of the target variable</td>
+<td style="text-align: left;">Numeric between 0.0 and 1.0: The value of the cumulative distribution function of the predictive distribution at the value of the outcome variable specified by the <code>output_type_id</code></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>pmf</code></td>
+<td style="text-align: left;">String naming a possible category of a discrete outcome variable</td>
+<td style="text-align: left;">Numeric between 0.0 and 1.0: The value of the probability mass function of the predictive distribution when evaluated at a specified level of a categorical outcome variable</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>sample</code></td>
+<td style="text-align: left;">Positive integer sample index</td>
+<td style="text-align: left;">Numeric: A sample from the predictive distribution</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="simple-ensemble" class="level2">
+<h2 class="anchored" data-anchor-id="simple-ensemble">Simple ensemble</h2>
+<p>The <code>simple_ensemble</code> function directly computes an ensemble from component model outputs by combining them via some function (<span class="math inline">\(C\)</span>) within each unique combination of task ID variables, output types, and output type IDs. This function can be used to summarize predictions of output types mean, median, quantile, CDF, and PMF. The mechanics of the ensemble calculations are the same for each of the output types, though the resulting statistical ensembling method differs for different output types as described below. An aggregation function <span class="math inline">\(C\)</span> of choice may be specified by the user.</p>
+<p>By default, <code>simple_ensemble</code> uses the mean for the aggregation function <span class="math inline">\(C\)</span> and equal weights for all models. For point predictions with a mean or median output type, the resulting ensemble prediction is an equally weighted average of the individual models’ predictions. For probabilistic predictions in a quantile format, by default <code>simple_ensemble</code> produces an equally weighted quantile average, and for model outputs in a CDF or PMF format, by default <code>simple_ensemble</code> computes an equally weighted linear opinion pool.</p>
+<p>A median ensemble may also be created by specifying “median” as the aggregation function, or a custom function may be passed to the <code>agg_fun</code> argument to create other ensemble types. Similarly, model weights can be specified to create a weighted ensemble. These weights are allowed to vary for different task ID values, and for predictions of quantile output type, the weights may also be different for different quantile probability levels (corresponding to values of the <code>output_type_id</code> column).</p>
+</section>
+<section id="linear-pool" class="level2">
+<h2 class="anchored" data-anchor-id="linear-pool">Linear pool</h2>
+<p>The <code>linear_pool</code> function implements the linear opinion pool method for ensembling projections. This function can be used to combine predictions with output types mean, quantile, CDF, and PMF. Unlike <code>simple_ensemble</code>, this function handles its computation differently based on the output type. For the CDF, PMF, and mean output types, the linear pool method is equivalent to calling <code>simple_ensemble</code> with a mean aggregation function, since <code>simple_ensemble</code> produces a linear pool prediction (an average of probabilities for the same prediction value or bin) for those output types.</p>
+<p>However, implementation of LOP is less straightforward for the quantile output type. This is because LOP averages CDF values (probabilities) at each value of the target variable, but the predictions are quantiles (on the scale of the target variable) for fixed probability levels. The value for these quantile predictions will generally differ between models, and as a result we are typically not provided CDF values at the same values of <span class="math inline">\(x\)</span> for all component predictions. This lack of alignment between CDF values for the same probability levels impedes computation of LOP from quantile forecasts and is illustrated in <a href="#fig-example-quantile-average-and-linear-pool">Figure&nbsp;1</a> Panel A below.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-example-quantile-average-and-linear-pool" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="hubEnsembles_manuscript-quarto_files/figure-html/fig-example-quantile-average-and-linear-pool-1.png" class="img-fluid figure-img" width="960"></p>
+<figcaption class="figure-caption">Figure&nbsp;1: (Panel A) Example of quantile output type predictions. In this example, points show model output collected for seven fixed quantiles <span class="math inline">\(Q = {0.01, 0.1, 0.3, 0.5, 0.7, 0.9, and 0.99}\)</span> from two distributions (<span class="math inline">\(N(100, 10)\)</span> in purple and <span class="math inline">\(N(120, 5)\)</span> in green, both with underlying cumulative distribution functions, CDFs). The associated values for each fixed quantile do not align across distributions (vertical lines). (Panel B) Quantile average ensemble, which is calculated by averaging values for each fixed quantile (represented by horizontal dashed gray lines). The distributions from panel A are re-plotted and the black line shows the resulting quantile average ensemble. Inset shows corresponding probability density functions (PDFs). (Panel C) Linear pool ensemble, which is calculated by averaging cumulative probabilities (i.e., quantiles) for each fixed value (represented by vertical dashed gray lines). To calculate the linear pool when model output is not defined for the same values (i.e., for quantile output type), model output is used to estimate the full CDFs for each distribution (solid lines), which are then used to generate new quantile-value pairs that are defined for the same values. Thus, the points in panel C differ from those in panels A and B. The distributions from panel A are re-plotted and the black line shows the resulting linear pool ensemble. Inset shows corresponding PDFs.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>Given that LOP cannot be directly calculated from quantile predictions, we must first obtain an estimate of the CDF for each component distribution using the provided quantiles, combine the CDFs, then calculate the quantiles from the ensemble’s CDF. We perform this calculation in three main steps, assisted by the <code>distfromq</code> package <span class="citation" data-cites="distfromq">(<a href="#ref-distfromq" role="doc-biblioref">Ray and Gerding 2024</a>)</span> for the first two:</p>
+<ol type="1">
+<li>Interpolate and extrapolate from the provided quantiles for each component model to obtain an estimate of the CDF of that particular distribution.</li>
+<li>Draw samples from each component model distribution. To reduce Monte Carlo variability, we use quasi-random samples corresponding to quantiles of the estimated distribution <span class="citation" data-cites="niederreiter1992quasirandom">(<a href="#ref-niederreiter1992quasirandom" role="doc-biblioref">Niederreiter 1992</a>)</span>.</li>
+<li>Pool the samples from all component models and extract the desired quantiles.</li>
+</ol>
+<!--#EH COMMENT: DO WE WANT TO ADD A SENTENCE TO (2) THAT EXPLAINS HOW THE SAMPLING PROCESS APPROXIMATES THE AVERAGING THAT IS SHOWN IN FIG. 3.1C?.-->
+<p>For step 1, functionality in the <code>distfromq</code> package uses a monotonic cubic spline for interpolation on the interior of the provided quantiles. The user may choose one of several distributions to perform extrapolation of the CDF tails. These include normal, lognormal, and cauchy distributions, with “normal” set as the default. A location-scale parameterization is used, with separate location and scale parameters chosen in the lower and upper tails so as to match the two most extreme quantiles <span class="citation" data-cites="distfromq">(<a href="#ref-distfromq" role="doc-biblioref">Ray and Gerding 2024</a>)</span>.</p>
+</section>
+</section>
+<section id="demonstration-of-functionality" class="level1">
+<h1>Demonstration of functionality</h1>
+<p>In this section, we provide a simple example to illustrate the two main functions in <code>hubEnsembles</code>, <code>simple_ensemble</code> and <code>linear_pool</code>. We will use the following R packages:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(hubUtils)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(hubVis)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(hubEnsembles)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="example-data-a-simple-forecast-hub" class="level2">
+<h2 class="anchored" data-anchor-id="example-data-a-simple-forecast-hub">Example data: a simple forecast hub</h2>
+<p>We will use the <code>example-simple-forecast-hub</code>, which has been created by the Consortium of Infectious Disease Modeling Hubs as a simple example hub to demonstrate the set up and functionality for the hubverse. The hub includes both example model output data and target data (sometimes known as “truth” data). The model output data includes <code>quantile</code>, <code>mean</code> and <code>median</code> forecasts of future incident COVID-19 hospitalizations, and <code>pmf</code> forecasts of the probability that the change in hospitalizations will be a “large decrease”, “decrease”, “stable”, “increase”, “large increase”.</p>
+<p>First we load the example model output data and the target data using the <code>connect_hub()</code> function from <code>hubUtils</code>, a package containing various utility functions for use with other hubverse tools.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>hub_path <span class="ot">&lt;-</span> <span class="fu">system.file</span>(<span class="st">"example-data/example-simple-forecast-hub"</span>,</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">package =</span> <span class="st">"hubEnsembles"</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>model_outputs <span class="ot">&lt;-</span> hubUtils<span class="sc">::</span><span class="fu">connect_hub</span>(hub_path) <span class="sc">|&gt;</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">collect</span>()</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>target_data_path <span class="ot">&lt;-</span> <span class="fu">file.path</span>(hub_path, <span class="st">"target-data"</span>, <span class="st">"covid-hospitalizations.csv"</span>)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>target_data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(target_data_path) <span class="sc">|&gt;</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">time_idx =</span> <span class="fu">as.Date</span>(time_idx))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Each forecast is made for four task ID variables, including the date the forecast was made (<code>origin_date</code>), the number of steps ahead (<code>horizon</code>), the location for which the forecast was made (<code>location</code>), and the forecast target (<code>target</code>). Below is an example from a single model, UMass-ar, for the 1-week ahead forecast of US incident hospitalizations made on December 12, 2022. We print only the median and the 50%, 80%, and 98% prediction intervals, though other intervals and output types are included in the model output.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>model_outputs <span class="sc">|&gt;</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">filter</span>(</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    output_type <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"quantile"</span>, <span class="st">"median"</span>),</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    output_type_id <span class="sc">%in%</span> <span class="fu">c</span>(<span class="fl">0.01</span>, <span class="fl">0.1</span>, <span class="fl">0.25</span>, <span class="fl">0.75</span>, <span class="fl">0.9</span>, <span class="fl">0.99</span>, <span class="cn">NA</span>),</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    origin_date <span class="sc">==</span> <span class="st">"2022-12-12"</span>,</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    location <span class="sc">==</span> <span class="st">"US"</span>,</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    horizon <span class="sc">==</span> <span class="dv">7</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="at">n =</span> 7L)</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="do">## # A tibble: 7 × 8</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="do">##   origin_date horizon location target  output_type output_type_id value model_id</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="do">##   &lt;date&gt;        &lt;int&gt; &lt;chr&gt;    &lt;chr&gt;   &lt;chr&gt;       &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt;   </span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="do">## 1 2022-12-12        7 US       inc co… quantile    0.01            4205 UMass-ar</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="do">## 2 2022-12-12        7 US       inc co… quantile    0.1             5599 UMass-ar</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="do">## 3 2022-12-12        7 US       inc co… quantile    0.25            6378 UMass-ar</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="do">## 4 2022-12-12        7 US       inc co… quantile    0.75            8533 UMass-ar</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="do">## 5 2022-12-12        7 US       inc co… quantile    0.9             9539 UMass-ar</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="do">## 6 2022-12-12        7 US       inc co… quantile    0.99           11801 UMass-ar</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="do">## 7 2022-12-12        7 US       inc co… median      &lt;NA&gt;            7403 UMass-ar</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The target data is specified for some of the same task ID variables. This data provides the observed value (<code>value</code>) for the forecast target (<code>target</code>) on a given single day (<code>time_idx</code>) and in a given location (<code>location</code>); the forecast-specific task ID variables (<code>origin_date</code> and <code>horizon</code>) are not relevant.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(target_data <span class="sc">|&gt;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">filter</span>(</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    location <span class="sc">==</span> <span class="st">"US"</span>,</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    time_idx <span class="sc">&gt;=</span> <span class="st">"2022-12-12"</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  ))</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="do">##     time_idx location value         target</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="do">## 1 2022-12-12       US  5629 inc covid hosp</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="do">## 2 2022-12-13       US  5556 inc covid hosp</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="do">## 3 2022-12-14       US  5799 inc covid hosp</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="do">## 4 2022-12-15       US  5680 inc covid hosp</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="do">## 5 2022-12-16       US  5570 inc covid hosp</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="do">## 6 2022-12-17       US  5034 inc covid hosp</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We can plot these forecasts and the target data using the <code>plot_step_ahead_model_output()</code> function from <code>hubVis</code>, another package from the hubverse suite for visualizing model outputs.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>hubVis<span class="sc">::</span><span class="fu">plot_step_ahead_model_output</span>(</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">model_output_data =</span> model_outputs <span class="sc">|&gt;</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">filter</span>(</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>      location <span class="sc">==</span> <span class="st">"US"</span>,</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>      output_type <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"median"</span>, <span class="st">"mean"</span>, <span class="st">"quantile"</span>),</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>      origin_date <span class="sc">==</span> <span class="st">"2022-12-12"</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">mutate</span>(</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>      <span class="at">target_date =</span> origin_date <span class="sc">+</span> horizon,</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>      <span class="at">output_type_id =</span> <span class="fu">as.double</span>(output_type_id)</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">truth_data =</span> target_data <span class="sc">|&gt;</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">filter</span>(</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>      location <span class="sc">==</span> <span class="st">"US"</span>,</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>      time_idx <span class="sc">&gt;=</span> <span class="st">"2022-11-01"</span>,</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>      time_idx <span class="sc">&lt;=</span> <span class="st">"2023-03-01"</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">facet =</span> <span class="st">"model_id"</span>,</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">facet_nrow =</span> <span class="dv">1</span>,</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">interactive =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">intervals =</span> <span class="fl">0.5</span>,</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>  <span class="at">one_color =</span> <span class="st">"black"</span>,</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>  <span class="at">pal_color =</span> <span class="cn">NULL</span>,</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>  <span class="at">show_legend =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>  <span class="at">use_median_as_point =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>) <span class="sc">+</span></span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">y =</span> <span class="st">"US incident hospitalizations"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="hubEnsembles_manuscript-quarto_files/figure-html/plot-ex-mods-1.png" class="img-fluid figure-img" width="768"></p>
+<figcaption class="figure-caption">Sample model output. One example forecast of daily US incident COVID-19 hospitalizations is shown for each model (panels). Forecasts are represented by a median (line) and 50% prediction interval (Q25-Q75).</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<!-- # LS: Even though we got some comments that different colors (with an accompanying legend) for the models are unnecessary if the facets are already labeled, I personally find the figures easier to read at a glance with multiple colors. I've left them in in my figures later in the paper but removed the legends since those are redundant. We should choose one approach and standardize, so let me know thoughts on which approach is better -->
+</section>
+<section id="creating-ensembles-with-simple_ensemble" class="level2">
+<h2 class="anchored" data-anchor-id="creating-ensembles-with-simple_ensemble">Creating ensembles with <code>simple_ensemble</code></h2>
+<p>Using the default options for <code>simple_ensemble()</code>, we can generate an equally weighted mean ensemble for each unique combination of values for the task ID variables (here, <code>origin_date</code>, <code>horizon</code>, <code>location</code>, and <code>target</code>), the <code>output_type</code> and the <code>output_type_id</code>. Note that this means that different ensemble methods are used for different output types: for the <code>quantile</code> output type in our example data, the resulting ensemble is a quantile average, while for the <code>pmf</code> output type, the ensemble is a linear pool.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>mean_ens <span class="ot">&lt;-</span> hubEnsembles<span class="sc">::</span><span class="fu">simple_ensemble</span>(model_outputs,</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">model_id =</span> <span class="st">"simple-ensemble-mean"</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The resulting model output has the same structure as the original model output data, with columns for the model ID, task ID variables, output type, output type ID, and value. We will also use <code>model_id = "simple-ensemble</code> to change the name of this ensemble in the resulting data frame; if not specified, the default will be “hub-ensemble”.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(mean_ens <span class="sc">|&gt;</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">filter</span>(</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    output_type <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"quantile"</span>, <span class="st">"median"</span>),</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    output_type_id <span class="sc">%in%</span> <span class="fu">c</span>(<span class="fl">0.01</span>, <span class="fl">0.1</span>, <span class="fl">0.25</span>, <span class="fl">0.75</span>, <span class="fl">0.9</span>, <span class="fl">0.99</span>, <span class="cn">NA</span>),</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    origin_date <span class="sc">==</span> <span class="st">"2022-12-12"</span>,</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    location <span class="sc">==</span> <span class="st">"US"</span>,</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    horizon <span class="sc">==</span> <span class="dv">7</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  ))</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="do">## # A tibble: 6 × 8</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="do">##   model_id  origin_date horizon location target output_type output_type_id value</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="do">##   &lt;chr&gt;     &lt;date&gt;        &lt;int&gt; &lt;chr&gt;    &lt;chr&gt;  &lt;chr&gt;       &lt;chr&gt;          &lt;dbl&gt;</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="do">## 1 simple-e… 2022-12-12        7 US       inc c… median      &lt;NA&gt;           6604.</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="do">## 2 simple-e… 2022-12-12        7 US       inc c… quantile    0.01           2291.</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="do">## 3 simple-e… 2022-12-12        7 US       inc c… quantile    0.1            4224.</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="do">## 4 simple-e… 2022-12-12        7 US       inc c… quantile    0.25           5415.</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a><span class="do">## 5 simple-e… 2022-12-12        7 US       inc c… quantile    0.75           7846.</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="do">## 6 simple-e… 2022-12-12        7 US       inc c… quantile    0.9            9189</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="changing-the-aggregation-function" class="level3">
+<h3 class="anchored" data-anchor-id="changing-the-aggregation-function">Changing the aggregation function</h3>
+<p>We can change the function that is used to aggregate model outputs. For example, we may want to calculate a median of the component models’ submitted values for each quantile. We do so by specifying <code>agg_fun = median</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>median_ens <span class="ot">&lt;-</span> hubEnsembles<span class="sc">::</span><span class="fu">simple_ensemble</span>(model_outputs,</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">agg_fun =</span> median,</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">model_id =</span> <span class="st">"simple-ensemble-median"</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Custom functions can also be passed into the <code>agg_fun</code> argument. For example, in some circumstances a geometric mean may be a more appropriate way to combine component model outputs; here we define a custom function <code>geometric_mean()</code> to do so. Any custom function to be used requires an argument <code>x</code> for the vector of numeric values to summarize, and if relevant, an argument <code>w</code> of numeric weights. Then, we can use this custom function to ensemble the component model outputs, again using <code>agg_fun = geometric_mean</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>geometric_mean <span class="ot">&lt;-</span> <span class="cf">function</span>(x) {</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  n <span class="ot">&lt;-</span> <span class="fu">length</span>(x)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="fu">prod</span>(x)<span class="sc">^</span>(<span class="dv">1</span> <span class="sc">/</span> n))</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>geometric_mean_ens <span class="ot">&lt;-</span> hubEnsembles<span class="sc">::</span><span class="fu">simple_ensemble</span>(model_outputs,</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">agg_fun =</span> geometric_mean,</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">model_id =</span> <span class="st">"simple-ensemble-geometric"</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>As expected, the mean, median, and geometric mean each give us slightly different resulting ensembles. The median point estimates and 50% prediction intervals in Figure @ref(fig:plot-ensembles) demonstrate this.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>hubVis<span class="sc">::</span><span class="fu">plot_step_ahead_model_output</span>(</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">model_output_data =</span> dplyr<span class="sc">::</span><span class="fu">bind_rows</span>(</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    mean_ens,</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    median_ens,</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    geometric_mean_ens</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">filter</span>(</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>      location <span class="sc">==</span> <span class="st">"US"</span>,</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>      output_type <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"median"</span>, <span class="st">"mean"</span>, <span class="st">"quantile"</span>),</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>      origin_date <span class="sc">==</span> <span class="st">"2022-12-12"</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">mutate</span>(</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>      <span class="at">target_date =</span> origin_date <span class="sc">+</span> horizon,</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>      <span class="at">output_type_id =</span> <span class="fu">as.double</span>(output_type_id)</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">truth_data =</span> target_data <span class="sc">|&gt;</span></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">filter</span>(</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>      location <span class="sc">==</span> <span class="st">"US"</span>,</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>      time_idx <span class="sc">&gt;=</span> <span class="st">"2022-11-01"</span>,</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>      time_idx <span class="sc">&lt;=</span> <span class="st">"2023-03-01"</span></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>  <span class="at">use_median_as_point =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>  <span class="at">interactive =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>  <span class="at">intervals =</span> <span class="fl">0.5</span>,</span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>  <span class="at">show_legend =</span> <span class="cn">TRUE</span></span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>) <span class="sc">+</span></span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">y =</span> <span class="st">"US incident hospitalizations"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="hubEnsembles_manuscript-quarto_files/figure-html/plot-ensembles-1.png" class="img-fluid figure-img" width="768"></p>
+<figcaption class="figure-caption">Three different ensembles for daily US incident COVID-19 hospitalizations. Each ensemble combines individual predictions from the example hub (Fig @ref(fig:plot-ex-mods)) using three methods: arithmetic mean (green), geometric mean (purple), and median (orange). All methods correspond to variations of the quantile average approach.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="weighting-model-contributions" class="level3">
+<h3 class="anchored" data-anchor-id="weighting-model-contributions">Weighting model contributions</h3>
+<p>In addition, we can weight the contributions of each model in the ensemble by providing a <code>data.frame</code> that specifies these weights. For example, if we want to include the baseline model in the ensemble, but give it less weight than the other forecasts, we would use the <code>weights = model_weights</code> argument, where <code>model_weights</code> is a <code>data.frame</code> with a <code>model_id</code> column containing each unique model_id and a <code>weight</code> column. The argument <code>weights_col_name</code> can optionally be used in the case where the <code>data.frame</code> defines model weights in a column named something other than <code>weight</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>model_weights <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">model_id =</span> <span class="fu">c</span>(<span class="st">"UMass-ar"</span>, <span class="st">"UMass-gbq"</span>, <span class="st">"simple_hub-baseline"</span>),</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">weight =</span> <span class="fu">c</span>(<span class="fl">0.4</span>, <span class="fl">0.4</span>, <span class="fl">0.2</span>)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>weighted_mean_ens <span class="ot">&lt;-</span> hubEnsembles<span class="sc">::</span><span class="fu">simple_ensemble</span>(model_outputs,</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">weights =</span> model_weights,</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">model_id =</span> <span class="st">"simple-ensemble-weighted-mean"</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="creating-ensembles-with-linear_pool" class="level2">
+<h2 class="anchored" data-anchor-id="creating-ensembles-with-linear_pool">Creating ensembles with <code>linear_pool</code></h2>
+<p>We can also generate a linear pool ensemble, or distributional mixture, using the <code>linear_pool()</code> function; this function can be applied to predictions with an <code>output_type</code> of <code>mean</code>, <code>quantile</code>, <code>cdf</code>, or <code>pmf</code>. Our example hub includes <code>median</code> output type, so we exclude it from the calculation.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>linear_pool_ens <span class="ot">&lt;-</span> hubEnsembles<span class="sc">::</span><span class="fu">linear_pool</span>(</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  model_outputs <span class="sc">|&gt;</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">filter</span>(output_type <span class="sc">!=</span> <span class="st">"median"</span>),</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">model_id =</span> <span class="st">"linear-pool"</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>As described above, for <code>quantile</code> model outputs, the <code>linear_pool</code> function approximates the full probability distribution for each component prediction using the value-quantile pairs provided by that model, and then obtains quasi-random samples from that distributional estimate. The number of samples drawn from the distribution of each component model defaults to <code>1e4</code>, but this can be changed using the <code>n_samples</code> argument.</p>
+<p>In Figure @ref(fig:plot-ex-quantile-and-linear-pool), we compare ensemble results generated by <code>simple_ensemble</code> and <code>linear_pool</code> for model outputs of output types PMF and quantile. As expected, the results from the two functions are equivalent for the PMF output type (because averaging probability bins is the definition of the linear pool method). This is not the case for the quantile output type, because the simple_ensemble is computing a quantile average.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="hubEnsembles_manuscript-quarto_files/figure-html/plot-ex-quantile-and-linear-pool-1.png" class="img-fluid figure-img" width="960"></p>
+<figcaption class="figure-caption">Comparison of results from <code>simple_ensemble</code> (blue) and <code>linear pool</code> (red). (Panel A) Ensemble predictions of 1-week change in US incident hospitalizations (classified as large decrease, decrease, stable, increase, large increase), which provide an example of PMF output type. (Panel B) Ensemble predictions of daily US incident COVID-19 hospitalizations, which provide an example of quantile output type. Note, for quantile output type, <code>simple_ensemble</code> corresponds to a quantile average. Ensembles combine individual models from the example hub (Fig @ref(fig:plot-ex-mods)).</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="case-study-weekly-incident-flu-hospitalizations" class="level1">
+<h1>Case study: Weekly incident flu hospitalizations</h1>
+<p>To demonstrate the utility of the <code>hubEnsembles</code> package and the differences between the two ensembling functions, we examine the case of predicting weekly influenza hospitalizations in the US.</p>
+<p>Since 2013 the US Center for Disease Control and Prevention (CDC) has been soliciting forecasts of seasonal influenza from modeling teams through a collaborative challenge called FluSight <span class="citation" data-cites="cdc_flusight">(<a href="#ref-cdc_flusight" role="doc-biblioref">CDC 2023</a>)</span>. Here we combine these forecasts using various aggregation methods to take advantage of the greater consistency <span class="citation" data-cites="hibon2005">(<a href="#ref-hibon2005" role="doc-biblioref">Hibon and Evgeniou 2005</a>)</span> and accuracy <span class="citation" data-cites="clemen1989 timmermann2006b">(<a href="#ref-clemen1989" role="doc-biblioref">Clemen 1989</a>; <a href="#ref-timmermann2006b" role="doc-biblioref">Timmermann 2006</a>)</span> of ensembles over individual models. In particular, we examine four equally-weighted ensembling methods implemented through <code>simple_ensemble()</code> and <code>linear_pool()</code>: a quantile (arithmetic) mean, a quantile median, a linear pool with normal tails, and a linear pool with lognormal tails.</p>
+<p>The component forecasts used to generate the ensembles consist of those submitted during influenza seasons 2021-2022 and 2022-2023, the only two complete seasons for which FluSight collected quantile forecasts for a target of weekly incident flu hospitalizations at the time of this writing. These predictions are not yet formatted according to hubverse standards but are easily transformed using the <code>as_model_out_tbl()</code> function from the <code>hubUtils</code> package. Below we print the first six rows of the transformed forecasts made on May 15, 2023 for California.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>flu_forecasts_raw <span class="ot">&lt;-</span> readr<span class="sc">::</span><span class="fu">read_rds</span>(<span class="st">"data/flu_forecasts_raw.rds"</span>)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>forecast_data_hub <span class="ot">&lt;-</span> flu_forecasts_raw <span class="sc">|&gt;</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">rename</span>(<span class="at">forecast_date =</span> timezero, <span class="at">location =</span> unit) <span class="sc">|&gt;</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  tidyr<span class="sc">::</span><span class="fu">separate</span>(target, <span class="at">sep =</span> <span class="st">" "</span>, <span class="at">convert =</span> <span class="cn">TRUE</span>, <span class="at">into =</span> <span class="fu">c</span>(<span class="st">"horizon"</span>, <span class="st">"target"</span>), <span class="at">extra =</span> <span class="st">"merge"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_model_out_tbl</span>(</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">model_id_col =</span> <span class="st">"model"</span>,</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">output_type_col =</span> <span class="st">"class"</span>,</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">output_type_id_col =</span> <span class="st">"quantile"</span>,</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">value_col =</span> <span class="st">"value"</span>,</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">sep =</span> <span class="st">"-"</span>,</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">trim_to_task_ids =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">hub_con =</span> <span class="cn">NULL</span>,</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">task_id_cols =</span> <span class="fu">c</span>(<span class="st">"forecast_date"</span>, <span class="st">"location"</span>, <span class="st">"horizon"</span>, <span class="st">"target"</span>),</span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">remove_empty =</span> <span class="cn">TRUE</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>forecast_data_hub <span class="sc">|&gt;</span></span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">filter</span>(location <span class="sc">==</span> <span class="st">"06"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>() <span class="sc">|&gt;</span></span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="table table-sm table-striped small">
+<colgroup>
+<col style="width: 18%">
+<col style="width: 11%">
+<col style="width: 8%">
+<col style="width: 7%">
+<col style="width: 6%">
+<col style="width: 18%">
+<col style="width: 9%">
+<col style="width: 12%">
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">model_id</th>
+<th style="text-align: left;">forecast_date</th>
+<th style="text-align: left;">season</th>
+<th style="text-align: left;">location</th>
+<th style="text-align: right;">horizon</th>
+<th style="text-align: left;">target</th>
+<th style="text-align: left;">output_type</th>
+<th style="text-align: right;">output_type_id</th>
+<th style="text-align: right;">value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">CADPH-FluCAT_Ensemble</td>
+<td style="text-align: left;">2023-05-15</td>
+<td style="text-align: left;">2022-2023</td>
+<td style="text-align: left;">06</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">wk ahead inc flu hosp</td>
+<td style="text-align: left;">quantile</td>
+<td style="text-align: right;">0.010</td>
+<td style="text-align: right;">0.000000</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">CADPH-FluCAT_Ensemble</td>
+<td style="text-align: left;">2023-05-15</td>
+<td style="text-align: left;">2022-2023</td>
+<td style="text-align: left;">06</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">wk ahead inc flu hosp</td>
+<td style="text-align: left;">quantile</td>
+<td style="text-align: right;">0.025</td>
+<td style="text-align: right;">0.000000</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">CADPH-FluCAT_Ensemble</td>
+<td style="text-align: left;">2023-05-15</td>
+<td style="text-align: left;">2022-2023</td>
+<td style="text-align: left;">06</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">wk ahead inc flu hosp</td>
+<td style="text-align: left;">quantile</td>
+<td style="text-align: right;">0.050</td>
+<td style="text-align: right;">4.387663</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">CADPH-FluCAT_Ensemble</td>
+<td style="text-align: left;">2023-05-15</td>
+<td style="text-align: left;">2022-2023</td>
+<td style="text-align: left;">06</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">wk ahead inc flu hosp</td>
+<td style="text-align: left;">quantile</td>
+<td style="text-align: right;">0.100</td>
+<td style="text-align: right;">10.779742</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">CADPH-FluCAT_Ensemble</td>
+<td style="text-align: left;">2023-05-15</td>
+<td style="text-align: left;">2022-2023</td>
+<td style="text-align: left;">06</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">wk ahead inc flu hosp</td>
+<td style="text-align: left;">quantile</td>
+<td style="text-align: right;">0.150</td>
+<td style="text-align: right;">14.898658</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">CADPH-FluCAT_Ensemble</td>
+<td style="text-align: left;">2023-05-15</td>
+<td style="text-align: left;">2022-2023</td>
+<td style="text-align: left;">06</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">wk ahead inc flu hosp</td>
+<td style="text-align: left;">quantile</td>
+<td style="text-align: right;">0.200</td>
+<td style="text-align: right;">18.263880</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Within the now-properly formatted model outputs, the task ID variables are horizon, location, target, and forecast date (the date on which the forecast was made). All of the forecasts have a quantile output type with 23 total unique output type IDs <span class="math display">\[Q = \{.010, 0.025, .050, .100, \cdots, .900, .950, .990\}.\]</span> The values of these quantile forecasts are non-negative. The resulting ensemble forecasts will have the same task ID variables and model output specifications.</p>
+<p>Next the component model outputs are combined using the following code to generate each model, then repeated for every forecast date.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>mean_ensemble <span class="ot">&lt;-</span> forecast_data_hub <span class="sc">|&gt;</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(model_id <span class="sc">!=</span> <span class="st">"Flusight-baseline"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  hubEnsembles<span class="sc">::</span><span class="fu">simple_ensemble</span>(<span class="at">weights =</span> <span class="cn">NULL</span>, <span class="at">agg_fun =</span> <span class="st">"mean"</span>, <span class="at">model_id =</span> <span class="st">"mean-ensemble"</span>)</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>median_ensemble <span class="ot">&lt;-</span> forecast_data_hub <span class="sc">|&gt;</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(model_id <span class="sc">!=</span> <span class="st">"Flusight-baseline"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>  hubEnsembles<span class="sc">::</span><span class="fu">simple_ensemble</span>(<span class="at">weights =</span> <span class="cn">NULL</span>, <span class="at">agg_fun =</span> <span class="st">"median"</span>, <span class="at">model_id =</span> <span class="st">"median-ensemble"</span>)</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>lp_normal <span class="ot">&lt;-</span> forecast_data_hub <span class="sc">|&gt;</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(model_id <span class="sc">!=</span> <span class="st">"Flusight-baseline"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>  hubEnsembles<span class="sc">::</span><span class="fu">linear_pool</span>(<span class="at">weights =</span> <span class="cn">NULL</span>, <span class="at">n_samples =</span> <span class="fl">1e5</span>, <span class="at">model_id =</span> <span class="st">"lp-normal"</span>, <span class="at">tail_dist =</span> <span class="st">"norm"</span>)</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>lp_lognormal <span class="ot">&lt;-</span> forecast_data_hub <span class="sc">|&gt;</span></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(model_id <span class="sc">!=</span> <span class="st">"Flusight-baseline"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>  hubEnsembles<span class="sc">::</span><span class="fu">linear_pool</span>(<span class="at">weights =</span> <span class="cn">NULL</span>, <span class="at">n_samples =</span> <span class="fl">1e5</span>, <span class="at">model_id =</span> <span class="st">"lp-lognormal"</span>, <span class="at">tail_dist =</span> <span class="st">"lnorm"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We score the ensemble forecasts for every unique combination of task ID variables against target data using several common metrics in forecast evaluation, including weighted interval score (WIS) <span class="citation" data-cites="bracher_evaluating_2021">(<a href="#ref-bracher_evaluating_2021" role="doc-biblioref">Bracher et al. 2021</a>)</span>, mean absolute error (MAE), 50% prediction interval (PI) coverage, and 95% PI coverage. Of these metrics, WIS and PI coverage evaluate probabilistic forecasts while MAE evaluates point forecasts. In this analysis, we take the 0.5 quantile to be the point forecast.</p>
+<p>WIS measures how consistent a set of prediction intervals is with the true value and is an alternative to common proper scoring rules like the Log Score and Continuous Ranked Probability Score, which can’t be evaluated directly for quantile forecasts <span class="citation" data-cites="bracher_evaluating_2021">(<a href="#ref-bracher_evaluating_2021" role="doc-biblioref">Bracher et al. 2021</a>)</span>. Since WIS is made up of three component penalties—one for each of spread, over-prediction, and under-prediction—a lower value indicates a more accurate forecast <span class="citation" data-cites="bracher_evaluating_2021">(<a href="#ref-bracher_evaluating_2021" role="doc-biblioref">Bracher et al. 2021</a>)</span>. The <span class="math inline">\((1-\alpha)*100\)</span>% PI coverage measures the proportion of the time that PIs at that nominal level included the true value, which provides information about whether a forecast has accurately characterized the uncertainty of future observations. Achieving approximately nominal (<span class="math inline">\((1-\alpha)*100\)</span>%) coverage indicates a well-calibrated forecast. MAE measures the average absolute error of a set of forecasts against the true value; smaller values of MAE indicate better forecast accuracy.</p>
+<p>The results show that the quantile median ensemble had the best overall performance in terms of WIS and MAE (and the relative versions of these metrics) with above-nominal coverage rates (Table @ref(tab:overall-evaluation)). The two linear opinion pools had very similar performance to each other. These methods had the second-best performance as measured by WIS and MAE, but they had the highest 50% and 95% coverage rates, with empirical coverage that was well above the nominal coverage rate. The quantile mean performed the worst of the ensembles with the highest MAE, which was substantially different from that of the other ensembles.</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="table table-sm table-striped small">
+<caption>Summary of overall model performance across both seasons, averaged over all locations except the US national location.</caption>
+<colgroup>
+<col style="width: 24%">
+<col style="width: 13%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">model</th>
+<th style="text-align: left;">wis</th>
+<th style="text-align: left;">mae</th>
+<th style="text-align: left;">cov50</th>
+<th style="text-align: left;">cov95</th>
+<th style="text-align: left;">rwis</th>
+<th style="text-align: left;">rmae</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>median-ensemble</strong></td>
+<td style="text-align: left;"><strong>18.158</strong></td>
+<td style="text-align: left;"><strong>27.36</strong></td>
+<td style="text-align: left;"><em>0.597</em></td>
+<td style="text-align: left;"><strong>0.922</strong></td>
+<td style="text-align: left;"><strong>0.794</strong></td>
+<td style="text-align: left;"><strong>0.933</strong></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">lp-normal</td>
+<td style="text-align: left;">19.745</td>
+<td style="text-align: left;">27.932</td>
+<td style="text-align: left;">0.709</td>
+<td style="text-align: left;">0.99</td>
+<td style="text-align: left;">0.863</td>
+<td style="text-align: left;">0.953</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">lp-lognormal</td>
+<td style="text-align: left;">19.747</td>
+<td style="text-align: left;">27.933</td>
+<td style="text-align: left;">0.708</td>
+<td style="text-align: left;">0.99</td>
+<td style="text-align: left;">0.863</td>
+<td style="text-align: left;">0.953</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">mean-ensemble</td>
+<td style="text-align: left;">20.18</td>
+<td style="text-align: left;">29.582</td>
+<td style="text-align: left;"><strong>0.595</strong></td>
+<td style="text-align: left;">0.889</td>
+<td style="text-align: left;">0.882</td>
+<td style="text-align: left;">1.009</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Flusight-baseline</td>
+<td style="text-align: left;">22.876</td>
+<td style="text-align: left;">29.315</td>
+<td style="text-align: left;">0.604</td>
+<td style="text-align: left;">0.881</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">1</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Plots of the models’ forecasts can aid our understanding about the origin of these accuracy differences. For example, the linear opinion pools, which had the highest coverage rates, consistently had some of the widest prediction intervals. The median ensemble, which had the best WIS, seems to have best-balanced interval width overall, with narrower intervals than the linear pools that achieved near-nominal coverage on average across all time points. The quantile mean’s interval widths could vary, though it usually had narrower intervals than the linear pools. However, this model’s point forecasts demonstrated a larger error margin compared to the other ensembles, especially at longer horizons. This can be seen in Figure @ref(fig:plot-forecasts-hubVis) for the 4-week ahead forecast in California following the 2022-23 season peak on December 5, 2022. Here the quantile mean is predicting a continued increase in hospitalizations while the other models predict a flat or slightly downward trend.</p>
+<!-- ELR: comments on the plot below:
+ - can we get it so that there is not a line during the off season in this plot?
+ - I don't think we need to color by model or have a legend for model color, since the model names are already in the facet labels.
+-->
+<div class="cell">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="hubEnsembles_manuscript-quarto_files/figure-html/plot-forecasts-hubVis-1.png" class="img-fluid figure-img" width="1152"></p>
+<figcaption class="figure-caption">TO BE FIXED: One to four week ahead forecasts for select dates plotted against target data for California.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>When examining the forecasts week-by-week across all locations, the ensemble models tend to have similar MAE values during the entire time period. This is especially prevalent at the one-week ahead horizon, with slight divergence in MAE values for certain weeks at the four week ahead horizon Figure @ref(fig:wis-mae-vs-forecast-date). However, the models show greater differences for the other two metrics, particularly during times of rapid change (Figure @ref(fig:wis-mae-vs-forecast-date)), with the scores aligning near-perfectly with the observed weekly incident hospitalizations. In fact, the linear pools have a lower WIS than the median ensemble at the one week ahead forecast horizon for over a third of forecast dates (11 weeks) during the 2022-2023 season: from October 17, 2022 to December 12, 2022; January 2, 2023; and January 9, 2023. These dates span the rapid rise and fall of incident flu hospitalizations surrounding the season’s peak, with the largest differences in WIS occurring on November 28, December 5, December 12, January 2, and January 9. Additionally, the PI coverage rates for the linear pools were at least as large as the coverage rates of the other models throughout the entire period of analysis at both the 1 and 4 week ahead forecast horizons (see Figure @ref(fig:cov95-vs-forecast-date)).</p>
+<div class="cell">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="hubEnsembles_manuscript-quarto_files/figure-html/wis-mae-vs-forecast-date-1.png" class="img-fluid figure-img" width="1152"></p>
+<figcaption class="figure-caption">Average h-week ahead WIS and MAE by forecast date for each model for all locations (except the US national location), split by season for readability. Average target data across all locations is plotted in black.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="hubEnsembles_manuscript-quarto_files/figure-html/cov95-vs-forecast-date-1.png" class="img-fluid figure-img" width="1152"></p>
+<figcaption class="figure-caption">Average h-week ahead 95% PI coverage and target data by forecast date for each model for all locations (except the US national location), split by season for readability.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>From these results, we can see that different ensembling methods perform best under different circumstances, though in this analysis all of the ensemble variations outperformed the baseline model. While the quantile median had the best overall results for WIS, MAE, 50% PI coverage, and 95% PI coverage, other models may perform better from week-to-week for each metric. For example, the linear pools achieved the lowest WIS during the period of rapid change in incident flu hospitalizations surrounding the season’s peak in early December 2022.</p>
+<p>Depending on the target being forecast or the goal of forecasting, the user may opt to choose a particular aggregation method that is most aligned with the objectives. One case may call for prioritizing above-nominal coverage rates while another may be more interested in accurate point forecasts. The <code>simple_ensemble</code> and <code>linear_pool</code> functions and the ability to specify component model weights and an aggregation function for <code>simple_ensemble</code> allow users to implement a variety of ensemble methods.</p>
+</section>
+<section id="conclusion" class="level1">
+<h1>Conclusion</h1>
+<!-- # EH: I opted for short and sweet here. We could also expand each of the ideas into a paragraph. -->
+<p>Ensembles of independent models are a powerful tool to generate more accurate and more reliable forecasts of future outcomes than a single model alone. Here, we have demonstrated how to utilize <code>hubEnsembles</code>, a simple and flexible framework to combine individual model forecasts and create ensemble predictions. When using <code>hubEnsembles</code>, it is important to carefully choose an ensemble method that is well suited for the situation. Although there may not be a “best” method, matching the properties of a given ensemble method with the features of the component models will likely yield best results. For example, we showed for forecasts of seasonal influenza in the US, the quantile median ensemble performed best overall, but the linear pool method had advantages during periods of rapid change, when outlying component forecasts were likely more important. Notably, all ensemble methods outperformed the baseline model. These performance improvements from ensemble models motivate the use of a “hub-based” approach to prediction for infectious diseases and in other fields. Fitting within the larger suite of “hubverse” tools that support such efforts, the <code>hubEnsembles</code> package provides important software infrastructure for leveraging the power of multi-model ensembles.</p>
+</section>
+<section id="references" class="level1 unnumbered">
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-aastveit2018" class="csl-entry" role="listitem">
+Aastveit, Knut Are, James Mitchell, Francesco Ravazzolo, and Herman K. van Dijk. 2018. <span>“The Evolution of Forecast Density Combinations in Economics.”</span> Amsterdam; Rotterdam. <a href="https://www.econstor.eu/handle/10419/185588">https://www.econstor.eu/handle/10419/185588</a>.
+</div>
+<div id="ref-alley2019" class="csl-entry" role="listitem">
+Alley, Richard B., Kerry A. Emanuel, and Fuqing Zhang. 2019. <span>“Advances in Weather Prediction.”</span> <em>Science</em> 363 (6425): 342–44. <a href="https://doi.org/10.1126/science.aav7274">https://doi.org/10.1126/science.aav7274</a>.
+</div>
+<div id="ref-bosse_stackr_2023" class="csl-entry" role="listitem">
+Bosse, Nikos, Yuling Yao, Sam Abbott, and Sebastian Funk. 2023. <em>Stackr: <span>Create</span> <span>Mixture</span> <span>Models</span> <span>From</span> <span>Predictive</span> <span>Samples</span></em>. <a href="http://epiforecasts.io/stackr/">http://epiforecasts.io/stackr/</a>.
+</div>
+<div id="ref-bracher_evaluating_2021" class="csl-entry" role="listitem">
+Bracher, Johannes, Evan L. Ray, Tilmann Gneiting, and Nicholas G. Reich. 2021. <span>“Evaluating Epidemic Forecasts in an Interval Format.”</span> <em>PLOS Computational Biology</em> 17 (2): e1008618. <a href="https://doi.org/10.1371/journal.pcbi.1008618">https://doi.org/10.1371/journal.pcbi.1008618</a>.
+</div>
+<div id="ref-cdc_flusight" class="csl-entry" role="listitem">
+CDC. 2023. <span>“About Flu Forecasting.”</span> <a href="https://www.cdc.gov/flu/weekly/flusight/how-flu-forecasting.htm">https://www.cdc.gov/flu/weekly/flusight/how-flu-forecasting.htm</a>.
+</div>
+<div id="ref-clemen1989" class="csl-entry" role="listitem">
+Clemen, Robert T. 1989. <span>“Combining Forecasts: A Review and Annotated Bibliography.”</span> <em>International Journal of Forecasting</em> 5 (4): 559–83. <a href="https://doi.org/10.1016/0169-2070(89)90012-5">https://doi.org/10.1016/0169-2070(89)90012-5</a>.
+</div>
+<div id="ref-couch_stacks_2023" class="csl-entry" role="listitem">
+Couch, Simon, and Max Kuhn. 2023. <em>Stacks: Tidy Model Stacking</em>. <a href="https://stacks.tidymodels.org/">https://stacks.tidymodels.org/</a>.
+</div>
+<div id="ref-cramer2022" class="csl-entry" role="listitem">
+Cramer, Estee Y., Evan L. Ray, Velma K. Lopez, Johannes Bracher, Andrea Brennen, Alvaro J. Castro Rivadeneira, Aaron Gerding, et al. 2022. <span>“Evaluation of Individual and Ensemble Probabilistic Forecasts of COVID-19 Mortality in the United States.”</span> <em>Proceedings of the National Academy of Sciences</em> 119 (15): e2113561119. <a href="https://doi.org/10.1073/pnas.2113561119">https://doi.org/10.1073/pnas.2113561119</a>.
+</div>
+<div id="ref-hibon2005" class="csl-entry" role="listitem">
+Hibon, Michèle, and Theodoros Evgeniou. 2005. <span>“To Combine or Not to Combine: Selecting Among Forecasts and Their Combinations.”</span> <em>International Journal of Forecasting</em> 21 (1): 15–24. <a href="https://doi.org/10.1016/j.ijforecast.2004.05.002">https://doi.org/10.1016/j.ijforecast.2004.05.002</a>.
+</div>
+<div id="ref-howerton2023" class="csl-entry" role="listitem">
+Howerton, Emily, Michael C. Runge, Tiffany L. Bogich, Rebecca K. Borchering, Hidetoshi Inamine, Justin Lessler, Luke C. Mullany, et al. 2023. <span>“Context-Dependent Representation of Within- and Between-Model Uncertainty: Aggregating Probabilistic Predictions in Infectious Disease Epidemiology.”</span> <em>Journal of The Royal Society Interface</em> 20 (198): 20220659. <a href="https://doi.org/10.1098/rsif.2022.0659">https://doi.org/10.1098/rsif.2022.0659</a>.
+</div>
+<div id="ref-hubverse_docs" class="csl-entry" role="listitem">
+Infectious Disease Modeling Hubs, Consortium of. 2022. <span>“The Hubverse: Open Tools for Collaborative Forecasting.”</span> <a href="https://hubdocs.readthedocs.io/en/latest/index.html">https://hubdocs.readthedocs.io/en/latest/index.html</a>.
+</div>
+<div id="ref-johansson2019" class="csl-entry" role="listitem">
+Johansson, Michael A., Karyn M. Apfeldorf, Scott Dobson, Jason Devita, Anna L. Buczak, Benjamin Baugher, Linda J. Moniz, et al. 2019. <span>“An open challenge to advance probabilistic forecasting for dengue epidemics.”</span> <em>Proceedings of the National Academy of Sciences</em> 116 (48): 24268–74. <a href="https://doi.org/10.1073/pnas.1909865116">https://doi.org/10.1073/pnas.1909865116</a>.
+</div>
+<div id="ref-lichtendahl2013" class="csl-entry" role="listitem">
+Lichtendahl, Kenneth C., Yael Grushka-Cockayne, and Robert L. Winkler. 2013. <span>“Is It Better to Average Probabilities or Quantiles?”</span> <em>Management Science</em> 59 (7): 1594–1611. <a href="https://doi.org/10.1287/mnsc.1120.1667">https://doi.org/10.1287/mnsc.1120.1667</a>.
+</div>
+<div id="ref-mcandrew_aggregating_2021" class="csl-entry" role="listitem">
+McAndrew, Thomas, Nutcha Wattanachit, Graham C. Gibson, and Nicholas G. Reich. 2021. <span>“Aggregating Predictions from Experts: <span>A</span> Review of Statistical Methods, Experiments, and Applications.”</span> <em>WIREs Computational Statistics</em> 13 (2): e1514. <a href="https://doi.org/doi.org/10.1002/wics.1514">https://doi.org/doi.org/10.1002/wics.1514</a>.
+</div>
+<div id="ref-mcgowan2019" class="csl-entry" role="listitem">
+McGowan, Craig J., Matthew Biggerstaff, Michael Johansson, Karyn M. Apfeldorf, Michal Ben-Nun, Logan Brooks, Matteo Convertino, et al. 2019. <span>“Collaborative Efforts to Forecast Seasonal Influenza in the United States, 2015<span></span>2016.”</span> <em>Scientific Reports</em> 9 (1): 683. <a href="https://doi.org/10.1038/s41598-018-36361-9">https://doi.org/10.1038/s41598-018-36361-9</a>.
+</div>
+<div id="ref-niederreiter1992quasirandom" class="csl-entry" role="listitem">
+Niederreiter, Harald. 1992. <em>Random Number Generation and Quasi-Monte Carlo Methods</em>. Philadelphia PA: Society for Industrial; Applied Mathematics.
+</div>
+<div id="ref-pedregosa_scikit-learn_2011" class="csl-entry" role="listitem">
+Pedregosa, Fabian, Gaël Varoquaux, Alexandre Gramfort, Vincent Michel, Bertrand Thirion, Olivier Grisel, Mathieu Blondel, et al. 2011. <span>“Scikit-Learn: <span>Machine</span> <span>Learning</span> in <span>Python</span>.”</span> <em>Journal of Machine Learning Research</em> 12 (85): 2825–30. <a href="http://jmlr.org/papers/v12/pedregosa11a.html">http://jmlr.org/papers/v12/pedregosa11a.html</a>.
+</div>
+<div id="ref-distfromq" class="csl-entry" role="listitem">
+Ray, Evan, and Aaron Gerding. 2024. <span>“Distfromq: Reconstruct a Distribution from a Collection of Quantiles.”</span> <a href="http://reichlab.io/distfromq/">http://reichlab.io/distfromq/</a>.
+</div>
+<div id="ref-reich2022" class="csl-entry" role="listitem">
+Reich, Nicholas G., Justin Lessler, Sebastian Funk, Cecile Viboud, Alessandro Vespignani, Ryan J. Tibshirani, Katriona Shea, et al. 2022. <span>“Collaborative Hubs: Making the Most of Predictive Epidemic Modeling.”</span> <em>American Journal of Public Health</em> 112 (6): 839–42. <a href="https://doi.org/10.2105/AJPH.2022.306831">https://doi.org/10.2105/AJPH.2022.306831</a>.
+</div>
+<div id="ref-stone1961" class="csl-entry" role="listitem">
+Stone, M. 1961. <span>“The Opinion Pool.”</span> <em>The Annals of Mathematical Statistics</em> 32 (4): 1339–42. <a href="http://www.jstor.org/stable/2237933">http://www.jstor.org/stable/2237933</a>.
+</div>
+<div id="ref-tebaldi2007" class="csl-entry" role="listitem">
+Tebaldi, Claudia, and Reto Knutti. 2007. <span>“The Use of the Multi-Model Ensemble in Probabilistic Climate Projections.”</span> <em>Philosophical Transactions: Mathematical, Physical and Engineering Sciences</em> 365 (1857): 2053–75. <a href="https://doi.org/10.1098/rsta.2007.2076">https://doi.org/10.1098/rsta.2007.2076</a>.
+</div>
+<div id="ref-timmermann2006b" class="csl-entry" role="listitem">
+Timmermann, Allan. 2006. <span>“Chapter 4 Forecast Combinations.”</span> In, edited by G. Elliott, C. W. J. Granger, and A. Timmermann, 1:135–96. Elsevier. <a href="https://doi.org/10.1016/S1574-0706(05)01004-9">https://doi.org/10.1016/S1574-0706(05)01004-9</a>.
+</div>
+<div id="ref-viboud2018" class="csl-entry" role="listitem">
+Viboud, Cécile, Kaiyuan Sun, Robert Gaffey, Marco Ajelli, Laura Fumanelli, Stefano Merler, Qian Zhang, Gerardo Chowell, Lone Simonsen, and Alessandro Vespignani. 2018. <span>“The RAPIDD Ebola Forecasting Challenge: Synthesis and Lessons Learnt.”</span> <em>Epidemics</em>, The RAPIDD Ebola Forecasting Challenge, 22 (March): 13–21. <a href="https://doi.org/10.1016/j.epidem.2017.08.002">https://doi.org/10.1016/j.epidem.2017.08.002</a>.
+</div>
+<div id="ref-vincent1912" class="csl-entry" role="listitem">
+Vincent, Stella Burnham. 1912. <span>“The Function of the Vibrissae in the Behavior of the White Rat.”</span> PhD thesis, Cambridge MA.
+</div>
+<div id="ref-weiss2019" class="csl-entry" role="listitem">
+Weiss, Christoph,E., Eran Raviv, and Gernot Roetzer. 2019. <span>“Forecast Combinations in R Using the ForecastComb Package.”</span> <em>The R Journal</em> 10 (2): 262. <a href="https://doi.org/10.32614/RJ-2018-052">https://doi.org/10.32614/RJ-2018-052</a>.
+</div>
+<div id="ref-winkler2015" class="csl-entry" role="listitem">
+Winkler, Robert L. 2015. <span>“Equal Versus Differential Weighting in Combining Forecasts.”</span> <em>Risk Analysis</em> 35 (1): 16–18. <a href="https://doi.org/10.1111/risa.12302">https://doi.org/10.1111/risa.12302</a>.
+</div>
+</div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div id="quarto-reuse" class="quarto-appendix-contents"><div><a rel="license" href="https://creativecommons.org/licenses/by/4.0/">https://creativecommons.org/licenses/by/4.0/</a></div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{shandross,
+  author = {Shandross, Li and Howerton, Emily and Ray, Evan},
+  title = {The {`hubEnsembles`} Package},
+  volume = {1},
+  number = {1},
+  doi = {10.5555/12345678},
+  langid = {en},
+  abstract = {Predictions of future outcomes are essential to planning
+    and decision making, yet generating reliable predictions of the
+    future is challenging. One method for overcoming this challenge is
+    combining predictions across multiple, independent models.}
+}
+</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-shandross" class="csl-entry quarto-appendix-citeas" role="listitem">
+Shandross, Li, Emily Howerton, and Evan Ray. n.d. <span>“The
+`hubEnsembles` Package.”</span> Journal of Open Source Software. <a href="https://doi.org/10.5555/12345678">https://doi.org/10.5555/12345678</a>.
+</div></div></section></div></main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
