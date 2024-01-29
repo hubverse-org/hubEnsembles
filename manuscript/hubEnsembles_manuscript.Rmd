@@ -59,7 +59,7 @@ To understand how these methods are implemented in `hubEnsembles`, we first must
 
 ## Hubverse terminology and conventions
 
-Model output is a central concept in the `hubEnsembles` package which generally refers to a specially formatted tabular representation of predictions produced by a modeling team. Each row represents a single, unique prediction with each column providing information about what is being predicted, its scope, and its value. Per hubverse convention, the columns may be broken down into task IDs, specification of the model output representation, and the model ID [@hubverse_docs]. <!--#ELR: or `model_id`, if we want to name the specific column -->
+Model output, generally referring to a specially formatted tabular representation of predictions produced by a modeling team, is a central concept in the hubEnsembles effort. Each row represents a single, unique prediction with each column providing information about what is being predicted, its scope, and its value. Per hubverse convention, the columns may be broken down into task IDs, specification of the model output representation, and the model ID [@hubverse_docs]. <!--#ELR: or `model_id`, if we want to name the specific column -->
 This representation of predictive model output is codified by the `model_out_tbl` S3 class in the `hubUtils` package, one of the foundational hubverse packages. 
 <!-- NGR: may need to change package name listed above once packages are split.-->
 
