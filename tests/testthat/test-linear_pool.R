@@ -81,7 +81,7 @@ test_that("sorted unique output_type_ids are identical in the component model ou
     c(250, 350, 500, 350)
 
   expected_output_type_ids <- data.frame(quantile_outputs) |>
-    dplyr::mutate(output_type_id=as.character(output_type_id)) |>
+    dplyr::mutate(output_type_id=output_type_id) |>
     dplyr::pull(output_type_id) |>
     unique() |>
     sort()
