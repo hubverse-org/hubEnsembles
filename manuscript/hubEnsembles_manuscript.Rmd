@@ -935,12 +935,12 @@ cov95_date_plot_states4_2223 <- flu_date_horizon_season_states |>
                                       truth_data = flu_truth_all) +
   coord_cartesian(ylim = c(0, 1.05))
 
-truth_states_2122 <- plot_flu_truth(flu_truth_all,
-                                    date_range = flu_dates_21_22[c(1, 22)],
-                                    main = "target data 2021-22")
-truth_states_2223 <- plot_flu_truth(flu_truth_all,
-                                    date_range = flu_dates_22_23[c(1, 31)],
-                                    main = "target data 2022-23")
+truth_states_2122 <- flu_truth_all |>
+  plot_flu_truth(date_range = flu_dates_21_22[c(1, 22)],
+                 main = "Target Data 2021-22 (wk inc flu hosp)")
+truth_states_2223 <- flu_truth_all |>
+  plot_flu_truth(date_range = flu_dates_22_23[c(1, 31)],
+                 main = "Target Data 2022-23 (wk inc flu hosp)")
 
 truth_states_2122 + truth_states_2223 +
   cov95_date_plot_states1_2122 + cov95_date_plot_states1_2223 +

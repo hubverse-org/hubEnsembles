@@ -171,7 +171,7 @@ plot_evaluated_scores_forecast_date <- function(summarized_scores, model_names,
       ggplot2::scale_y_continuous(
         name = paste("average", y_var),
         sec.axis = ggplot2::sec_axis(trans = ~ ./truth_scaling,
-                                     name = "avg target data")) +
+                                     name = "average\n target data")) +
       ggplot2::scale_color_manual(breaks = model_names, values = model_colors) +
       ggplot2::labs(title = main, x = "forecast date") +
       ggplot2::theme_bw()
@@ -231,6 +231,6 @@ plot_flu_truth <- function(truth_data, date_range = NULL, main = "truth data",
                           date_labels = "%b '%y") +
     ggplot2::coord_cartesian(ylim = c(0, max(truth_to_plot$value)*1.1)) +
     ggplot2::labs(title = main, x = "forecast date",
-                  y = "average wk inc flu hosp") +
+                  y = "average target data") +
     ggplot2::theme_bw()
 }
