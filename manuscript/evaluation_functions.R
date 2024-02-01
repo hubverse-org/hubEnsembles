@@ -80,7 +80,7 @@ evaluate_flu_scores <- function(scores, grouping_variables, baseline_name,
 #' @param y_var A string specifying which metric to plot as the y-variable
 #' @param horizon An integer specifying the horizon of the desired metric to
 #'  plot
-#' @param main A string specifying the plot title
+#' @param main A string specifying the plot title. Defaults to NULL.
 #' @param truth_data A data frame of truth data to plot in the same figure.
 #'  Defaults to `NULL`. If provided must contain target_end_date and value
 #'  columns.
@@ -94,7 +94,8 @@ evaluate_flu_scores <- function(scores, grouping_variables, baseline_name,
 #' @examples
 plot_evaluated_scores_forecast_date <- function(summarized_scores, model_names,
                                                 model_colors, y_var = "wis",
-                                                h = 1, main, truth_data = NULL,
+                                                h = 1, main = NULL, 
+                                                truth_data = NULL,
                                                 truth_scaling = 0.125) {
 
   data_to_plot <- summarized_scores |>
