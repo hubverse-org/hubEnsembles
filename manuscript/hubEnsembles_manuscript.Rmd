@@ -68,26 +68,27 @@ At minimum the task IDs (also called task ID variables) together specify the des
 ```{r flu-forecasts, echo=FALSE}
 library(hubUtils)
 readr::read_rds("data/flu_forecasts_raw.rds") |>
-    tidyr::separate(target, sep = " ", convert = TRUE, 
-                    into = c("horizon", "target"), extra = "merge") |>
-    as_model_out_tbl(
-        model_id_col = "model",
-        output_type_col = "class",
-        output_type_id_col = "quantile",
-        value_col = "value",
-        sep = "-",
-        trim_to_task_ids = FALSE,
-        hub_con = NULL,
-        task_id_cols = c("timezero", "location", "horizon", "target"),
-        remove_empty = TRUE
-    ) |>
-    dplyr::filter(
-      unit == "US", 
-      output_type_id %in% c(0.01, 0.1, 0.25, 0.5, 0.75, 0.9, 0.99)) |>
-    dplyr::rename(reference_date = timezero, location = unit) |>
-    dplyr::select(-season) |>
-    head(n = 7L) |>
-    knitr::kable(caption = "Example of forecasts for weekly incident flu hospitalizations, formatted according to hubverse standards. Quantile forecasts for the median and 50%, 80%, and 98% prediction intervals are shown.")
+  tidyr::separate(target, sep = " ", convert = TRUE,
+                  into = c("horizon", "target"), extra = "merge") |>
+  as_model_out_tbl(model_id_col = "model",
+                   output_type_col = "class",
+                   output_type_id_col = "quantile",
+                   value_col = "value",
+                   sep = "-",
+                   trim_to_task_ids = FALSE,
+                   hub_con = NULL,
+                   task_id_cols = c("timezero", "location", "horizon",
+                                    "target"),
+                   remove_empty = TRUE) |>
+  dplyr::filter(unit == "US",
+                output_type_id %in% c(0.01, 0.1, 0.25, 0.5, 0.75, 0.9, 0.99)) |>
+  dplyr::rename(reference_date = timezero, location = unit) |>
+  dplyr::select(-season) |>
+  head(n = 7L) |>
+  knitr::kable(caption = "Example of forecasts for weekly incident flu 
+               hospitalizations, formatted according to hubverse standards. 
+               Quantile forecasts for the median and 50%, 80%, and 98% 
+               prediction intervals are shown.")
 ```
 
 
@@ -133,191 +134,165 @@ quantile_probs <- c(0.01, seq(from = 0.1, to = 0.9, by = 0.2), 0.99)
 lop_example_x <- seq(85, 135, 10)
 x <- c(seq(from = 0.0, to = 400.0, length = 1001), lop_example_x)
 
-
-# distribution1 ~ N(100, 10)
+# distribution 1 ~ N(100, 10)
 mean1 <- 100
 sd1 <- 10
-# distribution2 ~ N(120, 5)
+# distribution 2 ~ N(120, 5)
 mean2 <- 120
 sd2 <- 5
 # distribution colors
 dist_colors <- viridisLite::viridis(2, end = 0.9)
 
 # cdfs defined for fixed quantiles
-cdf_defined_on_quantiles <- data.frame(
-  quantile = rep(quantile_probs, 3), 
-  value = c(qnorm(quantile_probs, mean1, sd1), 
-            qnorm(quantile_probs, mean2, sd2), 
-            qnorm(quantile_probs, mean(c(mean1,mean2)), mean(c(sd1, sd2)))),
-  distribution = c(rep("A", length(quantile_probs)), 
-                   rep("B", length(quantile_probs)), 
-                   rep("Q", length(quantile_probs))))
+cdf_defined_on_quantiles <-
+  data.frame(quantile = rep(quantile_probs, 3),
+             value = c(qnorm(quantile_probs, mean1, sd1),
+                       qnorm(quantile_probs, mean2, sd2),
+                       qnorm(quantile_probs, mean(c(mean1, mean2)),
+                             mean(c(sd1, sd2)))),
+             distribution = c(rep("A", length(quantile_probs)),
+                              rep("B", length(quantile_probs)),
+                              rep("Q", length(quantile_probs))))
 
 # cdfs defined for fixed values
-cdf_defined_on_values <- data.frame(
-  value = rep(x, 4), 
-  quantile = c(pnorm(x, mean1, sd1), 
-               pnorm(x, mean2, sd2), 
-               rowMeans(cbind(pnorm(x, mean1, sd1), 
-                              pnorm(x, mean2, sd2))), 
-               pnorm(x, mean(c(mean1, mean2)), mean(c(sd1, sd2)))), 
-  distribution = c(rep("A", length(x)), rep("B", length(x)), 
-                   rep("LOP", length(x)), rep("Q", length(x))))
+cdf_defined_on_values <-
+  data.frame(value = rep(x, 4),
+             quantile = c(pnorm(x, mean1, sd1), pnorm(x, mean2, sd2),
+                          rowMeans(cbind(pnorm(x, mean1, sd1),
+                                         pnorm(x, mean2, sd2))),
+                          pnorm(x, mean(c(mean1, mean2)), mean(c(sd1, sd2)))),
+             distribution = c(rep("A", length(x)), rep("B", length(x)),
+                              rep("LOP", length(x)), rep("Q", length(x))))
 
 # pdfs for all distributions
-pdfs_defined_on_values <- data.frame(
-  value = rep(x, 4), 
-  prob = c(dnorm(x, mean = mean1, sd = sd1), 
-           dnorm(x, mean = mean2, sd = sd2), 
-           rowMeans(cbind(dnorm(x, mean = mean1, sd = sd1), 
-                          dnorm(x, mean = mean2, sd = sd2))), 
-           dnorm(x, mean = mean(c(mean1, mean2)), 
-                 sd = mean(c(sd1, sd2)))), 
-  distribution = c(rep("A", length(x)), rep("B", length(x)), 
-                   rep("LOP", length(x)), rep("Q", length(x))))
+pdfs_defined_on_values <-
+  data.frame(value = rep(x, 4),
+             prob = c(dnorm(x, mean = mean1, sd = sd1),
+                      dnorm(x, mean = mean2, sd = sd2),
+                      rowMeans(cbind(dnorm(x, mean = mean1, sd = sd1),
+                                     dnorm(x, mean = mean2, sd = sd2))),
+                      dnorm(x, mean = mean(c(mean1, mean2)),
+                            sd = mean(c(sd1, sd2)))),
+             distribution = c(rep("A", length(x)), rep("B", length(x)),
+                              rep("LOP", length(x)), rep("Q", length(x))))
 
 ### panel A
-pA <- ggplot(data = dplyr::filter(cdf_defined_on_values, 
+pA <- ggplot(data = dplyr::filter(cdf_defined_on_values,
                                   distribution %in% c("A", "B")),
-             aes(x = value, y = quantile, color = distribution)) + 
-    geom_line(linewidth = 0.8, alpha = 0.3) +
-    geom_segment(data = dplyr::filter(cdf_defined_on_quantiles, 
-                                      distribution %in% c("A", "B")), 
-                 aes(x = value, xend = value, y = 0, yend = quantile), 
-                 alpha = 0.5) +
-    geom_point(data = dplyr::filter(cdf_defined_on_quantiles, 
-                                    distribution %in% c("A", "B"))) + 
-    coord_cartesian(xlim = c(75, 140)) +
-    labs(x = "value", y = "cumulative probability (quantile)", 
-         subtitle = "quantile predictions from two distributions") +
-    scale_color_manual(name = "distributions", 
-                       labels = c("N(100, 10)", "N(120, 5)"),
-                       values = dist_colors) +
-    scale_y_continuous(breaks = quantile_probs, limits = c(0,1),
-                       expand = c(0,0)) +
-    theme_bw() + 
-    theme(legend.position = "bottom", 
-          panel.grid.minor = element_blank(), 
-          panel.grid.major.x = element_blank())
+             aes(x = value, y = quantile, color = distribution)) +
+  geom_line(linewidth = 0.8, alpha = 0.3) +
+  geom_segment(data = dplyr::filter(cdf_defined_on_quantiles,
+                                    distribution %in% c("A", "B")),
+               aes(x = value, xend = value, y = 0, yend = quantile),
+               alpha = 0.5) +
+  geom_point(data = dplyr::filter(cdf_defined_on_quantiles,
+                                  distribution %in% c("A", "B"))) +
+  coord_cartesian(xlim = c(75, 140)) +
+  labs(x = "value", y = "cumulative probability (quantile)",
+       subtitle = "quantile predictions from two distributions") +
+  scale_color_manual(name = "distributions",
+                     labels = c("N(100, 10)", "N(120, 5)"),
+                     values = dist_colors) +
+  scale_y_continuous(breaks = quantile_probs, limits = c(0, 1),
+                     expand = c(0, 0)) +
+  theme_bw() +
+  theme(legend.position = "bottom",
+        panel.grid.minor = element_blank(),
+        panel.grid.major.x = element_blank())
 
 ### panel B
-pB <- ggplot(data = dplyr::filter(cdf_defined_on_values, distribution != "LOP"), 
+pB <- ggplot(data = dplyr::filter(cdf_defined_on_values, distribution != "LOP"),
              mapping = aes(x = value, y = quantile)) +
-    geom_segment(
-        data = 
-          dplyr::filter(cdf_defined_on_quantiles, distribution != "LOP") |>
-          reshape2::dcast(quantile ~ distribution, value.var = "value"), 
-        mapping = aes(x = A, xend = B, y = quantile, yend = quantile), 
-        color = "darkgray", linetype = "dashed") +
-    geom_line(
-        mapping = aes(alpha = distribution, color = distribution, 
-                      linewidth = distribution)) +
-    geom_point(
-        data = dplyr::filter(cdf_defined_on_quantiles, distribution != "LOP"), 
-        mapping = aes(color = distribution, size = distribution)) +
-    coord_cartesian(xlim = c(75, 135)) +
-    labs(x = "value", y = "", subtitle = "quantile average ensemble") +
-    scale_alpha_manual(values = c(0.3, 0.3, 1)) + 
-    scale_color_manual(values = c(dist_colors, "black")) +
-    scale_linewidth_manual(values = c(0.8, 0.8, 1.2)) +
-    scale_size_manual(values = c(1.2, 1.2, 1.7)) +
-    scale_y_continuous(breaks = quantile_probs, 
-                       limits = c(0,1), 
-                       expand = c(0,0)) +
-    theme_bw() +
-    theme(legend.position = "none", panel.grid.minor = element_blank(), 
-          panel.grid.major.x = element_blank())
+  geom_segment(data = dplyr::filter(cdf_defined_on_quantiles,
+                                    distribution != "LOP") |>
+                 reshape2::dcast(quantile ~ distribution, value.var = "value"),
+               mapping = aes(x = A, xend = B, y = quantile, yend = quantile),
+               color = "darkgray", linetype = "dashed") +
+  geom_line(mapping = aes(alpha = distribution, color = distribution,
+                          linewidth = distribution)) +
+  geom_point(data = dplyr::filter(cdf_defined_on_quantiles,
+                                  distribution != "LOP"),
+             mapping = aes(color = distribution, size = distribution)) +
+  coord_cartesian(xlim = c(75, 135)) +
+  labs(x = "value", y = "", subtitle = "quantile average ensemble") +
+  scale_alpha_manual(values = c(0.3, 0.3, 1)) +
+  scale_color_manual(values = c(dist_colors, "black")) +
+  scale_linewidth_manual(values = c(0.8, 0.8, 1.2)) +
+  scale_size_manual(values = c(1.2, 1.2, 1.7)) +
+  scale_y_continuous(breaks = quantile_probs, limits = c(0, 1),
+                     expand = c(0, 0)) +
+  theme_bw() +
+  theme(legend.position = "none", panel.grid.minor = element_blank(),
+        panel.grid.major.x = element_blank())
 
-pB_inset <- ggplot(data = dplyr::filter(pdfs_defined_on_values, 
+pB_inset <- ggplot(data = dplyr::filter(pdfs_defined_on_values,
                                         distribution != "LOP"),
                    mapping = aes(x = value, y = prob, color = distribution)) +
-    geom_line(aes(alpha = distribution, linewidth = distribution)) +
-    coord_cartesian(xlim = c(75, 135)) +
-    scale_alpha_manual(values = c(0.8, 0.8, 1)) +
-    scale_color_manual(values = c(dist_colors, "black")) +
-    scale_linewidth_manual(values = c(0.8, 0.8, 1.2)) +
-    theme_bw() +
-    theme(axis.text.y = element_blank(), axis.ticks.y = element_blank(),
-          axis.title = element_blank(), legend.position = "none",
-          panel.grid = element_blank())
+  geom_line(aes(alpha = distribution, linewidth = distribution)) +
+  coord_cartesian(xlim = c(75, 135)) +
+  scale_alpha_manual(values = c(0.8, 0.8, 1)) +
+  scale_color_manual(values = c(dist_colors, "black")) +
+  scale_linewidth_manual(values = c(0.8, 0.8, 1.2)) +
+  theme_bw() +
+  theme(axis.text.y = element_blank(), axis.ticks.y = element_blank(),
+        axis.title = element_blank(), legend.position = "none",
+        panel.grid = element_blank())
 
-pB_fin <- cowplot::ggdraw(pB) + 
-    cowplot::draw_plot(
-      pB_inset + 
-        theme(plot.margin = unit(0.01*c(1,1,1,1), "cm")), .19, .6, .3, .3, 
-      hjust = 0, vjust = 0)
+pB_fin <- cowplot::ggdraw(pB) +
+  cowplot::draw_plot(pB_inset + theme(plot.margin = unit(0.01 * c(1, 1, 1, 1),
+                                                         "cm")),
+                     .19, .6, .3, .3, hjust = 0, vjust = 0)
 
 
 ### panel C
-pC <- ggplot(data = cdf_defined_on_values |>
-                 dplyr::filter(distribution != "Q"), 
+pC <- ggplot(data = cdf_defined_on_values |> dplyr::filter(distribution != "Q"),
              mapping = aes(x = value, y = quantile)) +
-    geom_segment(
-        data = cdf_defined_on_values |>
-            dplyr::filter(distribution != "Q", 
-                          value %in% lop_example_x) |>
-            reshape2::dcast(value ~ distribution, value.var = "quantile"), 
-        mapping = aes(x = value, xend = value, 
-                      y = A, yend = B), 
-        color = "darkgray", linetype = "dashed") +
-    geom_line(
-        mapping = aes(color = distribution, 
-                      linewidth = distribution)) +
-    geom_point(
-        data = cdf_defined_on_values |>
-            dplyr::filter(distribution != "Q", 
-                          value %in% lop_example_x), 
-        mapping = aes(color = distribution, 
-                      size = distribution)) +
-    coord_cartesian(xlim = c(75, 135)) +
-    labs(x = "value", y = "", 
-         subtitle = "linear pool ensemble") +
-    scale_color_manual(values = c(dist_colors, "black")) +
-    scale_linewidth_manual(values = c(0.8, 0.8, 1.2)) +
-    scale_size_manual(values = c(1.2, 1.2, 1.7)) +
-    scale_y_continuous(breaks = quantile_probs, 
-                       limits = c(0,1), 
-                       expand = c(0,0)) +
-    theme_bw() +
-    theme(legend.position = "none", 
-          panel.grid.minor = element_blank(), 
-          panel.grid.major.x = element_blank())
+  geom_segment(data = cdf_defined_on_values |>
+                 dplyr::filter(distribution != "Q", value %in% lop_example_x) |>
+                 reshape2::dcast(value ~ distribution, value.var = "quantile"),
+               mapping = aes(x = value, xend = value, y = A, yend = B),
+               color = "darkgray", linetype = "dashed") +
+  geom_line(mapping = aes(color = distribution, linewidth = distribution)) +
+  geom_point(data = cdf_defined_on_values |>
+               dplyr::filter(distribution != "Q", value %in% lop_example_x),
+             mapping = aes(color = distribution, size = distribution)) +
+  coord_cartesian(xlim = c(75, 135)) +
+  labs(x = "value", y = "", subtitle = "linear pool ensemble") +
+  scale_color_manual(values = c(dist_colors, "black")) +
+  scale_linewidth_manual(values = c(0.8, 0.8, 1.2)) +
+  scale_size_manual(values = c(1.2, 1.2, 1.7)) +
+  scale_y_continuous(breaks = quantile_probs, limits = c(0, 1),
+                     expand = c(0, 0)) +
+  theme_bw() +
+  theme(legend.position = "none", panel.grid.minor = element_blank(),
+        panel.grid.major.x = element_blank())
 
 pC_inset <- ggplot(data = pdfs_defined_on_values |>
-                       dplyr::filter(distribution != "Q"),
-                   mapping = aes(x = value, y = prob,
-                                 color = distribution)) +
-    geom_line(aes(alpha = distribution,
-                  linewidth = distribution)) +
-    coord_cartesian(xlim = c(75, 135)) +
-    scale_alpha_manual(values = c(0.8, 0.8, 1)) +
-    scale_color_manual(values = c(dist_colors, "black")) +
-    scale_linewidth_manual(values = c(0.8, 0.8, 1.2)) +
-    theme_bw() +
-    theme(axis.text.y = element_blank(),
-          axis.ticks.y = element_blank(),
-          axis.title = element_blank(),
-          legend.position = "none",
-          panel.grid = element_blank())
+                     dplyr::filter(distribution != "Q"),
+                   mapping = aes(x = value, y = prob, color = distribution)) +
+  geom_line(aes(alpha = distribution, linewidth = distribution)) +
+  coord_cartesian(xlim = c(75, 135)) +
+  scale_alpha_manual(values = c(0.8, 0.8, 1)) +
+  scale_color_manual(values = c(dist_colors, "black")) +
+  scale_linewidth_manual(values = c(0.8, 0.8, 1.2)) +
+  theme_bw() +
+  theme(axis.text.y = element_blank(), axis.ticks.y = element_blank(),
+        axis.title = element_blank(), legend.position = "none",
+        panel.grid = element_blank())
 
-pC_fin <- cowplot::ggdraw(pC) + 
-    cowplot::draw_plot(pC_inset +
-                           theme(plot.margin = unit(0.01*c(1,1,1,1), "cm")),    
-                       .19, .6, .3, .3, 
-                       hjust = 0, vjust = 0)
+pC_fin <- cowplot::ggdraw(pC) +
+  cowplot::draw_plot(pC_inset + theme(plot.margin = unit(0.01 * c(1, 1, 1, 1),
+                                                         "cm")),
+                     .19, .6, .3, .3, hjust = 0, vjust = 0)
 
 # combine into final figure
 l <- cowplot::get_legend(pA)
 
-cowplot::plot_grid(
-    cowplot::plot_grid(pA + theme(legend.position = "none"), 
-                       pB_fin,
-                       pC_fin, 
-                       labels = LETTERS[1:3],
-                       nrow = 1, 
-                       rel_widths = c(0.34, 0.33, 0.33)), 
-    l, 
-    ncol = 1, rel_heights = c(0.95, 0.05))
+cowplot::plot_grid(cowplot::plot_grid(pA + theme(legend.position = "none"),
+                                      pB_fin, pC_fin, labels = LETTERS[1:3],
+                                      nrow = 1,
+                                      rel_widths = c(0.34, 0.33, 0.33)),
+                   l, ncol = 1, rel_heights = c(0.95, 0.05))
 
 ```
 
@@ -359,20 +334,20 @@ hub_path <- system.file("example-data/example-simple-forecast-hub",
 model_outputs <- hubUtils::connect_hub(hub_path) |>
   dplyr::collect()
 
-target_data_path <- file.path(hub_path, "target-data", 
+target_data_path <- file.path(hub_path, "target-data",
                               "covid-hospitalizations.csv")
 
 target_data <- read.csv(target_data_path) |>
-    dplyr::mutate(time_idx = as.Date(time_idx))
+  dplyr::mutate(time_idx = as.Date(time_idx))
 ```
 
 Each forecast is made for four task ID variables, including the date the forecast was made (`origin_date`), the number of steps ahead (`horizon`), the location for which the forecast was made (`location`), and the forecast target (`target`). Below is an example from a single model, UMass-ar, for the 1-week ahead forecast of US incident hospitalizations made on December 12, 2022. We print only the median and the 50%, 80%, and 98% prediction intervals, though other intervals and output types are included in the model output.
 
 ```{r}
 model_outputs |>
-  dplyr::filter(output_type %in% c("quantile","median"), 
+  dplyr::filter(output_type %in% c("quantile", "median"),
                 output_type_id %in% c(0.01, 0.1, 0.25, 0.75, 0.9, 0.99, NA),
-                origin_date == "2022-12-12", 
+                origin_date == "2022-12-12",
                 location == "US",
                 horizon == 7) |>
   head(n = 7)
@@ -380,7 +355,7 @@ model_outputs |>
 
 The target data is specified for some of the same task ID variables. This data provides the observed value (`value`) for the forecast target (`target`) on a given single day (`time_idx`) and in a given location (`location`); the forecast-specific task ID variables (`origin_date` and `horizon`) are not relevant.
 ```{r}
-target_data |> 
+target_data |>
   dplyr::filter(location == "US", time_idx >= "2022-12-12") |>
   head()
 ```
@@ -389,26 +364,25 @@ We can plot these forecasts and the target data using the `plot_step_ahead_model
 
 ```{r plot-ex-mods, fig.width = 8, fig.height = 4, fig.cap = "Example model output. One example forecast of daily US incident COVID-19 hospitalizations is shown for each of three models (panels). Forecasts are represented by a median (line) and 50% prediction interval (Q25-Q75)."}
 model_outputs_plot <- model_outputs |>
-      dplyr::filter(location == "US",
-                    output_type %in% c("median", "mean", "quantile"),
-                    origin_date == "2022-12-12") |>
-      dplyr::mutate(target_date =  origin_date + horizon)
-target_data_plot <- target_data |>  
-      dplyr::filter(location == "US",
-                    time_idx >= "2022-11-01",
-                    time_idx <= "2023-03-01")
+  dplyr::filter(location == "US",
+                output_type %in% c("median", "mean", "quantile"),
+                origin_date == "2022-12-12") |>
+  dplyr::mutate(target_date =  origin_date + horizon)
+target_data_plot <- target_data |>
+  dplyr::filter(location == "US",
+                time_idx >= "2022-11-01",
+                time_idx <= "2023-03-01")
 
-hubVis::plot_step_ahead_model_output(
-    model_output_data = model_outputs_plot,
-    truth_data = target_data_plot,
-    facet = "model_id", 
-    facet_nrow = 1, 
-    interactive = FALSE,
-    intervals = 0.5,
-    one_color = "black",
-    pal_color = NULL, 
-    show_legend = FALSE, 
-    use_median_as_point = TRUE) +
+hubVis::plot_step_ahead_model_output(model_output_data = model_outputs_plot,
+                                     truth_data = target_data_plot,
+                                     facet = "model_id",
+                                     facet_nrow = 1,
+                                     interactive = FALSE,
+                                     intervals = 0.5,
+                                     one_color = "black",
+                                     pal_color = NULL,
+                                     show_legend = FALSE,
+                                     use_median_as_point = TRUE) +
   theme_bw() +
   labs(y = "US incident hospitalizations")
 ```
@@ -423,7 +397,7 @@ hubVis::plot_step_ahead_model_output(
 Using the default options for `simple_ensemble()`, we can generate an equally weighted mean ensemble for each unique combination of values for the task ID variables (here, `origin_date`, `horizon`, `location`, and `target`), the `output_type` and the `output_type_id`. Note that this means that different ensemble methods are used for different output types: for the `quantile` output type in our example data, the resulting ensemble is a quantile average, while for the `pmf` output type, the ensemble is a linear pool.
 
 ```{r}
-mean_ens <- hubEnsembles::simple_ensemble(model_outputs, 
+mean_ens <- hubEnsembles::simple_ensemble(model_outputs,
                                           model_id = "simple-ensemble-mean")
 ```
 
@@ -443,8 +417,8 @@ mean_ens |>
 We can change the function that is used to aggregate model outputs. For example, we may want to calculate a median of the component models' submitted values for each quantile. We do so by specifying `agg_fun = median`. 
 
 ```{r}
-median_ens <- hubEnsembles::simple_ensemble(model_outputs, 
-                                            agg_fun = median, 
+median_ens <- hubEnsembles::simple_ensemble(model_outputs,
+                                            agg_fun = median,
                                             model_id = "simple-ensemble-median")
 ```
 Custom functions can also be passed into the `agg_fun` argument. We illustrate this by defining a custom function, `geometric_mean`, to compute the ensemble prediction as a geometric mean of the component model predictions. Any custom function to be used must have an argument `x` for the vector of numeric values to summarize, and if relevant, an argument `w` of numeric weights.
@@ -452,12 +426,12 @@ Custom functions can also be passed into the `agg_fun` argument. We illustrate t
 ```{r}
 geometric_mean <- function(x) {
   n <- length(x)
-  return(prod(x)^(1/n))
+  return(prod(x) ^ (1 / n))
 }
 
-geometric_mean_ens <-  hubEnsembles::simple_ensemble(
-  model_outputs, agg_fun = geometric_mean, 
-  model_id = "simple-ensemble-geometric")
+geometric_mean_ens <-
+  hubEnsembles::simple_ensemble(model_outputs, agg_fun = geometric_mean,
+                                model_id = "simple-ensemble-geometric")
 ```
 
 As expected, the mean, median, and geometric mean each give us slightly different resulting ensembles. The median point estimates and 50% prediction intervals in Figure \@ref(fig:plot-ensembles) demonstrate this. 
@@ -469,9 +443,9 @@ model_output_plot <- dplyr::bind_rows(mean_ens, median_ens,
                 output_type %in% c("median", "mean", "quantile"),
                 origin_date == "2022-12-12") |>
   dplyr::mutate(target_date = origin_date + horizon)
-  
+
 target_data_plot <- target_data |>
-  dplyr::filter(location == "US", time_idx >= "2022-11-01", 
+  dplyr::filter(location == "US", time_idx >= "2022-11-01",
                 time_idx <= "2023-03-01")
 
 hubVis::plot_step_ahead_model_output(model_output_data = model_output_plot,
@@ -480,8 +454,8 @@ hubVis::plot_step_ahead_model_output(model_output_data = model_output_plot,
                                      interactive = FALSE,
                                      intervals = 0.5,
                                      show_legend = TRUE) +
-    theme_bw() +
-    labs(y = "US incident hospitalizations")
+  theme_bw() +
+  labs(y = "US incident hospitalizations")
 ```
 
 ### Weighting model contributions
@@ -489,13 +463,13 @@ hubVis::plot_step_ahead_model_output(model_output_data = model_output_plot,
 We can weight the contributions of each model in the ensemble by providing a `data.frame` that specifies these weights for the `weights` argument of `simple_ensemble`. This `data.frame` should include a `model_id` column containing each unique model_id and a `weight` column. In the following example, we include the baseline model in the ensemble, but give it less weight than the other forecasts.
 
 ```{r}
-model_weights <- data.frame(
-  model_id = c("UMass-ar", "UMass-gbq", "simple_hub-baseline"),
-  weight = c(0.4, 0.4, 0.2))
+model_weights <- data.frame(model_id = c("UMass-ar", "UMass-gbq",
+                                         "simple_hub-baseline"),
+                            weight = c(0.4, 0.4, 0.2))
 
-weighted_mean_ens <- hubEnsembles::simple_ensemble(
-  model_outputs, weights = model_weights,
-  model_id = "simple-ensemble-weighted-mean")
+weighted_mean_ens <-
+  hubEnsembles::simple_ensemble(model_outputs, weights = model_weights,
+                                model_id = "simple-ensemble-weighted-mean")
 ```
 
 ## Creating ensembles with `linear_pool`
@@ -503,9 +477,10 @@ weighted_mean_ens <- hubEnsembles::simple_ensemble(
 We can also generate a linear pool ensemble, or distributional mixture, using the `linear_pool()` function; this function can be applied to predictions with an `output_type` of `mean`, `quantile`, `cdf`, or `pmf`. Our example hub includes `median` output type, so we exclude it from the calculation.  
 
 ```{r}
-linear_pool_ens <- hubEnsembles::linear_pool(
-  dplyr::filter(model_outputs, output_type != "median"), 
-  model_id = "linear-pool")
+linear_pool_ens <-
+  hubEnsembles::linear_pool(dplyr::filter(model_outputs,
+                                          output_type != "median"),
+                            model_id = "linear-pool")
 ```
 
 As described above, for `quantile` model outputs, the `linear_pool` function approximates the full probability distribution for each component prediction using the value-quantile pairs provided by that model, and then obtains quasi-random samples from that distributional estimate. The number of samples drawn from the distribution of each component model defaults to `1e4`, but this can be changed using the `n_samples` argument.
@@ -516,20 +491,19 @@ In Figure \@ref(fig:plot-ex-quantile-and-linear-pool), we compare ensemble resul
 
 p1 <- dplyr::bind_rows(mean_ens,
                        linear_pool_ens) |>
-    dplyr::filter(output_type == "pmf", origin_date == "2022-12-12", 
-                  horizon == 7, location == "US") |>
-    dplyr::mutate(output_type_id = gsub("_", " ", output_type_id)) |>
-    dplyr::mutate(output_type_id = factor(
-      output_type_id, levels = c("large decrease", "decrease", "stable", 
-                                 "increase", "large increase"))) |>
-    ggplot(aes(x = output_type_id, y = value, fill = model_id)) + 
-    geom_bar(stat = "identity", position = "dodge") + 
-    labs(x = "1-week change in US incident hospitalizations", 
-         y = "probability") + 
-    scale_fill_brewer(palette = "Set1") +
-    theme_bw() + 
-    theme(legend.position = "bottom", legend.title = element_blank())
-
+  dplyr::filter(output_type == "pmf", origin_date == "2022-12-12", horizon == 7,
+                location == "US") |>
+  dplyr::mutate(output_type_id = gsub("_", " ", output_type_id)) |>
+  dplyr::mutate(output_type_id = factor(output_type_id,
+                                        levels = c("large decrease", "decrease",
+                                                   "stable", "increase",
+                                                   "large increase"))) |>
+  ggplot(aes(x = output_type_id, y = value, fill = model_id)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "1-week change in US incident hospitalizations", y = "probability") +
+  scale_fill_brewer(palette = "Set1") +
+  theme_bw() +
+  theme(legend.position = "bottom", legend.title = element_blank())
 
 model_output_plot <- linear_pool_ens |>
   dplyr::filter(output_type_id == 0.5) |>
@@ -544,26 +518,29 @@ target_data_plot <- target_data |>
   dplyr::filter(location == "US", time_idx >= "2022-11-01",
                 time_idx <= "2023-03-01")
 
-p2 <- hubVis::plot_step_ahead_model_output(
-    model_output_data = model_output_plot,
-    truth_data = target_data_plot,
-    use_median_as_point = TRUE,
-    interactive = FALSE,
-    intervals = 0.5,
-    pal_color = "Set1",
-    show_legend = TRUE) +
+p2 <-
+  hubVis::plot_step_ahead_model_output(model_output_data = model_output_plot,
+                                       truth_data = target_data_plot,
+                                       use_median_as_point = TRUE,
+                                       interactive = FALSE,
+                                       intervals = 0.5,
+                                       pal_color = "Set1",
+                                       show_legend = TRUE) +
   theme_bw() +
   labs(y = "US incident hospitalizations")
 
 l <- cowplot::get_legend(p1)
 
-cowplot::plot_grid(
-    cowplot::plot_grid(
-      p1 + labs(subtitle = "example PMF output type") + 
-        theme(legend.position = "none"), 
-      p2 + labs(subtitle = "example quantile output type") + 
-        theme(legend.position = "none"),
-      labels = LETTERS[1:2]), l, ncol = 1,rel_heights = c(0.95, 0.05)
+cowplot::plot_grid(cowplot::plot_grid(p1 +
+                                        labs(subtitle =
+                                               "example PMF output type") +
+                                        theme(legend.position = "none"),
+                                      p2 +
+                                        labs(subtitle =
+                                               "example quantile output type") +
+                                        theme(legend.position = "none"),
+                                      labels = LETTERS[1:2]), l, ncol = 1,
+  rel_heights = c(0.95, 0.05)
 )
 ```
 
@@ -581,19 +558,19 @@ flu_forecasts_raw <- readr::read_rds("data/flu_forecasts_raw.rds")
 
 forecast_data_hub <- flu_forecasts_raw |>
   dplyr::rename(forecast_date = timezero, location = unit) |>
-  tidyr::separate(target, sep = " ", convert = TRUE, 
+  tidyr::separate(target, sep = " ", convert = TRUE,
                   into = c("horizon", "target"), extra = "merge") |>
-  as_model_out_tbl(
-    model_id_col = "model",
-    output_type_col = "class",
-    output_type_id_col = "quantile",
-    value_col = "value",
-    sep = "-",
-    trim_to_task_ids = FALSE,
-    hub_con = NULL,
-    task_id_cols = c("forecast_date", "location", "horizon", "target"),
-    remove_empty = TRUE)
-  
+  as_model_out_tbl(model_id_col = "model",
+                   output_type_col = "class",
+                   output_type_id_col = "quantile",
+                   value_col = "value",
+                   sep = "-",
+                   trim_to_task_ids = FALSE,
+                   hub_con = NULL,
+                   task_id_cols = c("forecast_date", "location", "horizon",
+                                    "target"),
+                   remove_empty = TRUE)
+
 forecast_data_hub |>
   dplyr::filter(location == "06") |>
   head() |>
@@ -605,19 +582,27 @@ Within the now-properly formatted model outputs, the task ID variables are forec
 Next the component model outputs are combined using the following code to generate predictions from each ensemble model.
 
 ```{r construct ensembles, eval=FALSE}
-forecast_data_hub <- dplyr::filter(forecast_data_hub, model_id != "Flusight-baseline")
+forecast_data_hub <- dplyr::filter(forecast_data_hub,
+                                   model_id != "Flusight-baseline")
 
-mean_ensemble <- hubEnsembles::simple_ensemble(
-  forecast_data_hub, weights=NULL, agg_fun = "mean", model_id="mean-ensemble")
+mean_ensemble <- hubEnsembles::simple_ensemble(forecast_data_hub,
+                                               weights = NULL,
+                                               agg_fun = "mean",
+                                               model_id = "mean-ensemble")
 
-median_ensemble <- hubEnsembles::simple_ensemble(
-  forecast_data_hub, weights=NULL, agg_fun = "median", model_id="median-ensemble")
+median_ensemble <- hubEnsembles::simple_ensemble(forecast_data_hub,
+                                                 weights = NULL,
+                                                 agg_fun = "median",
+                                                 model_id = "median-ensemble")
 
-lp_normal <- hubEnsembles::linear_pool(
-  forecast_data_hub, weights=NULL, n_samples = 1e5, model_id="lp-normal", tail_dist="norm") 
+lp_normal <- hubEnsembles::linear_pool(forecast_data_hub, weights = NULL,
+                                       n_samples = 1e5, model_id = "lp-normal",
+                                       tail_dist = "norm")
 
-lp_lognormal <- hubEnsembles::linear_pool(
-  forecast_data_hub, weights=NULL, n_samples = 1e5, model_id="lp-lognormal", tail_dist="lnorm")
+lp_lognormal <- hubEnsembles::linear_pool(forecast_data_hub, weights = NULL,
+                                          n_samples = 1e5,
+                                          model_id = "lp-lognormal",
+                                          tail_dist = "lnorm")
 ```
 
 ```{r read in forecasts and scores, echo=FALSE}
@@ -627,7 +612,7 @@ library(RColorBrewer)
 source("evaluation_functions.R")
 source("as_covid_hub_forecasts.R")
 
-model_names <- c("Flusight-baseline", "lp-lognormal", "lp-normal", 
+model_names <- c("Flusight-baseline", "lp-lognormal", "lp-normal",
                  "mean-ensemble", "median-ensemble")
 
 flu_truth_all <- readr::read_rds("data/flu_truth_all.rds")
@@ -646,7 +631,7 @@ flu_dates_off_season <- as.Date("2022-06-27") + weeks(0:15)
 all_flu_dates <- c(flu_dates_21_22, flu_dates_22_23)
 ```
 
-We score the ensemble forecasts for every unique combination of task ID variables against target data using several common metrics in forecast evaluation, including weighted interval score (WIS) [@bracher_evaluating_2021], mean absolute error (MAE), 50% prediction interval (PI) coverage, and 95% PI coverage. Of these metrics, WIS and PI coverage evaluate probabilistic forecasts while MAE evaluates point forecasts. In this analysis, we take the 0.5 quantile to be the point forecast. 
+We score the ensemble forecasts for every unique combination of task ID variables against target data using several common metrics in forecast evaluation, including weighted interval score (WIS) [@bracher_evaluating_2021], mean absolute error (MAE), 50% prediction interval (PI) coverage, and 95% PI coverage. Of these metrics, WIS and PI coverage evaluate probabilistic forecasts while MAE evaluates point forecasts. In this analysis, we take the 0.5 quantile to be the point forecast.
 
 WIS measures how consistent a set of prediction intervals is with the observed value and is an alternative to common proper scoring rules like the Log Score and Continuous Ranked Probability Score, which can't be evaluated directly for quantile forecasts [@bracher_evaluating_2021]. Since WIS is made up of three component penalties—one for each of spread, over-prediction, and under-prediction—a lower value indicates a more accurate forecast [@bracher_evaluating_2021]. The $(1-\alpha)*100$% PI coverage measures the proportion of the time that PIs at that nominal level included the true value, which provides information about whether a forecast has accurately characterized its uncertainty about future observations. Achieving approximately nominal ($(1-\alpha)*100$%) coverage indicates a well-calibrated forecast. MAE measures the average absolute error of a set of forecasts against the true value; smaller values of MAE indicate better forecast accuracy.
 
@@ -655,14 +640,16 @@ The results show that the quantile median ensemble had the best overall performa
 ```{r overall-evaluation, message=FALSE, warning=FALSE, echo=FALSE}
 source("format_cells.R")
 flu_overall_states <- flu_scores_all |>
-  evaluate_flu_scores(grouping_variables = NULL, 
+  evaluate_flu_scores(grouping_variables = NULL,
                       baseline_name = "Flusight-baseline", us_only = FALSE)
 
 flu_overall_states |>
   format_cells(rows = 1, cols = c(1:3, 5:7), "bold") |>
   format_cells(rows = 4, cols = 4, "bold") |>
   format_cells(rows = 1, cols = 4, "italics") |>
-  knitr::kable(caption = "Summary of overall model performance across both seasons, averaged over all locations except the US national location.")
+  knitr::kable(caption = "Summary of overall model performance across both 
+               seasons, averaged over all locations except the US national 
+               location.")
 ```
 
 Plots of the models' forecasts can aid our understanding about the origin of these accuracy differences. For example, the linear opinion pools, which had the highest coverage rates, consistently had some of the widest prediction intervals. The median ensemble, which had the best WIS, seems to have best-balanced interval width overall, with narrower intervals than the linear pools that achieved near-nominal coverage on average across all time points. The quantile mean's interval widths could vary, though it usually had narrower intervals than the linear pools. However, this model's point forecasts demonstrated a larger error margin compared to the other ensembles, especially at longer horizons. This can be seen in Figure \@ref(fig:plot-forecasts-hubVis) for the 4-week ahead forecast in California following the 2022-23 season peak on December 5, 2022. Here the quantile mean predicted a continued increase in hospitalizations, at a steeper slope than the other ensemble methods.
@@ -677,148 +664,153 @@ Plots of the models' forecasts can aid our understanding about the origin of the
 
 ```{r plot-forecasts, eval = FALSE, echo = FALSE, fig.cap = 'One to four week ahead forecasts for select dates plotted against target data for Vermont and California.'}
 flu_forecasts_wide <- flu_forecasts_all |>
-  dplyr::left_join(covidHubUtils::hub_locations_flusight, 
+  dplyr::left_join(covidHubUtils::hub_locations_flusight,
                    by = c("location" = "fips")) |>
-  dplyr::mutate(horizon=as.character(horizon)) 
+  dplyr::mutate(horizon = as.character(horizon))
 
 select_dates <- all_flu_dates[seq(2, 53, 4)]
 
-forecasts_vt <- flu_forecasts_wide |> 
+forecasts_vt <- flu_forecasts_wide |>
   dplyr::filter(location == "50", forecast_date %in% select_dates)
-    
-vt_plot <- covidHubUtils::plot_forecasts(
-  forecasts_vt, 
-  hub = "FluSight",
-  intervals = c(.50, .95),
-  truth_data = dplyr::select(flu_truth_all, model, location, target_end_date, 
-                             target_variable, value),
-  truth_source = "HealthData",
-  use_median_as_point = TRUE,
-  facet = model ~.,
-  facet_nrow = 5,
-  fill_by_model = TRUE, 
-  fill_transparency = 0.75,
-  # top_layer = c("forecasts", "truth"),
-  title = "none",
-  subtitle = "none",
-  show_caption = FALSE,
-  plot = FALSE)
+
+vt_plot <-
+  covidHubUtils::plot_forecasts(forecasts_vt,
+                                hub = "FluSight",
+                                intervals = c(.50, .95),
+                                truth_data = dplyr::select(flu_truth_all, model,
+                                                           location,
+                                                           target_end_date,
+                                                           target_variable,
+                                                           value),
+                                truth_source = "HealthData",
+                                use_median_as_point = TRUE,
+                                facet = model ~ .,
+                                facet_nrow = 5,
+                                fill_by_model = TRUE,
+                                fill_transparency = 0.75,
+                                # top_layer = c("forecasts", "truth"),
+                                title = "none",
+                                subtitle = "none",
+                                show_caption = FALSE,
+                                plot = FALSE)
 
 max_truth_vt <- max(dplyr::filter(flu_truth_all, location == "50")$value)
 max_forecast_vt <- max(dplyr::filter(forecasts_vt, location == "50")$value)
-  
+
 vt_plot <- vt_plot +
-  scale_x_date(name = NULL, limits = c(as.Date("2022-01-01"), 
-                                       as.Date("2023-06-08")), 
+  scale_x_date(name = NULL, limits = c(as.Date("2022-01-01"),
+                                       as.Date("2023-06-08")),
                date_breaks = "4 months", date_labels = "%b '%y") +
-  coord_cartesian(ylim = c(0, max(25, min(max_truth_vt * 3.5, 
+  coord_cartesian(ylim = c(0, max(25, min(max_truth_vt * 3.5,
                                           max_forecast_vt)))) +
   ggtitle("Vermont") +
   theme(axis.ticks.length.x = unit(0.5, "cm"),
         axis.text.x = element_text(vjust = 7, hjust = -0.2),
         legend.position = "none")
-          
 
 forecasts_ca <- flu_forecasts_wide |>
   dplyr::filter(location == "06", forecast_date %in% select_dates)
-    
-ca_plot <- covidHubUtils::plot_forecasts(
-  forecasts_ca, 
-  hub = "FluSight",
-  intervals = c(.50, .95),
-  truth_data = dplyr::select(flu_truth_all, model, location, target_end_date, 
-                             target_variable, value),
-  truth_source = "HealthData",
-  use_median_as_point = TRUE,
-  facet = model ~.,
-  facet_nrow = 5,
-  fill_by_model = TRUE, 
-#  fill_transparency = 0.75,
-#  top_layer = c("forecasts", "truth"),
-  title = "none",
-  subtitle = "none",
-  show_caption = FALSE,
-  plot = FALSE)
+
+ca_plot <-
+  covidHubUtils::plot_forecasts(forecasts_ca,
+                                hub = "FluSight",
+                                intervals = c(.50, .95),
+                                truth_data = dplyr::select(flu_truth_all, model,
+                                                           location,
+                                                           target_end_date,
+                                                           target_variable,
+                                                           value),
+                                truth_source = "HealthData",
+                                use_median_as_point = TRUE,
+                                facet = model ~ .,
+                                facet_nrow = 5,
+                                fill_by_model = TRUE,
+                                #  fill_transparency = 0.75,
+                                #  top_layer = c("forecasts", "truth"),
+                                title = "none",
+                                subtitle = "none",
+                                show_caption = FALSE,
+                                plot = FALSE)
 
 max_truth_ca <- max(filter(flu_truth_all, location == "06")$value)
 max_forecast_ca <- max(filter(forecasts_ca, location == "06")$value)
-  
+
 ca_plot <- ca_plot +
-  scale_x_date(name = NULL, limits = c(as.Date("2022-01-01"), 
-                                       as.Date("2023-06-08")), 
+  scale_x_date(name = NULL, limits = c(as.Date("2022-01-01"),
+                                       as.Date("2023-06-08")),
                date_breaks = "4 months", date_labels = "%b '%y") +
-  coord_cartesian(ylim = c(0, max(25, min(max_truth_ca * 3.5, 
+  coord_cartesian(ylim = c(0, max(25, min(max_truth_ca * 3.5,
                                           max_forecast_ca)))) +
   ggtitle("California") +
   theme(axis.ticks.length.x = unit(0.5, "cm"),
         axis.text.x = element_text(vjust = 7, hjust = -0.2),
         legend.position = "none")
-          
+
 vt_plot + ca_plot +
-  plot_layout(ncol = 2, guides='collect') &
-  plot_annotation(
-    title = "Weekly Influenza Hospitalizations: observed and forecasted",
-    subtitle = "Forecasts for Vermont and California, every 4 weeks") &
-  theme(legend.position='none')
+  plot_layout(ncol = 2, guides = "collect") &
+  plot_annotation(title = paste0("Weekly Influenza Hospitalizations: observed",
+                                 " and forecasted"),
+                  subtitle = paste0("Forecasts for Vermont and California, ",
+                                    "every 4 weeks")) &
+  theme(legend.position = "none")
 ```
 
 ```{r plot-forecasts-hubVis, echo = FALSE, fig.cap = 'TO BE FIXED: One to four week ahead forecasts for select dates plotted against target data for California.'}
 library(hubVis)
-select_dates <- c(all_flu_dates[seq(1, 69, 4)], flu_dates_21_22[22] + 
+select_dates <- c(all_flu_dates[seq(1, 69, 4)], flu_dates_21_22[22] +
                     lubridate::weeks(1:16))
-forecasts_ca <- flu_forecasts_og |> 
-  rbind(
-    expand.grid(
-      model_id = model_names[1:5], 
-      forecast_date = flu_dates_21_22[22] + lubridate::weeks(1:16), 
-      location = unique(flu_truth_all$location), 
-      horizon = 1:4,
-      target = "wk ahead inc flu hosp",
-      output_type = "quantile", 
-      output_type_id = c(0.01, 0.025, seq(0.05, 0.95, 0.5), 0.975, 0.99),
-      value = NA) |> 
-    dplyr::mutate(target_end_date = forecast_date + lubridate::weeks(horizon), 
-                  .before = target)) |>
+forecasts_ca <- flu_forecasts_og |>
+  rbind(expand.grid(model_id = model_names[1:5],
+                    forecast_date = flu_dates_21_22[22] +
+                      lubridate::weeks(1:16),
+                    location = unique(flu_truth_all$location),
+                    horizon = 1:4,
+                    target = "wk ahead inc flu hosp",
+                    output_type = "quantile",
+                    output_type_id = c(0.01, 0.025, seq(0.05, 0.95, 0.5),
+                                       0.975, 0.99),
+                    value = NA) |>
+          dplyr::mutate(target_end_date = forecast_date +
+                          lubridate::weeks(horizon), .before = target)) |>
   dplyr::filter(location == "06", forecast_date %in% select_dates) |>
   dplyr::group_by(forecast_date) |>
   as_model_out_tbl()
 
-truth_ca <- flu_truth_all |> 
+truth_ca <- flu_truth_all |>
   dplyr::filter(location == "06") |>
-  rbind(
-    expand.grid(
-      model = "flu-truth", 
-      target_variable = "inc flu hosp",
-      target_end_date = flu_dates_21_22[22] + weeks(1:16), 
-      location = unique(flu_truth_all$location), 
-      value = NA
-    ))
-  
-ca_plot_new <- plot_step_ahead_model_output(
-  forecasts_ca,
-  truth_ca,
-  use_median_as_point = TRUE,
-  show_plot = FALSE,
-  x_col_name = "target_end_date",
-  x_truth_col_name = "target_end_date",
-  show_legend = FALSE,
-  facet = "model_id",
-  facet_nrow = 3,
-  interactive = FALSE,
-  fill_transparency = 0.45,
-  intervals = c(0.5, 0.95),
-  title = "Weekly Incident Hospitalizations for Influenza in California"
-)
+  rbind(expand.grid(model = "flu-truth",
+                    target_variable = "inc flu hosp",
+                    target_end_date = flu_dates_21_22[22] +
+                      lubridate::weeks(1:16),
+                    location = unique(flu_truth_all$location),
+                    value = NA))
+
+ca_plot_new <-
+  plot_step_ahead_model_output(forecasts_ca, truth_ca,
+                               use_median_as_point = TRUE,
+                               show_plot = FALSE,
+                               x_col_name = "target_end_date",
+                               x_truth_col_name = "target_end_date",
+                               show_legend = FALSE,
+                               facet = "model_id",
+                               facet_nrow = 3,
+                               interactive = FALSE,
+                               fill_transparency = 0.45,
+                               intervals = c(0.5, 0.95),
+                               title = paste0("Weekly Incident ",
+                                              "Hospitalizations for Influenza ",
+                                              "in California"))
 
 max_truth_ca <- max(dplyr::filter(flu_truth_all, location == "06")$value)
 max_forecast_ca <- max(dplyr::filter(forecasts_ca, location == "06")$value)
 
 ca_plot_new <- ca_plot_new +
-  scale_x_date(name = NULL, limits = c(as.Date("2022-01-01"), 
-                                       as.Date("2023-06-08")), 
+  scale_x_date(name = NULL, limits = c(as.Date("2022-01-01"),
+                                       as.Date("2023-06-08")),
                date_breaks = "4 months", date_labels = "%b '%y") +
-  coord_cartesian(ylim = c(0, max(25, min(max_truth_ca * 3.5, max_forecast_ca)))) +
-#  ggtitle("California") +
+  coord_cartesian(ylim = c(0, max(25, min(max_truth_ca * 3.5,
+                                          max_forecast_ca)))) +
+  #  ggtitle("California") +
   theme(axis.ticks.length.x = unit(0.5, "cm"),
         axis.text.x = element_text(vjust = 7, hjust = -0.2),
         legend.position = "none")
@@ -828,120 +820,132 @@ ca_plot_new
 
 When examining the forecasts week-by-week across all locations, the ensemble models tend to have similar MAE values during the entire time period, with slight divergence in MAE values for certain weeks at the four week ahead horizon (Figure \@ref(fig:wis-mae-vs-forecast-date)). However, the models show greater differences for the other two metrics, particularly during times of rapid change (Figure \@ref(fig:wis-mae-vs-forecast-date)), with the scores aligning near-perfectly with the observed weekly incident hospitalizations. In fact, the linear pools have a lower WIS than the median ensemble at the one week ahead forecast horizon for over a third of forecast dates (11 weeks) during the 2022-2023 season: from October 17, 2022 to December 12, 2022; January 2, 2023; and January 9, 2023. These dates span the rapid rise and fall of incident flu hospitalizations surrounding the season's peak, with the largest differences in WIS occurring on November 28, December 5, December 12, January 2, and January 9. Additionally, the PI coverage rates for the linear pools were at least as large as the coverage rates of the other models throughout the entire period of analysis at both the 1 and 4 week ahead forecast horizons (see Figure \@ref(fig:cov95-vs-forecast-date)).
 
-```{r wis-mae-vs-forecast-date, message=FALSE, warning=FALSE, fig.cap='Average h-week ahead WIS and MAE by forecast date for each model for all locations (except the US national location), split by season for readability. Average target data across all locations is plotted in black.', echo=FALSE}  
+```{r wis-mae-vs-forecast-date, message=FALSE, warning=FALSE, fig.cap='Average h-week ahead WIS and MAE by forecast date for each model for all locations (except the US national location), split by season for readability. Average target data across all locations is plotted in black.', echo=FALSE} 
 model_names <- c(model_names, "average target data")
 #model_colors <- c("#6BAED6", "#FD8D3C", "#74C476", "#9E9AC8", "#FB6A4A")
-model_colors = c(brewer.pal(5,'Set2'), "black");
+model_colors <- c(brewer.pal(5, "Set2"), "black")
 
 flu_date_horizon_season_states <- flu_scores_all |>
-  evaluate_flu_scores(grouping_variables = c("horizon", "forecast_date", 
-                                             "season"), 
+  evaluate_flu_scores(grouping_variables = c("horizon", "forecast_date",
+                                             "season"),
                       baseline_name = "Flusight-baseline", us_only = FALSE)
 
 # WIS
 wis_date_plot_states1_2122 <- flu_date_horizon_season_states |>
   dplyr::filter(season == "2021-2022") |>
-  plot_evaluated_scores_forecast_date(
-    model_names, model_colors, h = 1, main = "WIS 2021-2022, 1 week ahead", 
-    truth_data = flu_truth_all, truth_scaling = 0.1)
+  plot_evaluated_scores_forecast_date(model_names, model_colors, h = 1,
+                                      main = "WIS 2021-2022, 1 week ahead",
+                                      truth_data = flu_truth_all,
+                                      truth_scaling = 0.1)
 wis_date_plot_states4_2122 <- flu_date_horizon_season_states |>
   dplyr::filter(season == "2021-2022") |>
-  plot_evaluated_scores_forecast_date(
-    model_names, model_colors, h = 4, main = "WIS 2021-2022, 4 week ahead", 
-    truth_data = flu_truth_all, truth_scaling = 0.1)
-  
+  plot_evaluated_scores_forecast_date(model_names, model_colors, h = 4,
+                                      main = "WIS 2021-2022, 4 week ahead",
+                                      truth_data = flu_truth_all,
+                                      truth_scaling = 0.1)
+
 wis_date_plot_states1_2223 <- flu_date_horizon_season_states |>
   dplyr::filter(season == "2022-2023") |>
-  plot_evaluated_scores_forecast_date(
-    model_names, model_colors, h = 1, main = "WIS 2022-2023, 1 week ahead", 
-    truth_data = flu_truth_all, truth_scaling = 0.1)
+  plot_evaluated_scores_forecast_date(model_names, model_colors, h = 1,
+                                      main = "WIS 2022-2023, 1 week ahead",
+                                      truth_data = flu_truth_all,
+                                      truth_scaling = 0.1)
 wis_date_plot_states4_2223 <- flu_date_horizon_season_states |>
   dplyr::filter(season == "2022-2023") |>
-  plot_evaluated_scores_forecast_date(
-    model_names, model_colors, h = 4, main = "WIS 2022-2023, 4 week ahead", 
-    truth_data = flu_truth_all, truth_scaling = 0.1)
+  plot_evaluated_scores_forecast_date(model_names, model_colors, h = 4,
+                                      main = "WIS 2022-2023, 4 week ahead",
+                                      truth_data = flu_truth_all,
+                                      truth_scaling = 0.1)
 
 # MAE
 flu_date_horizon_season_states <- flu_scores_all |>
-    evaluate_flu_scores(
-      grouping_variables = c("horizon", "forecast_date", "season"), 
-      baseline_name = "Flusight-baseline", us_only = FALSE)
+  evaluate_flu_scores(grouping_variables = c("horizon", "forecast_date",
+                                             "season"),
+                      baseline_name = "Flusight-baseline", us_only = FALSE)
 
 mae_date_plot_states1_2122 <- flu_date_horizon_season_states |>
-    dplyr::filter(season == "2021-2022") |>
-    plot_evaluated_scores_forecast_date(
-      model_names, model_colors, h = 1, y_var = "mae", 
-      main = "MAE 2021-2022, 1 week ahead", truth_data = flu_truth_all, 
-      truth_scaling = 0.15)
+  dplyr::filter(season == "2021-2022") |>
+  plot_evaluated_scores_forecast_date(model_names, model_colors, h = 1,
+                                      y_var = "mae",
+                                      main = "MAE 2021-2022, 1 week ahead",
+                                      truth_data = flu_truth_all,
+                                      truth_scaling = 0.15)
 mae_date_plot_states4_2122 <- flu_date_horizon_season_states |>
-    dplyr::filter(season == "2021-2022") |>
-    plot_evaluated_scores_forecast_date(
-      model_names, model_colors, h = 4, y_var = "mae", 
-      main = "MAE 2021-2022, 4 week ahead", truth_data = flu_truth_all, 
-      truth_scaling = 0.15)
+  dplyr::filter(season == "2021-2022") |>
+  plot_evaluated_scores_forecast_date(model_names, model_colors, h = 4,
+                                      y_var = "mae",
+                                      main = "MAE 2021-2022, 4 week ahead",
+                                      truth_data = flu_truth_all,
+                                      truth_scaling = 0.15)
 
 mae_date_plot_states1_2223 <- flu_date_horizon_season_states |>
-    dplyr::filter(season == "2022-2023") |>
-    plot_evaluated_scores_forecast_date(
-      model_names, model_colors, h = 1, y_var = "mae", 
-      main = "MAE 2022-2023, 1 week ahead", truth_data = flu_truth_all, 
-      truth_scaling = 0.15)
+  dplyr::filter(season == "2022-2023") |>
+  plot_evaluated_scores_forecast_date(model_names, model_colors, h = 1,
+                                      y_var = "mae",
+                                      main = "MAE 2022-2023, 1 week ahead",
+                                      truth_data = flu_truth_all,
+                                      truth_scaling = 0.15)
 mae_date_plot_states4_2223 <- flu_date_horizon_season_states |>
-    dplyr::filter(season == "2022-2023") |>
-    plot_evaluated_scores_forecast_date(
-      model_names, model_colors, h = 4, y_var = "mae", 
-      main = "MAE 2022-2023, 4 week ahead", truth_data = flu_truth_all, 
-      truth_scaling = 0.15)
+  dplyr::filter(season == "2022-2023") |>
+  plot_evaluated_scores_forecast_date(model_names, model_colors, h = 4,
+                                      y_var = "mae",
+                                      main = "MAE 2022-2023, 4 week ahead",
+                                      truth_data = flu_truth_all,
+                                      truth_scaling = 0.15)
 
 # Figure
-wis_date_plot_states1_2122 + mae_date_plot_states1_2122 + 
-  wis_date_plot_states4_2122 + mae_date_plot_states4_2122 + 
-  wis_date_plot_states1_2223 + mae_date_plot_states1_2223 + 
-  wis_date_plot_states4_2223 + mae_date_plot_states4_2223 + 
-  plot_layout(ncol = 2, guides = 'collect') &
-  theme(legend.position = 'bottom')
-```  
+wis_date_plot_states1_2122 + mae_date_plot_states1_2122 +
+  wis_date_plot_states4_2122 + mae_date_plot_states4_2122 +
+  wis_date_plot_states1_2223 + mae_date_plot_states1_2223 +
+  wis_date_plot_states4_2223 + mae_date_plot_states4_2223 +
+  plot_layout(ncol = 2, guides = "collect") &
+  theme(legend.position = "bottom")
+``` 
 
-```{r cov95-vs-forecast-date, message=FALSE, warning=FALSE, fig.cap='Target data and average h-week ahead 95% PI coverage by forecast date for each model for all locations (except the US national location), split by season for readability.', echo=FALSE}  
+```{r cov95-vs-forecast-date, message=FALSE, warning=FALSE, fig.cap='Target data and average h-week ahead 95% PI coverage by forecast date for each model for all locations (except the US national location), split by season for readability.', echo=FALSE} 
 # 95% Coverage
 cov95_date_plot_states1_2122 <- flu_date_horizon_season_states |>
   dplyr::filter(season == "2021-2022") |>
-  plot_evaluated_scores_forecast_date(
-    model_names, model_colors, h = 1, y_var = "cov95", 
-    main = "95% Coverage 2021-22, 1 week ahead", truth_data = flu_truth_all) +
+  plot_evaluated_scores_forecast_date(model_names, model_colors, h = 1,
+                                      y_var = "cov95",
+                                      main = "95% Coverage 2021-22, 1 week 
+                                      ahead", truth_data = flu_truth_all) +
   coord_cartesian(ylim = c(0, 1.05))
 cov95_date_plot_states4_2122 <- flu_date_horizon_season_states |>
   dplyr::filter(season == "2021-2022") |>
-  plot_evaluated_scores_forecast_date(
-    model_names, model_colors, h = 4, y_var = "cov95", 
-    main = "95% Coverage 2021-22, 4 week ahead", truth_data = flu_truth_all) +
+  plot_evaluated_scores_forecast_date(model_names, model_colors, h = 4,
+                                      y_var = "cov95",
+                                      main = "95% Coverage 2021-22, 4 week
+                                      ahead", truth_data = flu_truth_all) +
   coord_cartesian(ylim = c(0, 1.05))
-  
+
 cov95_date_plot_states1_2223 <- flu_date_horizon_season_states |>
   dplyr::filter(season == "2022-2023") |>
-  plot_evaluated_scores_forecast_date(
-    model_names, model_colors, h = 1, y_var = "cov95", 
-    main = "95% Coverage 2022-23, 1 week ahead", truth_data = flu_truth_all) +
+  plot_evaluated_scores_forecast_date(model_names, model_colors, h = 1,
+                                      y_var = "cov95",
+                                      main = "95% Coverage 2022-23, 1 week 
+                                      ahead", truth_data = flu_truth_all) +
   coord_cartesian(ylim = c(0, 1.05))
 cov95_date_plot_states4_2223 <- flu_date_horizon_season_states |>
   dplyr::filter(season == "2022-2023") |>
-  plot_evaluated_scores_forecast_date(
-    model_names, model_colors, h = 4, y_var = "cov95", 
-    main = "95% Coverage 2022-23, 4 week ahead", truth_data = flu_truth_all) +
+  plot_evaluated_scores_forecast_date(model_names, model_colors, h = 4,
+                                      y_var = "cov95",
+                                      main = "95% Coverage 2022-23, 4 week 
+                                      ahead", truth_data = flu_truth_all) +
   coord_cartesian(ylim = c(0, 1.05))
-    
-truth_states_2122 <- plot_flu_truth(
-  flu_truth_all, date_range = flu_dates_21_22[c(1, 22)], 
-  main = "target data 2021-22")
-truth_states_2223 <- plot_flu_truth(
-  flu_truth_all, date_range = flu_dates_22_23[c(1, 31)], 
-  main = "target data 2022-23")
 
-truth_states_2122 + truth_states_2223 + 
-  cov95_date_plot_states1_2122 + cov95_date_plot_states1_2223 + 
-  cov95_date_plot_states4_2122 + cov95_date_plot_states4_2223 + 
-  plot_layout(ncol = 2, guides = 'collect') &
-  theme(legend.position = 'bottom')
+truth_states_2122 <- plot_flu_truth(flu_truth_all,
+                                    date_range = flu_dates_21_22[c(1, 22)],
+                                    main = "target data 2021-22")
+truth_states_2223 <- plot_flu_truth(flu_truth_all,
+                                    date_range = flu_dates_22_23[c(1, 31)],
+                                    main = "target data 2022-23")
+
+truth_states_2122 + truth_states_2223 +
+  cov95_date_plot_states1_2122 + cov95_date_plot_states1_2223 +
+  cov95_date_plot_states4_2122 + cov95_date_plot_states4_2223 +
+  plot_layout(ncol = 2, guides = "collect") &
+  theme(legend.position = "bottom")
 ```
 
 From these results, we can see that different ensembling methods perform best under different circumstances, though in this analysis all of the ensemble variations outperformed the baseline model. While the quantile median had the best overall results for WIS, MAE, 50% PI coverage, and 95% PI coverage, other models may perform better from week-to-week for each metric. For example, the linear pools achieved the lowest WIS during the period of rapid change in incident flu hospitalizations surrounding the season's peak in early December 2022.
