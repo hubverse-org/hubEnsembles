@@ -81,7 +81,6 @@ test_that("sorted unique output_type_ids are identical in the component model ou
     c(250, 350, 500, 350)
 
   expected_output_type_ids <- data.frame(quantile_outputs) |>
-    dplyr::mutate(output_type_id=as.character(output_type_id)) |>
     dplyr::pull(output_type_id) |>
     unique() |>
     sort()
@@ -235,15 +234,13 @@ test_that("(weighted) quantiles correctly calculated", {
   quantile_actual <- linear_pool(component_outputs, weights = NULL,
                                           weights_col_name = NULL,
                                           model_id = "hub-ensemble",
-                                          task_id_cols = NULL) |>
-                      dplyr::mutate(output_type_id = as.numeric(output_type_id))
+                                          task_id_cols = NULL)
 
   weighted_quantile_actual <- linear_pool(weighted_component_outputs,
                                           weights = fweight1,
                                           weights_col_name = "weight",
                                           model_id = "hub-ensemble",
-                                          task_id_cols = NULL) |>
-                      dplyr::mutate(output_type_id = as.numeric(output_type_id))
+                                          task_id_cols = NULL) 
 
   expect_equal(quantile_expected,
                as.data.frame(quantile_actual),
@@ -328,24 +325,21 @@ test_that("(weighted) quantiles correctly calculated - lognormal family", {
                                           weights_col_name = NULL,
                                           model_id = "hub-ensemble",
                                           task_id_cols = NULL,
-                                          n_samples = 1e5) |>
-                            dplyr::mutate(output_type_id = as.numeric(output_type_id))
+                                          n_samples = 1e5)
 
   weighted_quantile_actual_norm <- linear_pool(weighted_component_outputs,
                                           weights = fweight1,
                                           weights_col_name = "weight",
                                           model_id = "hub-ensemble",
                                           task_id_cols = NULL,
-                                          n_samples = 1e5) |>
-                                      dplyr::mutate(output_type_id = as.numeric(output_type_id))
+                                          n_samples = 1e5) 
 
   quantile_actual_lnorm <- linear_pool(component_outputs, weights = NULL,
                                           weights_col_name = NULL,
                                           model_id = "hub-ensemble",
                                           task_id_cols = NULL,
                                           tail_dist = "lnorm",
-                                          n_samples = 1e5) |>
-                              dplyr::mutate(output_type_id = as.numeric(output_type_id))
+                                          n_samples = 1e5) 
 
   weighted_quantile_actual_lnorm <- linear_pool(weighted_component_outputs,
                                           weights = fweight1,
@@ -353,8 +347,7 @@ test_that("(weighted) quantiles correctly calculated - lognormal family", {
                                           model_id = "hub-ensemble",
                                           task_id_cols = NULL,
                                           tail_dist = "lnorm",
-                                          n_samples = 1e5) |>
-                                      dplyr::mutate(output_type_id = as.numeric(output_type_id))
+                                          n_samples = 1e5)
       
   expect_false(isTRUE(
     all.equal(quantile_expected,

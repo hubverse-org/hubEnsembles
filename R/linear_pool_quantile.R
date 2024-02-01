@@ -43,14 +43,11 @@ linear_pool_quantile <- function(model_outputs, weights = NULL,
                         task_id_cols = NULL,
                         n_samples = 1e4,
                         ...) {
-  model_outputs <- model_outputs |>
-    dplyr::mutate(output_type_id=as.numeric(output_type_id))
-  
   quantile_levels <- unique(model_outputs$output_type_id)
 
   if (is.null(weights)) {
     group_by_cols <- task_id_cols
-    agg_args <- c(list(x = quote(.data[["pred_qs"]]), probs = quantile_levels))
+    agg_args <- c(list(x = quote(.data[["pred_qs"]]), probs = as.numeric(quantile_levels)))
   } else {
     weight_by_cols <- colnames(weights)[colnames(weights) != weights_col_name]
 
@@ -60,7 +57,7 @@ linear_pool_quantile <- function(model_outputs, weights = NULL,
     agg_args <- c(list(x = quote(.data[["pred_qs"]]),
                      weights = quote(.data[[weights_col_name]]),
                      normwt = TRUE,
-                     probs = quantile_levels))
+                     probs = as.numeric(quantile_levels)))
 
     group_by_cols <- c(task_id_cols, weights_col_name)
   }
@@ -69,20 +66,19 @@ linear_pool_quantile <- function(model_outputs, weights = NULL,
     dplyr::group_by(model_id, dplyr::across(dplyr::all_of(group_by_cols))) |>
     dplyr::summarize(
       pred_qs = list(distfromq::make_q_fn(
-        ps = output_type_id,
+        ps = as.numeric(output_type_id),
         qs = value,
         ...)(seq(from = 0, to = 1, length.out = n_samples + 2)[2:n_samples])),
       .groups = "drop") |>
     tidyr::unnest(pred_qs) |>
     dplyr::group_by(dplyr::across(dplyr::all_of(task_id_cols))) |>
     dplyr::summarize(
-      output_type_id= list(quantile_levels),
+      output_type_id = list(quantile_levels),
       value = list(do.call(Hmisc::wtd.quantile, args = agg_args)),
       .groups = "drop") |>
     tidyr::unnest(cols = tidyselect::all_of(c("output_type_id", "value"))) |>
     dplyr::mutate(model_id = model_id, .before = 1) |>
     dplyr::mutate(output_type = "quantile", .before = output_type_id) |>
-    dplyr::mutate(output_type_id=as.character(output_type_id)) |>
     dplyr::ungroup()
 
   return(quantile_outputs)
