@@ -27,29 +27,30 @@ The `hubEnsembles` package is part of the "hubverse" collection of open-source s
 
 # Mathematical definitions and properties of ensemble methods
 
-The `hubEnsembles` package supports both point predictions and probabilistic predictions of different formats. A point prediction gives a single estimate of a future outcome while a probabilistic prediction provides an estimated probability distribution over a future outcome. We use $N$ to denote the total number of individual predictions that the ensemble will combine. For example, these predictions will often be produced by different statistical or mathematical models, and $N$ is the total number of models that have provided predictions. Individual predictions will be indexed by the subscript $i$. Optionally, the package allows for calculating ensembles that use a weight $w_i$ for each prediction. Informally, predictions with a larger weight have a greater influence on the value of the ensemble prediction, though the details of this depend on the ensemble method (described further below). 
+The `hubEnsembles` package supports both point predictions and probabilistic predictions of different formats. A point prediction gives a single estimate of a future outcome while a probabilistic prediction provides an estimated probability distribution over a future outcome. We use $N$ to denote the total number of individual predictions that the ensemble will combine. For example, these predictions will often be produced by different statistical or mathematical models, and $N$ is the total number of models that have provided predictions. Individual predictions will be indexed by the subscript $i$. Optionally, the package allows for calculating ensembles that use a weight $w_i$ for each prediction; we define the set of model-specific weights as $\pmb{w} = \{w_i | i \in 1, ..., N\}$. Informally, predictions with a larger weight have a greater influence on the value of the ensemble prediction, though the details of this depend on the ensemble method (described further below). 
 
-For a set of point predictions, $p_i$, each from a distinct model $i$, the `hubEnsembles` package can compute an ensemble of these predictions
+For a set of $N$ point predictions, $\pmb{p} = \{p_i|i \in 1, ..., N\}$, each from a distinct model $i$, the `hubEnsembles` package can compute an ensemble of these predictions
 
 $$
-p_E = C(p_i, w_i) 
+p_E = C(\pmb{p}, \pmb{w}) 
 $$
 
-using any function $C$, and model-specific weights $w_i$. For example, an arithmetic average of predictions yields $p_E = \sum_{i=1}^Np_iw_i$, where the weights are non-negative and sum to 1. If $w_i = 1/N$ for all $i$, all predictions will be equally weighted. This framework can also support more complex functions for aggregation, such as a (weighted) median or geometric mean.
+using any function $C$, and a any set of model-specific weights $\pmb{w}$. For example, an arithmetic average of predictions yields $p_E = \sum_{i=1}^Np_iw_i$, where the weights are non-negative and sum to 1. If $w_i = 1/N$ for all $i$, all predictions will be equally weighted. This framework can also support more complex functions for aggregation, such as a (weighted) median or geometric mean.
 
 For probabilistic predictions, there are two commonly used classes of methods to average or ensemble multiple predictions: quantile averaging (also called a Vincent average [@vincent1912]) and probability averaging (also called a distributional mixture or linear opinion pool [@stone1961]) [@lichtendahl2013]. To define these two classes of methods, let $F(x)$ be a cumulative density function (CDF) defined over values $x$ of the target variable for the prediction, and $F^{-1}(\theta)$ be the corresponding quantile function defined over quantile levels $\theta \in [0, 1]$. Additionally, we will use $f(x)$ to denote a probability mass function (PMF) for a prediction of a discrete variable or a discretization (such as binned values) of a continuous variable.
 
-The quantile average is calculated as
+The quantile average combines a set of quantile functions, $\mathcal{Q} = \{F_i^{-1}(\theta)| i \in 1,...,N \}$, with a given set of weights, $\pmb{w}$, as
 $$
-F^{-1}_Q(\theta) = \sum_{i = 1}^Nw_iF^{-1}_i(\theta).
+F^{-1}_Q(\theta) = C_Q(\mathcal{Q}, \pmb{w}) = \sum_{i = 1}^Nw_iF^{-1}_i(\theta).
 $$
 This computes the average value of predictions across different models for each fixed quantile level $\theta$. It is also possible to use other combination functions, such as a weighted median, to combine quantile predictions.
 
-The probability average or linear pool is calculated by averaging probabilities across predictions for a fixed value of the target variable, $x$. This can be expressed in terms of either predictive CDFs or PMFs as follows:
-\begin{align*}
-F_{LOP}(x) &= \sum_{i = 1}^Nw_iF_i(x), \\
-f_{LOP}(x) &= \sum_{i = 1}^Nw_if_i(x).
-\end{align*}
+The probability average or linear pool is calculated by averaging probabilities across predictions for a fixed value of the target variable, $x$. In other words, for a set of CDFs, $\mathcal{F} = \{F_i(x)| i \in 1,...,N \}$ and weights, $\pmb{w}$, the linear pool is calculated as
+
+$$
+F_{LOP}(x) = C_{LOP}(\mathcal{F}, \pmb{w}) = \sum_{i = 1}^Nw_iF_i(x). 
+$$
+For a set of PMFs, $\{f_i|i \in 1, ..., N\}$, the linear pool can be equivalently calculated: $f_{LOP}(x) = \sum_{i = 1}^N w_i f_i(x)$. 
 
 The different averaging methods for probabilistic predictions yield different properties of the resulting ensemble distribution. For example, the variance of the linear pool is $\sigma^2_{LOP} = \sum_{i=1}^Nw_i\sigma_i^2 + \sum_{i=1}^Nw_i(\mu_i-\mu_{LOP})^2$, where $\mu_i$ is the mean and $\sigma^2_i$ is the variance of individual prediction $i$, and although there is no closed-form variance for the quantile average, the variance of the quantile average will always be less than or equal to that of the linear pool [@lichtendahl2013]. Both methods generate distributions with the same mean, $\mu_Q = \mu_{LOP} = \sum_{i=1}^Nw_i\mu_i$, which is the mean of individual model means [@lichtendahl2013]. The linear pool method preserves variation between individual models, whereas the quantile average cancels away this variation under the assumption it constitutes sampling error [@howerton2023]. 
 
