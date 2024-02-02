@@ -128,20 +128,20 @@ plot_evaluated_scores_forecast_date <- function(summarized_scores, model_names,
   if (y_var == "wis") {
     gg <- ggplot2::ggplot(data_to_plot,
                           mapping = ggplot2::aes(x = forecast_date, y = wis,
-                                                 group = model)) +
+                                                 shape = model, group = model)) +
       ggplot2::coord_cartesian(ylim = c(0, sum(quantile(data_to_plot$wis,
                                                         prob = c(0.5, 0.99)))))
   } else if (y_var == "mae") {
     gg <- ggplot2::ggplot(data_to_plot,
                           mapping = ggplot2::aes(x = forecast_date, y = mae,
-                                                 group = model)) +
+                                                 shape = model, group = model)) +
       ggplot2::coord_cartesian(ylim = c(0, sum(quantile(data_to_plot$mae,
                                                         prob = c(0.5, 0.99)))))
   } else if (y_var == "cov95") {
     truth_data = NULL
     gg <- ggplot2::ggplot(data_to_plot,
                           mapping = ggplot2::aes(x = forecast_date, y = cov95,
-                                                 group = model)) +
+                                                 shape = model, group = model)) +
 #      ggplot2::geom_jitter(height = 0.05, width = 0, mapping = ggplot2::aes(color = model)) +
       ggplot2::coord_cartesian(ylim = c(0, 1.05)) +
       ggplot2::geom_hline(ggplot2::aes(yintercept = 0.95))
@@ -149,7 +149,7 @@ plot_evaluated_scores_forecast_date <- function(summarized_scores, model_names,
     truth_data = NULL
     gg <- ggplot2::ggplot(data_to_plot,
                           mapping = ggplot2::aes(x = forecast_date, y = cov95,
-                                                 group = model)) +
+                                                 shape = model, group = model)) +
 #      geom_jitter(height=0.05, width=0, mapping=aes(color=model)) +
       ggplot2::coord_cartesian(ylim = c(0, 1.05)) +
       ggplot2::geom_hline(ggplot2::aes(yintercept = 0.50))
