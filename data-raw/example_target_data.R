@@ -7,6 +7,7 @@ target_data_path <- file.path(hub_path, "target-data",
                               "flu-hospitalization-time-series.csv")
 
 example_target_data <- read.csv(target_data_path) |>
-    dplyr::mutate(time_idx = as.Date(date))
+    dplyr::mutate(date = as.Date(date)) |>
+    dplyr::rename(time_idx = date)
 
 usethis::use_data(example_target_data, overwrite = TRUE)
