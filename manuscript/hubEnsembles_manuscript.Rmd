@@ -346,8 +346,7 @@ The target data provides the observed incident influenza hospitalizations (`valu
 ```{r}
 hubEnsembles::example_target_data |>
   dplyr::filter(location == "US", 
-                time_idx > "2022-12-17") |>
-  head()
+                time_idx > "2022-12-17")
 ```
 
 We can plot these forecasts and the target data using the `plot_step_ahead_model_output()` function from `hubVis`, another package for visualizing model outputs from the hubverse suite.
@@ -357,8 +356,7 @@ model_outputs_plot <- hubEnsembles::example_model_output |>
     hubUtils::as_model_out_tbl() |>
     dplyr::filter(location == "US",
                   output_type %in% c("median", "mean", "quantile"),
-                  reference_date == "2022-12-17") |>
-    dplyr::mutate(target_date =  reference_date + horizon)
+                  reference_date == "2022-12-17") 
 
 target_data_plot <- hubEnsembles::example_target_data |>
     dplyr::filter(location == "US",
