@@ -5,7 +5,8 @@
 library(hubUtils)
 hub_path <- "../example-complex-forecast-hub"
 example_model_output <- hubUtils::connect_hub(hub_path) |>
-    dplyr::collect()
+    dplyr::collect() |>
+    dplyr::select(model_id, location, reference_date, horizon, target_end_date, target, output_type, output_type_id, value)
 
 usethis::use_data(example_model_output, overwrite = TRUE)
 

@@ -1,7 +1,8 @@
 ---
 title: "`hubEnsembles`: Ensembling Methods in R"
 output: 
-  bookdown::html_document2
+  bookdown::html_document2:
+    df_print: paged
 bibliography: ../manuscript/references.bib
 ---
 
@@ -327,22 +328,20 @@ library(hubEnsembles)
 
 We will use an example hub to demonstrate the functionality of the `hubEnsembles` package (https://github.com/Infectious-Disease-Modeling-Hubs/example-complex-forecast-hub). The example hub includes both example model output data and target data (sometimes known as "truth" data). The model output data includes `quantile`, `mean` and `median` forecasts of future incident influenza hospitalizations, and `pmf` forecasts of hospitalization intensity, including "low", "moderate", "high", or "very high" intensities. Hospitalization intensity categories are determined by thresholds for weekly hospital admissions per 100,000 population. These example data are included in the `hubEnsembles` package.
 
-Each forecast is made for five task ID variables, including the location for which the forecast was made (`location`), the date on which the forecast was made (`reference_date`), the number of steps ahead (`horizon`), the date of the forecast prediction (a combination of the date the forecast was made and the forecast horizon, `target_end_date`), and the forecast target (`target`). Below is an example from a single model, the Flusight-baseline model, for the 1-week ahead forecast of US incident hospitalizations made on December 17, 2022. We print only the median and the 50%, 80%, and 98% prediction intervals, although other intervals and output types are included in the example model output data.
+Each forecast is made for five task ID variables, including the location for which the forecast was made (`location`), the date on which the forecast was made (`reference_date`), the number of steps ahead (`horizon`), the date of the forecast prediction (a combination of the date the forecast was made and the forecast horizon, `target_end_date`), and the forecast target (`target`, omitted in the print-out below since all values are identical in this case). Below is an example from a single model, the Flusight-baseline model, for the 1-week ahead forecast of US incident hospitalizations made on December 17, 2022. We print only the median and the 50%, 80%, and 98% prediction intervals, although other intervals and output types are included in the example model output data.
 
-```{r}
+```{r, cols.print=9}
 hubEnsembles::example_model_output |>
   dplyr::filter(output_type %in% c("quantile", "median"),
                 output_type_id %in% c(0.01, 0.1, 0.25, 0.75, 0.9, 0.99, NA),
                 reference_date == "2022-12-17",
                 location == "US",
-                horizon == 1) |>
-  head(n = 7)
+                horizon == 1) |> 
+  dplyr::select(-target)
 ```
 
 
-<!-- # EH: Note, head() now only shows 6 columns, and the last 3 columns are cut off in the .html file -->
-
-The target data provides the observed incident influenza hospitalizations (`value`) in a given week (`time_idx`) and location (`location`); this target data corresponds to the forecast target `wk inc flu hosp`. The forecast-specific task ID variables `reference_date` `horizon` are not relevant.
+The target data provides the observed incident influenza hospitalizations (`value`) in a given week (`time_idx`) and location (`location`); this target data corresponds to the forecast target `wk inc flu hosp`. The forecast-specific task ID variables `reference_date` and `horizon` are not relevant.
 
 ```{r}
 hubEnsembles::example_target_data |>
