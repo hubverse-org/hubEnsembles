@@ -42,3 +42,6 @@ Imports:
 Remotes:
     Infectious-Disease-Modeling-Hubs/hubUtils,
     reichlab/distfromq
+Depends: 
+    R (>= 2.10)
+LazyData: true
