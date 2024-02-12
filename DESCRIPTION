@@ -42,3 +42,4 @@ Imports:
 Remotes:
     Infectious-Disease-Modeling-Hubs/hubUtils,
     reichlab/distfromq
+Config/Needs/website: Infectious-Disease-Modeling-Hubs/hubStyle

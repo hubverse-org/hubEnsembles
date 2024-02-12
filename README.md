@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# hubEnsembles
+# hubEnsembles <img src="man/figures/logo.png" align="right" height="131" alt="" />
 
 <!-- badges: start -->
 
@@ -30,18 +30,14 @@ remotes::install_github("infectious-disease-modeling-hubs/hubEnsembles")
 
 <!--
 ## Example
-
-This is a basic example which shows you how to solve a common problem:
-
-
+&#10;This is a basic example which shows you how to solve a common problem:
+&#10;
 ```r
 library(hubEnsembles)
 ## basic example code
 ```
-
-What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so:
-
-
+&#10;What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so:
+&#10;
 ```r
 summary(cars)
 #>      speed           dist       
@@ -52,12 +48,24 @@ summary(cars)
 #>  3rd Qu.:19.0   3rd Qu.: 56.00  
 #>  Max.   :25.0   Max.   :120.00
 ```
-
-You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date. `devtools::build_readme()` is handy for this. You could also use GitHub Actions to re-render `README.Rmd` every time you push. An example workflow can be found here: <https://github.com/r-lib/actions/tree/v1/examples>.
-
-You can also embed plots, for example:
-
-<img src="man/figures/README-pressure-1.png" width="100%" />
-
-In that case, don't forget to commit and push the resulting figure files, so they display on GitHub and CRAN.
+&#10;You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date. `devtools::build_readme()` is handy for this. You could also use GitHub Actions to re-render `README.Rmd` every time you push. An example workflow can be found here: <https://github.com/r-lib/actions/tree/v1/examples>.
+&#10;You can also embed plots, for example:
+&#10;<img src="man/figures/README-pressure-1.png" width="100%" />
+&#10;In that case, don't forget to commit and push the resulting figure files, so they display on GitHub and CRAN.
 -->
+
+------------------------------------------------------------------------
+
+## Code of Conduct
+
+Please note that the hubEnsembles package is released with a
+[Contributor Code of Conduct](.github/CODE_OF_CONDUCT.md). By
+contributing to this project, you agree to abide by its terms.
+
+## Contributing
+
+Interested in contributing back to the open-source Hubverse project?
+Learn more about how to [get involved in the Hubverse
+Community](https://hubdocs.readthedocs.io/en/latest/overview/contribute.html)
+or [how to contribute to the hubEnsembles
+package](.github/CONTRIBUTING.md).

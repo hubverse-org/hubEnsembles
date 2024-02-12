@@ -8,3 +8,9 @@
 ^pkgdown$
 ^doc$
 ^Meta$
+^docs$
+^\.DS_Store$
+^\.Rhistory$
+^\.Rdata$
+^\.httr-oauth$
+^\.secrets$
