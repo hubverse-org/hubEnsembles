@@ -14,6 +14,7 @@ Authors@R: c(
     person(given = "Emily",
            family = "Howerton",
            role = c("aut"),
+           email = "ehowerton@psu.edu",
            comment = c(ORCID = "0000-0002-0639-3728")),
     person("Anna", "Krystalli", , "annakrystalli@googlemail.com", 
            role = c("ctb"),
