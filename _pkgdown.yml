@@ -1,4 +1,3 @@
 url: https://infectious-disease-modeling-hubs.github.io/hubEnsembles/
 template:
-  bootstrap: 5
-
+  package: hubStyle
