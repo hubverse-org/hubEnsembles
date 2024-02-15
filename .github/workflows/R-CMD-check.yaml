@@ -29,7 +29,7 @@ jobs:
       R_KEEP_PKG_SOURCE: yes
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - uses: r-lib/actions/setup-pandoc@v2
 
@@ -39,19 +39,6 @@ jobs:
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
 
-      - name: Cache R packages
-        uses: actions/cache@v1
-        with:
-          path: ${{ env.R_LIBS_USER }}
-          key: r-${{ hashFiles('DESCRIPTION') }}
-          
-      - name: Install dependencies
-        run: |
-          install.packages(c("remotes","rmarkdown","dplyr","purrr","tidyr","tidyselect"))
-          remotes::install_github("reichlab/distfromq")
-          remotes::install_deps(dependencies = NA)
-        shell: Rscript {0}
-      
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::rcmdcheck
