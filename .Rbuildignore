@@ -14,3 +14,4 @@
 ^\.Rdata$
 ^\.httr-oauth$
 ^\.secrets$
+^data-raw$

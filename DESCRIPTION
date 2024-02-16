@@ -52,3 +52,6 @@ Remotes:
     Infectious-Disease-Modeling-Hubs/hubUtils,
     reichlab/distfromq
 Config/Needs/website: Infectious-Disease-Modeling-Hubs/hubStyle
+Depends: 
+    R (>= 2.10)
+LazyData: true
