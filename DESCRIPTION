@@ -24,6 +24,7 @@ Description: Functions for combining model outputs (e.g. predictions or
 License: MIT + file LICENSE
 VignetteBuilder: knitr
 Suggests: 
+    hubData,
     knitr,
     plotly,
     rmarkdown,
@@ -32,7 +33,7 @@ Suggests:
 Config/testthat/edition: 3
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 URL: https://github.com/Infectious-Disease-Modeling-Hubs/hubEnsembles,
     https://infectious-disease-modeling-hubs.github.io/hubEnsembles/
 BugReports: https://github.com/Infectious-Disease-Modeling-Hubs/hubEnsembles/issues
@@ -41,14 +42,14 @@ Imports:
     distfromq (>= 1.0.2),
     dplyr,
     Hmisc,
-    hubUtils,
+    hubUtils (>= 0.0.1),
     magrittr,
     matrixStats,
     purrr,
-    rlang,
     tidyr,
     tidyselect
 Remotes:
-    Infectious-Disease-Modeling-Hubs/hubUtils,
+    Infectious-Disease-Modeling-Hubs/hubUtils#143,
+    Infectious-Disease-Modeling-Hubs/hubData#1,
     reichlab/distfromq
 Config/Needs/website: Infectious-Disease-Modeling-Hubs/hubStyle

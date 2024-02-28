@@ -37,7 +37,7 @@ The `example-simple-forecast-hub` has been created by the Consortium of Infectio
 hub_path <- system.file("example-data/example-simple-forecast-hub",
                         package = "hubEnsembles")
 
-model_outputs <- hubUtils::connect_hub(hub_path) %>%
+model_outputs <- hubData::connect_hub(hub_path) %>%
   dplyr::collect()
 head(model_outputs)
 
