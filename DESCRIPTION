@@ -1,6 +1,6 @@
 Package: hubEnsembles
 Title: Ensemble methods for combining hub model outputs
-Version: 0.0.0.9002
+Version: 0.1.1
 Authors@R: c(
     person(given = "Evan L",
            family = "Ray",
@@ -53,3 +53,6 @@ Remotes:
     Infectious-Disease-Modeling-Hubs/hubData#1,
     reichlab/distfromq
 Config/Needs/website: Infectious-Disease-Modeling-Hubs/hubStyle
+Depends: 
+    R (>= 2.10)
+LazyData: true
