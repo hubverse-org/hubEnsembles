@@ -49,8 +49,8 @@ Imports:
     tidyr,
     tidyselect
 Remotes:
-    Infectious-Disease-Modeling-Hubs/hubUtils#143,
-    Infectious-Disease-Modeling-Hubs/hubData#1,
+    Infectious-Disease-Modeling-Hubs/hubUtils,
+    Infectious-Disease-Modeling-Hubs/hubData,
     reichlab/distfromq
 Config/Needs/website: Infectious-Disease-Modeling-Hubs/hubStyle
 Depends: 
