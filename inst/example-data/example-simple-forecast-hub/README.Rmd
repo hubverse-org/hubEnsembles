@@ -29,7 +29,7 @@ To work with the data in R, you can use code like the following:
 library(hubUtils)
 library(dplyr)
 
-model_outputs <- hubUtils::connect_hub(hub_path = ".") %>%
+model_outputs <- hubData::connect_hub(hub_path = ".") %>%
     dplyr::collect()
 head(model_outputs)
 
