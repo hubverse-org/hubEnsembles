@@ -46,6 +46,7 @@ Imports:
     magrittr,
     matrixStats,
     purrr,
+    rlang,
     tidyr,
     tidyselect
 Remotes:

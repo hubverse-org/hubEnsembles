@@ -36,6 +36,7 @@
 #'     3. Collect the samples from all component models and extract the desired quantiles.
 #'   Steps 1 and 2 in this process are performed by `distfromq::make_q_fun`.
 #' @return a `model_out_tbl` object of ensemble predictions for the `quantile` output type.
+#' @importFrom rlang .data
 
 linear_pool_quantile <- function(model_outputs, weights = NULL,
                         weights_col_name = "weight",
@@ -66,11 +67,11 @@ linear_pool_quantile <- function(model_outputs, weights = NULL,
     dplyr::group_by(model_id, dplyr::across(dplyr::all_of(group_by_cols))) |>
     dplyr::summarize(
       pred_qs = list(distfromq::make_q_fn(
-        ps = as.numeric(output_type_id),
-        qs = value,
+        ps = as.numeric(.data$output_type_id),
+        qs = .data$value,
         ...)(seq(from = 0, to = 1, length.out = n_samples + 2)[2:n_samples])),
       .groups = "drop") |>
-    tidyr::unnest(pred_qs) |>
+    tidyr::unnest(.data$pred_qs) |>
     dplyr::group_by(dplyr::across(dplyr::all_of(task_id_cols))) |>
     dplyr::summarize(
       output_type_id = list(quantile_levels),
@@ -78,7 +79,7 @@ linear_pool_quantile <- function(model_outputs, weights = NULL,
       .groups = "drop") |>
     tidyr::unnest(cols = tidyselect::all_of(c("output_type_id", "value"))) |>
     dplyr::mutate(model_id = model_id, .before = 1) |>
-    dplyr::mutate(output_type = "quantile", .before = output_type_id) |>
+    dplyr::mutate(output_type = "quantile", .before = .data$output_type_id) |>
     dplyr::ungroup()
 
   return(quantile_outputs)
