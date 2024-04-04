@@ -36,6 +36,7 @@
 #'     3. Collect the samples from all component models and extract the desired quantiles.
 #'   Steps 1 and 2 in this process are performed by `distfromq::make_q_fun`.
 #' @return a `model_out_tbl` object of ensemble predictions for the `quantile` output type.
+#' @importFrom rlang .data
 
 linear_pool_quantile <- function(model_outputs, weights = NULL,
                                  weights_col_name = "weight",

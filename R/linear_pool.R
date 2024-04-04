@@ -80,6 +80,8 @@
 #' all.equal(lp_from_component_qs$value, lp_qs, tolerance = 1e-3,
 #'           check.attributes=FALSE)
 #'
+#' @importFrom rlang .data
+
 linear_pool <- function(model_outputs, weights = NULL,
                         weights_col_name = "weight",
                         model_id = "hub-ensemble",

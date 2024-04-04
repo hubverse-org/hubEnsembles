@@ -14,7 +14,7 @@
 #' @return no return value
 #'
 #' @noRd
-#'
+#' @importFrom rlang .data
 
 validate_output_type_ids <- function(model_outputs, task_id_cols) {
   same_output_id <- model_outputs |>
