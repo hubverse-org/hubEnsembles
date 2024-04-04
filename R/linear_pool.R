@@ -84,15 +84,16 @@ linear_pool <- function(model_outputs, weights = NULL,
                         weights_col_name = "weight",
                         model_id = "hub-ensemble",
                         task_id_cols = NULL,
-                        n_samples=1e4,
+                        n_samples = 1e4,
                         ...) {
 
   # validate_ensemble_inputs
   valid_types <- c("mean", "quantile", "cdf", "pmf")
-  validated_inputs <- validate_ensemble_inputs(model_outputs, weights=weights,
-                                       weights_col_name = weights_col_name,
-                                       task_id_cols = task_id_cols,
-                                       valid_output_types = valid_types)
+  validated_inputs <- model_outputs |>
+    validate_ensemble_inputs(weights = weights,
+                             weights_col_name = weights_col_name,
+                             task_id_cols = task_id_cols,
+                             valid_output_types = valid_types)
 
   model_outputs_validated <- validated_inputs$model_outputs
   weights_validated <- validated_inputs$weights

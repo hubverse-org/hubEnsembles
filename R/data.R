@@ -50,4 +50,3 @@
 #'
 #' @source <https://github.com/Infectious-Disease-Modeling-Hubs/example-complex-forecast-hub/>
 "example_model_output"
-
