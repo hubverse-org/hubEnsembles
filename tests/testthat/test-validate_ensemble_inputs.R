@@ -65,5 +65,5 @@ test_that("error if models provide different output_type_ids", {
   model_outputs |>
     dplyr::filter(!(model_id == "b" & abs(output_type_id - 0.5) < 1e-6)) |>
     validate_output_type_ids(task_id_cols = c("location", "horizon", "target", "target_date")) |>
-    expect_no_error()
+    expect_error()
 })

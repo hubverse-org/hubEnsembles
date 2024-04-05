@@ -93,7 +93,7 @@ test_that("component model outputs and resulting ensemble model outputs have ide
   expected_output_type_ids <- sort(unique(quantile_outputs$output_type_id))
 
   actual_output_type_ids <- quantile_outputs |>
-    simple_ensemble(quantile_outputs, weights = NULL,
+    simple_ensemble(weights = NULL,
                     weights_col_name = NULL,
                     model_id = "hub-ensemble",
                     task_id_cols = NULL) |>
