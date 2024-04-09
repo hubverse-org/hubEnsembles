@@ -48,19 +48,20 @@ simple_ensemble <- function(model_outputs, weights = NULL,
 
   # validate_ensemble_inputs
   valid_types <- c("mean", "median", "quantile", "cdf", "pmf")
-  validated_inputs <- validate_ensemble_inputs(model_outputs, weights = weights,
-                                       weights_col_name = weights_col_name,
-                                       task_id_cols = task_id_cols,
-                                       valid_output_types = valid_types)
-  
-    model_outputs_validated <- validated_inputs$model_outputs
-    weights_validated <- validated_inputs$weights
-    task_id_cols_validated <- validated_inputs$task_id_cols
+  validated_inputs <- model_outputs |>
+    validate_ensemble_inputs(weights = weights,
+                             weights_col_name = weights_col_name,
+                             task_id_cols = task_id_cols,
+                             valid_output_types = valid_types)
+
+  model_outputs_validated <- validated_inputs$model_outputs
+  weights_validated <- validated_inputs$weights
+  task_id_cols_validated <- validated_inputs$task_id_cols
 
   if (is.null(weights_validated)) {
     agg_args <- c(agg_args, list(x = quote(.data[["value"]])))
   } else {
-    weight_by_cols <- 
+    weight_by_cols <-
       colnames(weights_validated)[colnames(weights_validated) != weights_col_name]
 
     model_outputs_validated <- model_outputs_validated %>%

@@ -112,8 +112,9 @@ An alternative approach to generate an ensemble is a linear pool, or a distribut
 For `mean`, `cdf` and `pmf` output types, the linear pool is equivalent to using a mean `simple_ensemble`. For `quantile` model outputs, the `linear_pool` function needs to approximate a full probability distribution using the value-quantile pairs from each component model. As a default, this is done with functions in the `distfromq` package, which defaults to fitting a monotonic cubic spline.
 
 ```{r}
-linear_pool_ens <- hubEnsembles::linear_pool(model_outputs %>%
-  filter(output_type != "median"))
+linear_pool_ens <- model_outputs %>%
+  filter(output_type != "median") %>%
+  hubEnsembles::linear_pool()
 head(linear_pool_ens)
 ```
 
@@ -122,13 +123,13 @@ head(linear_pool_ens)
 ```{r}
 basic_plot_function <- function(plot_df, truth_df, plain_line = 0.5, ribbon = c(0.975, 0.025),
                                 forecast_date) {
-  plain_df <- dplyr::filter(plot_df, output_type_id == plain_line)
+  plain_df <- dplyr::filter(plot_df, .data$output_type_id == plain_line)
 
-  ribbon_df <- dplyr::filter(plot_df, output_type_id %in% ribbon) %>%
-    dplyr::mutate(output_type_id = ifelse(output_type_id == min(ribbon),
+  ribbon_df <- dplyr::filter(plot_df, .data$output_type_id %in% ribbon) %>%
+    dplyr::mutate(output_type_id = ifelse(.data$output_type_id == min(ribbon),
       "min", "max"
     )) %>%
-    tidyr::pivot_wider(names_from = output_type_id, values_from = value)
+    tidyr::pivot_wider(names_from = .data$output_type_id, values_from = .data$value)
 
   plot_model <- plot_ly(height = 600, colors = scales::hue_pal()(50))
 
