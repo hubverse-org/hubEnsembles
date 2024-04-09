@@ -86,15 +86,16 @@ linear_pool <- function(model_outputs, weights = NULL,
                         weights_col_name = "weight",
                         model_id = "hub-ensemble",
                         task_id_cols = NULL,
-                        n_samples=1e4,
+                        n_samples = 1e4,
                         ...) {
 
   # validate_ensemble_inputs
   valid_types <- c("mean", "quantile", "cdf", "pmf")
-  validated_inputs <- validate_ensemble_inputs(model_outputs, weights=weights,
-                                       weights_col_name = weights_col_name,
-                                       task_id_cols = task_id_cols,
-                                       valid_output_types = valid_types)
+  validated_inputs <- model_outputs |>
+    validate_ensemble_inputs(weights = weights,
+                             weights_col_name = weights_col_name,
+                             task_id_cols = task_id_cols,
+                             valid_output_types = valid_types)
 
   model_outputs_validated <- validated_inputs$model_outputs
   weights_validated <- validated_inputs$weights
@@ -107,17 +108,17 @@ linear_pool <- function(model_outputs, weights = NULL,
       type <- split_outputs$output_type[1]
       if (type %in% c("mean", "cdf", "pmf")) {
         simple_ensemble(split_outputs, weights = weights_validated,
-                              weights_col_name = weights_col_name,
-                              agg_fun = "mean", agg_args = list(),
-                              model_id = model_id,
-                              task_id_cols = task_id_cols_validated)
+                        weights_col_name = weights_col_name,
+                        agg_fun = "mean", agg_args = list(),
+                        model_id = model_id,
+                        task_id_cols = task_id_cols_validated)
       } else if (type == "quantile") {
         linear_pool_quantile(split_outputs, weights = weights_validated,
-                              weights_col_name = weights_col_name,
-                              model_id = model_id,
-                              n_samples = n_samples,
-                              task_id_cols = task_id_cols_validated,
-                              ...)
+                             weights_col_name = weights_col_name,
+                             model_id = model_id,
+                             n_samples = n_samples,
+                             task_id_cols = task_id_cols_validated,
+                             ...)
       }
     }) |>
     hubUtils::as_model_out_tbl()

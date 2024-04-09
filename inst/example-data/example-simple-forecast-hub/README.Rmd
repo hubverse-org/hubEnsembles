@@ -30,7 +30,7 @@ library(hubUtils)
 library(dplyr)
 
 model_outputs <- hubData::connect_hub(hub_path = ".") %>%
-    dplyr::collect()
+  dplyr::collect()
 head(model_outputs)
 
 target_data <- read.csv("target-data/covid-hospitalizations.csv")

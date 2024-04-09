@@ -31,7 +31,7 @@
 #'
 #' @noRd
 
-validate_ensemble_inputs <- function(model_outputs, weights=NULL,
+validate_ensemble_inputs <- function(model_outputs, weights = NULL,
                                      weights_col_name = "weight",
                                      task_id_cols = NULL,
                                      valid_output_types) {
@@ -72,7 +72,7 @@ validate_ensemble_inputs <- function(model_outputs, weights=NULL,
   }
 
   if (!is.null(weights)) {
-      req_weight_cols <- c("model_id", weights_col_name)
+    req_weight_cols <- c("model_id", weights_col_name)
     if (!all(req_weight_cols %in% colnames(weights))) {
       cli::cli_abort(c(
         "x" = "{.arg weights} did not include required columns
@@ -109,5 +109,5 @@ validate_ensemble_inputs <- function(model_outputs, weights=NULL,
   validated_inputs <- list(model_outputs = model_outputs,
                            weights = weights,
                            task_id_cols = task_id_cols)
-  return (validated_inputs)
+  return(validated_inputs)
 }
