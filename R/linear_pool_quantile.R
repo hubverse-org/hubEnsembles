@@ -77,9 +77,11 @@ linear_pool_quantile <- function(model_outputs, weights = NULL,
     ) |>
     tidyr::unnest(.data$pred_qs) |>
     dplyr::group_by(dplyr::across(dplyr::all_of(task_id_cols))) |>
-    dplyr::summarize(output_type_id = list(quantile_levels),
-                     value = list(do.call(Hmisc::wtd.quantile, args = agg_args)),
-                     .groups = "drop") |>
+    dplyr::summarize(
+      output_type_id = list(quantile_levels),
+      value = list(do.call("wtd.quantile", args = agg_args)),
+      .groups = "drop"
+    ) |>
     tidyr::unnest(cols = tidyselect::all_of(c("output_type_id", "value"))) |>
     dplyr::mutate(model_id = model_id, .before = 1) |>
     dplyr::mutate(output_type = "quantile", .before = .data$output_type_id) |>

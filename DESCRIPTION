@@ -1,6 +1,6 @@
 Package: hubEnsembles
 Title: Ensemble methods for combining hub model outputs
-Version: 0.1.1
+Version: 0.1.2
 Authors@R: c(
     person(given = "Evan L",
            family = "Ray",
@@ -44,7 +44,6 @@ Imports:
     cli,
     distfromq (>= 1.0.2),
     dplyr,
-    Hmisc,
     hubUtils (>= 0.0.1),
     magrittr,
     matrixStats,
