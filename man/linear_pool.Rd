@@ -18,7 +18,7 @@ linear_pool(
 )
 }
 \arguments{
-\item{model_outputs}{an object of class \code{model_output_df} with component
+\item{model_outputs}{an object of class \code{model_out_tbl} with component
 model outputs (e.g., predictions).}
 
 \item{weights}{an optional \code{data.frame} with component model weights. If
@@ -26,7 +26,7 @@ provided, it should have a column named \code{model_id} and a column containing
 model weights. Optionally, it may contain additional columns corresponding
 to task id variables, \code{output_type}, or \code{output_type_id}, if weights are
 specific to values of those variables. The default is \code{NULL}, in which case
-an equally-weighted ensemble is calculated.}
+an equally-weighted ensemble is calculated. Should be pre-validated.}
 
 \item{weights_col_name}{\code{character} string naming the column in \code{weights}
 with model weights. Defaults to \code{"weight"}}
@@ -48,8 +48,8 @@ details of how to estimate a quantile function from provided quantile levels
 and quantile values for \code{output_type} \code{"quantile"}.}
 }
 \value{
-a \code{model_out_tbl} object of ensemble predictions. Note that any additional
-columns in the input \code{model_outputs} are dropped.
+a \code{model_out_tbl} object of ensemble predictions. Note that any
+additional columns in the input \code{model_outputs} are dropped.
 }
 \description{
 Compute ensemble model outputs as a linear pool, otherwise known as a
@@ -70,9 +70,9 @@ When the \code{output_type} is \code{quantile}, we obtain the quantiles of a lin
 in three steps:
 1. Interpolate and extrapolate from the provided quantiles for each component
 model to obtain an estimate of the cdf of that distribution.
-2. Draw samples from the distribution for each component model. To reduce Monte
-Carlo variability, we use pseudo-random samples corresponding to quantiles
-of the estimated distribution.
+2. Draw samples from the distribution for each component model. To reduce
+Monte Carlo variability, we use pseudo-random samples corresponding to
+quantiles of the estimated distribution.
 3. Collect the samples from all component models and extract the desired quantiles.
 Steps 1 and 2 in this process are performed by \code{distfromq::make_q_fn}.
 }
