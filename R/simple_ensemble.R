@@ -21,9 +21,8 @@
 #'   ensemble model.
 #' @param task_id_cols `character` vector with names of columns in
 #'   `model_outputs` that specify modeling tasks. Defaults to `NULL`, in which
-#'   case all columns in `model_outputs` other than `"model_id"`, the specified
-#'   `output_type_col` and `output_type_id_col`, and `"value"` are used as task
-#'   ids.
+#'   case all columns in `model_outputs` other than `"model_id"`, `"output_type"`,
+#'   `"output_type_id"`, and `"value"` are used as task ids.
 #'
 #' @details The default for `agg_fun` is `"mean"`, in which case the ensemble's
 #'   output is the average of the component model outputs within each group

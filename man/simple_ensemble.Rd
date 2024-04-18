@@ -42,9 +42,8 @@ ensemble model.}
 
 \item{task_id_cols}{\code{character} vector with names of columns in
 \code{model_outputs} that specify modeling tasks. Defaults to \code{NULL}, in which
-case all columns in \code{model_outputs} other than \code{"model_id"}, the specified
-\code{output_type_col} and \code{output_type_id_col}, and \code{"value"} are used as task
-ids.}
+case all columns in \code{model_outputs} other than \code{"model_id"}, \code{"output_type"},
+\code{"output_type_id"}, and \code{"value"} are used as task ids.}
 }
 \value{
 a \code{model_out_tbl} object of ensemble predictions. Note that
