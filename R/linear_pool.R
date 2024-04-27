@@ -22,7 +22,7 @@
 #'     1. Interpolate and extrapolate from the provided quantiles for each component
 #'        model to obtain an estimate of the cdf of that distribution.
 #'     2. Draw samples from the distribution for each component model. To reduce
-#'        Monte Carlo variability, we use pseudo-random samples corresponding to
+#'        Monte Carlo variability, we use quasi-random samples corresponding to
 #'        quantiles of the estimated distribution.
 #'     3. Collect the samples from all component models and extract the desired quantiles.
 #'   Steps 1 and 2 in this process are performed by `distfromq::make_q_fn`.
