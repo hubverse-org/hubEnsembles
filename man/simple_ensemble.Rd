@@ -25,7 +25,7 @@ provided, it should have a column named \code{model_id} and a column containing
 model weights. Optionally, it may contain additional columns corresponding
 to task id variables, \code{output_type}, or \code{output_type_id}, if weights are
 specific to values of those variables. The default is \code{NULL}, in which case
-an equally-weighted ensemble is calculated.}
+an equally-weighted ensemble is calculated. Should be pre-validated.}
 
 \item{weights_col_name}{\code{character} string naming the column in \code{weights}
 with model weights. Defaults to \code{"weight"}}
@@ -42,9 +42,8 @@ ensemble model.}
 
 \item{task_id_cols}{\code{character} vector with names of columns in
 \code{model_outputs} that specify modeling tasks. Defaults to \code{NULL}, in which
-case all columns in \code{model_outputs} other than \code{"model_id"}, the specified
-\code{output_type_col} and \code{output_type_id_col}, and \code{"value"} are used as task
-ids.}
+case all columns in \code{model_outputs} other than \code{"model_id"}, \code{"output_type"},
+\code{"output_type_id"}, and \code{"value"} are used as task ids.}
 }
 \value{
 a \code{model_out_tbl} object of ensemble predictions. Note that

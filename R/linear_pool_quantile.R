@@ -2,39 +2,9 @@
 #' (distributional mixture) of component model outputs for the `quantile`
 #' output type.
 #'
-#' @param model_outputs an object of class `model_output_df` with component
-#'   model outputs (e.g., predictions) with only a `quantile` output type.
-#'   Should be pre-validated.
-#' @param weights an optional `data.frame` with component model weights. If
-#'   provided, it should have a column named `model_id` and a column containing
-#'   model weights. Optionally, it may contain additional columns corresponding
-#'   to task id variables, `output_type`, or `output_type_id`, if weights are
-#'   specific to values of those variables. The default is `NULL`, in which case
-#'   an equally-weighted ensemble is calculated. Should be pre-validated.
-#' @param weights_col_name `character` string naming the column in `weights`
-#'   with model weights. Defaults to `"weight"`.
-#' @param model_id `character` string with the identifier to use for the
-#'   ensemble model.
-#' @param task_id_cols `character` vector with names of columns in
-#'   `model_outputs` that specify modeling tasks. Defaults to `NULL`, in which
-#'   case all columns in `model_outputs` other than `"model_id"`, the specified
-#'   `output_type_col` and `output_type_id_col`, and `"value"` are used as task
-#'   ids. Should be pre-validated.
-#' @param n_samples `numeric` that specifies the number of samples to use when
-#'   calculating quantiles from an estimated quantile function. Defaults to `1e4`.
-#' @param ... parameters that are passed to `distfromq::make_q_fun`, specifying
-#'   details of how to estimate a quantile function from provided quantile levels
-#'   and quantile values for `output_type` `"quantile"`.
+#' @inherit linear_pool params details
 #' @noRd
-#' @details The underlying mechanism for the computations to obtain the quantiles
-#'   of a linear pool in three steps is as follows:
-#'     1. Interpolate and extrapolate from the provided quantiles for each component
-#'        model to obtain an estimate of the cdf of that distribution.
-#'     2. Draw samples from the distribution for each component model. To reduce Monte
-#'        Carlo variability, we use pseudo-random samples corresponding to quantiles
-#'        of the estimated distribution.
-#'     3. Collect the samples from all component models and extract the desired quantiles.
-#'   Steps 1 and 2 in this process are performed by `distfromq::make_q_fun`.
+#'
 #' @return a `model_out_tbl` object of ensemble predictions for the `quantile` output type.
 #' @importFrom rlang .data
 

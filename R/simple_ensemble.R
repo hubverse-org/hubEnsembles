@@ -9,7 +9,7 @@
 #'   model weights. Optionally, it may contain additional columns corresponding
 #'   to task id variables, `output_type`, or `output_type_id`, if weights are
 #'   specific to values of those variables. The default is `NULL`, in which case
-#'   an equally-weighted ensemble is calculated.
+#'   an equally-weighted ensemble is calculated. Should be pre-validated.
 #' @param weights_col_name `character` string naming the column in `weights`
 #'   with model weights. Defaults to `"weight"`
 #' @param agg_fun a function or character string name of a function to use for
@@ -21,9 +21,8 @@
 #'   ensemble model.
 #' @param task_id_cols `character` vector with names of columns in
 #'   `model_outputs` that specify modeling tasks. Defaults to `NULL`, in which
-#'   case all columns in `model_outputs` other than `"model_id"`, the specified
-#'   `output_type_col` and `output_type_id_col`, and `"value"` are used as task
-#'   ids.
+#'   case all columns in `model_outputs` other than `"model_id"`, `"output_type"`,
+#'   `"output_type_id"`, and `"value"` are used as task ids.
 #'
 #' @details The default for `agg_fun` is `"mean"`, in which case the ensemble's
 #'   output is the average of the component model outputs within each group
