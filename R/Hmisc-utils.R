@@ -188,6 +188,7 @@ testDateTime <- function(x, what=c('either','both','timeVaries'))
 
 # Check if all elements in a character vector are numeric
 # Source: https://github.com/harrelfe/Hmisc/blob/f80ecfb27e1deb88b3c6cc075c7252e3c577f66b/R/Misc.s#L241
+#' @exportS3Method NULL
 all.is.numeric <- function(x, what=c('test','vector','nonnum'),
                            extras=c('.','NA'))
 {
