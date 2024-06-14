@@ -24,9 +24,9 @@
 #'   2. Draw samples from the distribution for each component model. To reduce
 #'      Monte Carlo variability, we use quasi-random samples corresponding to
 #'      quantiles of the estimated distribution.
-#'   3. Collect the samples from all component models and extract the desired 
+#'   3. Collect the samples from all component models and extract the desired
 #'      quantiles.
-#' 
+#'
 #' Steps 1 and 2 in this process are performed by `distfromq::make_q_fn`.
 #'
 #' @return a `model_out_tbl` object of ensemble predictions. Note that any

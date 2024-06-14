@@ -56,7 +56,7 @@ hubExamples::forecast_outputs |>
       forecasts (the `value` column) to two digits. The `location`,  
       `reference_date` and `target_end_date` columns are omitted for brevity. 
       This example data is provided in the `hubExamples` package."
-    )
+  )
 ```
 
 We also have corresponding target data included in the `hubExamples` package (\@ref(tab:example-target-data)). The example target data provide observed incident influenza hospitalizations (`observation`) in a given week (`date`) and for a given location (`location`). This target data could be used as calibration data for generating forecasts or for evaluating the forecasts post hoc. The forecast-specific task ID variables `reference_date` and `horizon` are not relevant for the target data.
@@ -81,10 +81,11 @@ The `simple_ensemble()` function directly computes an ensemble from component mo
 
 By default, `simple_ensemble()` uses the mean for the aggregation function and equal weights for all models, though the user can create different types of weighted ensembles by specifying an aggregation function and weights. 
 
-Using the default options for `simple_ensemble()`, we can generate an equally weighted mean ensemble for each unique combination of values for the task ID variables, the `output_type` and the `output_type_id`. This means different ensemble methods will be used for different output types: for the `quantile` output type in our example data, the resulting ensemble is a quantile average, while for the PMF output type, the ensemble is a linear pool.
+Using the default options for `simple_ensemble()`, we can generate an equally weighted mean ensemble for each unique combination of values for the task ID variables, the `output_type` and the `output_type_id`. This means different ensemble methods will be used for different output types: for the `quantile` output type in our example data, the resulting ensemble is a quantile average, while for the mean, CDF, PMF output type, the ensemble is a linear pool. We must filter the sample output type because it is not yet supported.
 
 ```{r}
 mean_ens <- hubExamples::forecast_outputs |>
+  dplyr::filter(output_type != "sample") |>
   hubEnsembles::simple_ensemble(
     model_id = "simple-ensemble-mean"
   )
@@ -123,6 +124,7 @@ We can change the function that is used to aggregate model outputs. For example,
 
 ```{r}
 median_ens <- hubExamples::forecast_outputs |>
+  dplyr::filter(output_type != "sample") |>
   hubEnsembles::simple_ensemble(
     agg_fun = median,
     model_id = "simple-ensemble-median"
@@ -133,10 +135,11 @@ Custom functions can also be passed into the `agg_fun` argument. We illustrate t
 
 ```{r}
 geometric_mean <- function(x) {
-    n <- length(x)
-    return(prod(x)^(1 / n))
-  }
+  n <- length(x)
+  return(prod(x)^(1 / n))
+}
 geometric_mean_ens <- hubExamples::forecast_outputs |>
+  dplyr::filter(output_type != "sample") |>
   hubEnsembles::simple_ensemble(
     agg_fun = geometric_mean,
     model_id = "simple-ensemble-geometric"
@@ -159,7 +162,7 @@ model_out_plot <- dplyr::bind_rows(
 
 target_data_plot <- hubExamples::forecast_target_ts |>
   dplyr::filter(
-    location == "25", 
+    location == "25",
     date >= "2022-11-01", date <= "2023-03-01"
   )
 
@@ -170,7 +173,7 @@ hubVis::plot_step_ahead_model_output(
   interactive = FALSE,
   intervals = c(0.5, 0.90),
   show_legend = TRUE,
-  x_col_name = "target_end_date", 
+  x_col_name = "target_end_date",
   x_target_col_name = "date"
 ) +
   theme_bw() +
@@ -184,14 +187,15 @@ We can weight the contributions of each model in the ensemble using the `weights
 ```{r}
 #| prompt: true
 model_weights <- data.frame(
-    model_id = c("MOBS-GLEAM_FLUH", "PSI-DICE", "simple_hub-baseline"),
-    weight = c(0.4, 0.4, 0.2)
-  )
+  model_id = c("MOBS-GLEAM_FLUH", "PSI-DICE", "simple_hub-baseline"),
+  weight = c(0.4, 0.4, 0.2)
+)
 weighted_mean_ens <- hubExamples::forecast_outputs |>
-    hubEnsembles::simple_ensemble(
-      weights = model_weights,
-      model_id = "simple-ensemble-weighted-mean"
-    )
+  dplyr::filter(output_type != "sample") |>
+  hubEnsembles::simple_ensemble(
+    weights = model_weights,
+    model_id = "simple-ensemble-weighted-mean"
+  )
 head(weighted_mean_ens)
 ```
 
@@ -201,12 +205,12 @@ The `linear_pool()` function implements the linear opinion pool (LOP, also known
 
 For the quantile output type, the `linear_pool()` function first must approximate a full probability distribution using the value-quantile level pairs from each component model. As a default, this is done with functions in the `distfromq` package, which defaults to fitting a monotonic cubic spline for the interior and a Gaussian normal distribution for the tails. Quasi-random samples are drawn from each distributional estimate, which are then collected and used to extract the desired quantiles from the final ensemble distribution.
 
-Using the default options for `linear_pool()`, we can generate an equally-weighted linear pool for each of the output types in our example hub (except for the median output type which must be excluded). The resulting distribution for the linear pool of quantiles is estimated using a default of `n_samples = 1e4` quasi random samples drawn from the distribution of each component model.
+Using the default options for `linear_pool()`, we can generate an equally-weighted linear pool for each of the output types in our example hub (except for the median and sample output types which must be excluded). The resulting distribution for the linear pool of quantiles is estimated using a default of `n_samples = 1e4` quasi random samples drawn from the distribution of each component model.
 
 ```{r}
 #| prompt: true
 linear_pool_norm <- hubExamples::forecast_outputs |>
-  dplyr::filter(output_type != "median") |>
+  dplyr::filter(!output_type %in% c("median", "sample")) |>
   hubEnsembles::linear_pool(model_id = "linear-pool-normal")
 head(linear_pool_norm)
 ```
@@ -223,7 +227,7 @@ p1 <- dplyr::bind_rows(mean_ens, linear_pool_norm) |>
   ) |>
   # Reorder bin names to be in correct order
   dplyr::mutate(
-    output_type_id = 
+    output_type_id =
       factor(
         output_type_id,
         levels = c("low", "moderate", "high", "very high")
@@ -243,7 +247,7 @@ p1 <- dplyr::bind_rows(mean_ens, linear_pool_norm) |>
 
 ## Create new data frame of ensemble output to be plotted
 # Use median results as point estimate in plot
-# Pull quantile == 0.5 results for linear pool and add them to the end of 
+# Pull quantile == 0.5 results for linear pool and add them to the end of
 # the data.frame as "median" output type (because linear_pool() does not
 # automatically provide median estimates)
 model_output_plot <- linear_pool_norm |>
@@ -258,12 +262,12 @@ model_output_plot <- dplyr::bind_rows(mean_ens, model_output_plot) |>
     reference_date == "2022-12-17"
   ) |>
   dplyr::mutate(
-    target_date = reference_date + horizon, 
+    target_date = reference_date + horizon,
     output_type_id = as.numeric(output_type_id)
   )
 target_data_plot <- hubExamples::forecast_target_ts |>
   dplyr::filter(
-    location == "25", 
+    location == "25",
     date >= "2022-11-01", date <= "2023-03-01"
   )
 
@@ -277,7 +281,7 @@ p2 <-
     intervals = c(0.5, 0.9),
     pal_color = "Set1",
     show_legend = TRUE,
-    x_col_name = "target_end_date", 
+    x_col_name = "target_end_date",
     x_target_col_name = "date"
   ) +
   theme_bw() +
@@ -306,11 +310,11 @@ Like with `simple_ensemble()`, weights may be provided for each model that deter
 
 ```{r}
 model_weights <- data.frame(
-    model_id = c("MOBS-GLEAM_FLUH", "PSI-DICE", "simple_hub-baseline"),
-    weight = c(0.4, 0.4, 0.2)
-  )
+  model_id = c("MOBS-GLEAM_FLUH", "PSI-DICE", "simple_hub-baseline"),
+  weight = c(0.4, 0.4, 0.2)
+)
 weighted_linear_pool_norm <- hubExamples::forecast_outputs |>
-  dplyr::filter(output_type != "median") |>
+  dplyr::filter(!output_type %in% c("median", "sample")) |>
   hubEnsembles::linear_pool(
     weights = model_weights,
     model_id = "linear-pool-weighted"
@@ -322,13 +326,13 @@ We can also change the distribution that `distfromq` uses to estimate the compon
 ```{r}
 #| prompt: true
 linear_pool_lnorm <- hubExamples::forecast_outputs |>
-  dplyr::filter(output_type != "median") |>
+  dplyr::filter(!output_type %in% c("median", "sample")) |>
   hubEnsembles::linear_pool(
     model_id = "linear-pool-lognormal",
     tail_dist = "lnorm"
   )
 linear_pool_cauchy <- hubExamples::forecast_outputs |>
-  dplyr::filter(output_type != "median") |>
+  dplyr::filter(!output_type %in% c("median", "sample")) |>
   hubEnsembles::linear_pool(
     model_id = "linear-pool-cauchy",
     tail_dist = "cauchy"
@@ -350,7 +354,7 @@ linear_pool_plot <- dplyr::bind_rows(
 
 target_data_plot <- hubExamples::forecast_target_ts |>
   dplyr::filter(
-    location == "25", 
+    location == "25",
     date >= "2022-11-01", date <= "2023-03-01"
   )
 
@@ -361,7 +365,7 @@ hubVis::plot_step_ahead_model_output(
   interactive = FALSE,
   intervals = c(0.5, 0.90),
   show_legend = TRUE,
-  x_col_name = "target_end_date", 
+  x_col_name = "target_end_date",
   x_target_col_name = "date"
 ) +
   theme_bw() +
