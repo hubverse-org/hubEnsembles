@@ -34,9 +34,9 @@ library(hubEnsembles)
 
 We will use an example hub provided by the hubverse to demonstrate the functionality of the `hubEnsembles` package. This example hub was generated with modified forecasts from the FluSight forecasting challenge, a collaborative modeling exercise run by the US Centers for Disease Control and Prevention (CDC) since 2013 that solicits seasonal influenza forecasts from outside modeling teams. The example hub includes both example model output data and target data (sometimes known as "truth" data), which are stored in the `hubExamples` package as data objects named `forecast_outputs` and `forecast_target_ts`. Note that the toy model outputs contain predictions for only a small subset rows of select dates, locations, and output type IDs, far fewer than an actual modeling hub would typically collect.
 
-The model output data includes quantile, mean and median forecasts of future incident influenza hospitalizations and PMF forecasts of hospitalization intensity (categories determined by threshold of weekly hospital admissions per 100,000 population). Each forecast is made for five task ID variables, including the location for which the forecast was made (`location`), the date on which the forecast was made (`reference_date`), the number of steps ahead (`horizon`), the date of the forecast prediction (a combination of the date the forecast was made and the forecast horizon, `target_end_date`), and the forecast target (`target`). \@ref(tab:example-model-outputs) prints a subset of quantile, median, and PMF forecasts included in this example model output. 
+The model output data includes quantile, mean and median forecasts of future incident influenza hospitalizations and PMF forecasts of hospitalization intensity (categories determined by threshold of weekly hospital admissions per 100,000 population). Each forecast is made for five task ID variables, including the location for which the forecast was made (`location`), the date on which the forecast was made (`reference_date`), the number of steps ahead (`horizon`), the date of the forecast prediction (a combination of the date the forecast was made and the forecast horizon, `target_end_date`), and the forecast target (`target`). 
 
-```{r example-model-outputs, cols.print=12}
+```{r example-model-outputs}
 hubExamples::forecast_outputs |>
   dplyr::filter(
     output_type %in% c("quantile", "median", "pmf"),
@@ -46,56 +46,17 @@ hubExamples::forecast_outputs |>
     horizon == 1
   ) |>
   dplyr::mutate(value = round(value, 2)) |>
-  dplyr::select(model_id, target, horizon, output_type, output_type_id, value) |>
-  knitr::kable(
-    caption = "Example model output for forecasts of incident influenza
-      hospitalizations and hospitalization intensity. A subset of is shown:
-      1-week ahead quantile, median, and PMF forecasts made on 2022-12-17
-      for Massachusetts from three distinct models. Only the 25th and 
-      75th quantiles are displayed for the quantile forecasts. We round the 
-      forecasts (the `value` column) to two digits. The `location`,
-      `reference_date` and `target_end_date` columns are omitted for brevity. 
-      This example data is provided in the `hubExamples` package."
-  )
+  dplyr::select(model_id, target, horizon, output_type, output_type_id, value)
 ```
 
 ```{r}
 hubExamples::forecast_outputs
-print(hubExamples::forecast_outputs)
-head(hubExamples::forecast_outputs)
 ```
 
-```{r, warning=FALSE}
-hubExamples::forecast_outputs
-print(hubExamples::forecast_outputs)
-head(hubExamples::forecast_outputs)
-```
-
-```{r, message=FALSE}
-hubExamples::forecast_outputs
-print(hubExamples::forecast_outputs)
-head(hubExamples::forecast_outputs)
-```
-
-```{r, warning=FALSE, message=FALSE}
-hubExamples::forecast_outputs
-print(hubExamples::forecast_outputs)
-head(hubExamples::forecast_outputs)
-```
-
-We also have corresponding target data included in the `hubExamples` package (\@ref(tab:example-target-data)). The example target data provide observed incident influenza hospitalizations (`observation`) in a given week (`date`) and for a given location (`location`). This target data could be used as calibration data for generating forecasts or for evaluating the forecasts post hoc. The forecast-specific task ID variables `reference_date` and `horizon` are not relevant for the target data.
+We also have corresponding target data included in the `hubExamples` package. The example target data provide observed incident influenza hospitalizations (`observation`) in a given week (`date`) and for a given location (`location`). This target data could be used as calibration data for generating forecasts or for evaluating the forecasts post hoc. The forecast-specific task ID variables `reference_date` and `horizon` are not relevant for the target data.
 
 ```{r example-target-data, cols.print=13}
-hubExamples::forecast_target_ts |>
-  dplyr::filter(
-    location == "25",
-    date >= "2022-11-01", date <= "2023-02-01"
-  ) |>
-  knitr::kable(
-    caption = "Example target data for incident influenza hospitalizations. This
-      table includes target data from 2022-11-01 and 2023-02-01. This target data
-      is provided in the `hubExamples` package."
-  )
+head(hubExamples::forecast_target_ts)
 ```
 
 
@@ -115,7 +76,7 @@ mean_ens <- hubExamples::forecast_outputs |>
   )
 ```
 
-The resulting model output has the same structure as the original model output data (\@ref(tab:mean-ensemble)), with columns for model ID, task ID variables, output type, output type ID, and value. We also use `model_id = "simple-ensemble-mean"` to change the name of this ensemble in the resulting model output; if not specified, the default will be "hub-ensemble".
+The resulting model output has the same structure as the original model output data, with columns for model ID, task ID variables, output type, output type ID, and value. We also use `model_id = "simple-ensemble-mean"` to change the name of this ensemble in the resulting model output; if not specified, the default will be "hub-ensemble".
 
 ```{r mean-ensemble, echo=FALSE, rows.print = 9}
 mean_ens |>
@@ -130,16 +91,8 @@ mean_ens |>
     horizon == 1
   ) |>
   dplyr::mutate(value = round(value, 2)) |>
-  dplyr::select(model_id, target, horizon, output_type, output_type_id, value) |>
-  knitr::kable(
-    caption = "Mean ensemble model output. The values in the `model_id` column are
-      set by the argument `simple_ensemble(..., model_id)`. Results are generated 
-      for all output types, but only a subset are shown: 1-week ahead forecasts made 
-      on 2022-12-17 for Massachusetts, with only the median, 25th and 75th quantiles
-      for the quantile output type and all bins for the PMF output type. The 
-      `location`, `reference_date` and `target_end_date` columns have been omitted 
-      for brevity, and the `value` column is rounded to two digits."
-  )
+  dplyr::select(model_id, target, horizon, output_type, output_type_id, value)
+head(mean_ens)
 ```
 
 ## Changing the aggregation function
@@ -170,9 +123,9 @@ geometric_mean_ens <- hubExamples::forecast_outputs |>
   )
 ```
 
-As expected, the mean, median, and geometric mean each give us slightly different resulting ensembles. The median point estimates, 50% prediction intervals, and 90% prediction intervals in \@ref(fig:plot-ensembles) demonstrate this.
+As expected, the mean, median, and geometric mean each give us slightly different resulting ensembles. The median point estimates, 50% prediction intervals, and 90% prediction intervals in the figure below demonstrate this. Note that the geometric mean ensemble and simple mean ensemble generate similar estimates in this case of predicting weekly incident influenza hospitalizations in Massachusetts.
 
-```{r plot-ensembles, echo=FALSE, warning=FALSE, fig.height=4, fig.width=8, fig.cap="Three different ensembles for weekly incident influenza hospitalizations in Massachusetts. Each ensemble combines individual predictions from the example hub using a different method: arithmetic mean, geometric mean, or median. All methods correspond to variations of the quantile average approach. Ensembles are represented by a median (line), 50% and 90% prediction intervals (ribbons). Geometric mean ensemble and simple mean ensemble generate similar estimates in this case."}
+```{r plot-ensembles, echo=FALSE, warning=FALSE, fig.height=4, fig.width=8}
 model_out_plot <- dplyr::bind_rows(
   mean_ens, median_ens,
   geometric_mean_ens
@@ -209,7 +162,6 @@ hubVis::plot_step_ahead_model_output(
 We can weight the contributions of each model in the ensemble using the `weights` argument of `simple_ensemble()`. This argument takes a `data.frame` that should include a `model_id` column containing each unique model ID and a `weight` column. In the following example, we include the baseline model in the ensemble, but give it less weight than the other forecasts.
 
 ```{r}
-#| prompt: true
 model_weights <- data.frame(
   model_id = c("MOBS-GLEAM_FLUH", "PSI-DICE", "simple_hub-baseline"),
   weight = c(0.4, 0.4, 0.2)
@@ -232,17 +184,15 @@ For the quantile output type, the `linear_pool()` function first must approximat
 Using the default options for `linear_pool()`, we can generate an equally-weighted linear pool for each of the output types in our example hub (except for the median and sample output types which must be excluded). The resulting distribution for the linear pool of quantiles is estimated using a default of `n_samples = 1e4` quasi random samples drawn from the distribution of each component model.
 
 ```{r}
-#| prompt: true
 linear_pool_norm <- hubExamples::forecast_outputs |>
   dplyr::filter(!output_type %in% c("median", "sample")) |>
   hubEnsembles::linear_pool(model_id = "linear-pool-normal")
 head(linear_pool_norm)
 ```
 
-In \@ref(fig:plot-ex-quantile-and-linear-pool), we compare ensemble results generated by `simple_ensemble()` and `linear_pool()` for model outputs of output types PMF and quantile. As expected, the results from the two functions are equivalent for the PMF output type: for this output type, the `simple_ensemble()` method averages the predicted probability of each category across the component models, which is the definition of the linear pool ensemble method. This is not the case for the quantile output type, because the `simple_ensemble()` is computing a quantile average.
+In the figure below, we compare ensemble results generated by `simple_ensemble()` and `linear_pool()` for model outputs of output types PMF and quantile. Panel A shows PMF type predictions of Massachusetts incident influenza hospitalization intensity while Panel B shows quantile type predictions of Massachusetts weekly incident influenza hospitalizations. As expected, the results from the two functions are equivalent for the PMF output type: for this output type, the `simple_ensemble()` method averages the predicted probability of each category across the component models, which is the definition of the linear pool ensemble method. This is not the case for the quantile output type, because the `simple_ensemble()` is computing a quantile average.
 
-```{r plot-ex-quantile-and-linear-pool, echo=FALSE, fig.height=4, fig.width=10, fig.cap = "Comparison of results from `linear_pool()` (blue) and `simple_ensemble()` (red). (Panel A) Ensemble predictions of Massachusetts incident influenza hospitalization intensity (classified as low, moderate, high, or very high), which provide an example of PMF output type. (Panel B) Ensemble predictions of weekly incident influenza hospitalizations in Massachusetts, which provide an example of quantile output type. Note, for quantile output type, `simple_ensemble()` corresponds to a quantile average. Ensembles combine individual models from the example hub, and are represented by a median (line), 50% and 90% prediction intervals (ribbons)."}
-
+```{r plot-ex-quantile-and-linear-pool, echo=FALSE, fig.height=4, fig.width=10}
 # Generate plot of ensemble probability in each bin
 p1 <- dplyr::bind_rows(mean_ens, linear_pool_norm) |>
   dplyr::filter(
@@ -348,7 +298,6 @@ weighted_linear_pool_norm <- hubExamples::forecast_outputs |>
 We can also change the distribution that `distfromq` uses to estimate the component models' distributional tails to either log normal or cauchy using the `tail_dist` argument.
 
 ```{r}
-#| prompt: true
 linear_pool_lnorm <- hubExamples::forecast_outputs |>
   dplyr::filter(!output_type %in% c("median", "sample")) |>
   hubEnsembles::linear_pool(
@@ -363,8 +312,9 @@ linear_pool_cauchy <- hubExamples::forecast_outputs |>
   )
 ```
 
+The figure below compares three linear pools with different distribution tails—normal,lognormal, and cauchy—predicting weekly incident influence hospitalizations in Massachusetts. The plotted quantiles show that the three linear pools generate similar predictive distributions, except for the model with cauchy tails near the outer edges of the distribution. This is expected given that the only difference between the linear pools is the selection of tail distribution, and cauchy distributions have heavy tails.
 
-```{r plot-linear-pools, echo=FALSE, warning=FALSE, fig.height=4, fig.width=8, fig.cap = "Three different linear pools for weekly incident influenza hospitalizations in Massachusetts. Each linear pool combines individual predictions from the example hub using different distributional tails: normal, log normal, or cauchy. Linear pools are represented by a  median (line), 50% and 90% prediction intervals (ribbons). All generate  similar estimates, except for cauchy near the distribution tails."}
+```{r plot-linear-pools, echo=FALSE, warning=FALSE, fig.height=4, fig.width=8}
 linear_pool_plot <- dplyr::bind_rows(
   linear_pool_norm, linear_pool_lnorm,
   linear_pool_cauchy
@@ -395,5 +345,3 @@ hubVis::plot_step_ahead_model_output(
   theme_bw() +
   labs(y = "incident hospitalizations")
 ```
-
-The three resulting linear pools are mostly the same, except for the outer quantiles. This is expected given that the only difference is the selection of tail distribution. The linear pools with normal and lognormal tails are nearly identical while the linear pool with cauchy tails has a slightly wider 90% prediction intervals, which is as expected since cauchy distributions have heavy tails.
