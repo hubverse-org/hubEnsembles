@@ -18,167 +18,354 @@ knitr::opts_chunk$set(
 
 # Introduction
 
-The `hubEnsembles` package includes functionality for aggregating model outputs, such as forecasts or projections, that are submitted to a hub by multiple models and combined into ensemble model outputs. The package includes two main functions: `simple_ensemble` and `linear_pool`. We illustrate these functions in this vignette, and briefly compare them.
+The `hubEnsembles` package provides a flexible framework for aggregating model outputs, such as forecasts or projections, that are submitted to a hub by multiple models and combined into ensemble model outputs. The package includes two main functions: `simple_ensemble` and `linear_pool`. We illustrate these functions in this vignette, and briefly compare them.
 
 This vignette uses the following R packages:
 
-```{r setup}
+```{r setup, message=FALSE}
 library(dplyr)
-library(plotly)
+library(ggplot2)
 library(hubUtils)
+library(hubVis)
 library(hubEnsembles)
 ```
 
-# Example data: a simple forecast hub
+# Example data: a forecast hub
 
-The `example-simple-forecast-hub` has been created by the Consortium of Infectious Disease Modeling Hubs as a simple example hub to demonstrate the set up and functionality for the hubverse. The hub includes both target data and example model output data.
+We will use an example hub provided by the hubverse to demonstrate the functionality of the `hubEnsembles` package. This example hub was generated with modified forecasts from the FluSight forecasting challenge, a collaborative modeling exercise run by the US Centers for Disease Control and Prevention (CDC) since 2013 that solicits seasonal influenza forecasts from outside modeling teams. The example hub includes both example model output data and target data (sometimes known as "truth" data), which are stored in the `hubExamples` package as data objects named `forecast_outputs` and `forecast_target_ts`. Note that the toy model outputs contain predictions for only a small subset rows of select dates, locations, and output type IDs, far fewer than an actual modeling hub would typically collect.
 
-```{r}
-hub_path <- system.file("example-data/example-simple-forecast-hub",
-  package = "hubEnsembles"
-)
+The model output data includes quantile, mean and median forecasts of future incident influenza hospitalizations and PMF forecasts of hospitalization intensity (categories determined by threshold of weekly hospital admissions per 100,000 population). Each forecast is made for five task ID variables, including the location for which the forecast was made (`location`), the date on which the forecast was made (`reference_date`), the number of steps ahead (`horizon`), the date of the forecast prediction (a combination of the date the forecast was made and the forecast horizon, `target_end_date`), and the forecast target (`target`). \@ref(tab:example-model-outputs) prints a subset of quantile, median, and PMF forecasts included in this example model output. 
 
-model_outputs <- hubData::connect_hub(hub_path) %>%
-  dplyr::collect()
-head(model_outputs)
-
-target_data_path <- file.path(
-  hub_path, "target-data",
-  "covid-hospitalizations.csv"
-)
-target_data <- read.csv(target_data_path)
-head(target_data)
+```{r example-model-outputs, cols.print=12}
+hubExamples::forecast_outputs |>
+  dplyr::filter(
+    output_type %in% c("quantile", "median", "pmf"),
+    output_type_id %in% c(0.25, 0.75, NA, "low", "moderate", "high", "very high"),
+    reference_date == "2022-12-17",
+    location == "25",
+    horizon == 1
+  ) |>
+  dplyr::mutate(value = round(value, 2)) |>
+  dplyr::select(model_id, target, horizon, output_type, output_type_id, value) |>
+  knitr::kable(
+    caption = "Example model output for forecasts of incident influenza
+      hospitalizations and hospitalization intensity. A subset of is shown:
+      1-week ahead quantile, median, and PMF forecasts made on 2022-12-17
+      for Massachusetts from three distinct models. Only the 25th and 
+      75th quantiles are displayed for the quantile forecasts. We round the 
+      forecasts (the `value` column) to two digits. The `location`,  
+      `reference_date` and `target_end_date` columns are omitted for brevity. 
+      This example data is provided in the `hubExamples` package."
+    )
 ```
+
+We also have corresponding target data included in the `hubExamples` package (\@ref(tab:example-target-data)). The example target data provide observed incident influenza hospitalizations (`observation`) in a given week (`date`) and for a given location (`location`). This target data could be used as calibration data for generating forecasts or for evaluating the forecasts post hoc. The forecast-specific task ID variables `reference_date` and `horizon` are not relevant for the target data.
+
+```{r example-target-data, cols.print=13}
+hubExamples::forecast_target_ts |>
+  dplyr::filter(
+    location == "25",
+    date >= "2022-11-01", date <= "2023-02-01"
+  ) |>
+  knitr::kable(
+    caption = "Example target data for incident influenza hospitalizations. This
+      table includes target data from 2022-11-01 and 2023-02-01. This target data
+      is provided in the `hubExamples` package."
+  )
+```
+
 
 # Creating ensembles with `simple_ensemble`
 
-The `simple_ensemble` function is used to summarize across component model outputs; this function can be applied to predictions with an `output_type` of `mean`, `median`, `quantile`, `cdf`, or `pmf`.
+The `simple_ensemble()` function directly computes an ensemble from component model outputs by combining them via some function within each unique combination of task ID variables, output types, and output type IDs. This function can be used to summarize predictions of output types mean, median, quantile, CDF, and PMF. The mechanics of the ensemble calculations are the same for each of the output types, though the resulting statistical ensembling method differs for different output types.
 
-The `simple_ensemble` function defaults to calculating an equally weighted mean across all component model outputs for each unique `output_type_id`. For our example data, which contains two output types (`median` and `quantile`), this means the resulting ensemble will be the mean of component model submitted values for each quantile.
+By default, `simple_ensemble()` uses the mean for the aggregation function and equal weights for all models, though the user can create different types of weighted ensembles by specifying an aggregation function and weights. 
+
+Using the default options for `simple_ensemble()`, we can generate an equally weighted mean ensemble for each unique combination of values for the task ID variables, the `output_type` and the `output_type_id`. This means different ensemble methods will be used for different output types: for the `quantile` output type in our example data, the resulting ensemble is a quantile average, while for the PMF output type, the ensemble is a linear pool.
 
 ```{r}
-mean_ens <- hubEnsembles::simple_ensemble(model_outputs)
-head(mean_ens)
+mean_ens <- hubExamples::forecast_outputs |>
+  hubEnsembles::simple_ensemble(
+    model_id = "simple-ensemble-mean"
+  )
+```
+
+The resulting model output has the same structure as the original model output data (\@ref(tab:mean-ensemble)), with columns for model ID, task ID variables, output type, output type ID, and value. We also use `model_id = "simple-ensemble-mean"` to change the name of this ensemble in the resulting model output; if not specified, the default will be "hub-ensemble".
+
+```{r mean-ensemble, echo=FALSE, rows.print = 9}
+mean_ens |>
+  dplyr::filter(
+    output_type %in% c("quantile", "median", "pmf"),
+    output_type_id %in% c(
+      0.025, 0.25, 0.75, 0.975, NA,
+      "low", "moderate", "high", "very high"
+    ),
+    reference_date == "2022-12-17",
+    location == "25",
+    horizon == 1
+  ) |>
+  dplyr::mutate(value = round(value, 2)) |>
+  dplyr::select(model_id, target, horizon, output_type, output_type_id, value) |>
+  knitr::kable(
+    caption = "Mean ensemble model output. The values in the `model_id` column are
+      set by the argument `simple_ensemble(..., model_id)`. Results are generated 
+      for all output types, but only a subset are shown: 1-week ahead forecasts made 
+      on 2022-12-17 for Massachusetts, with only the median, 25th and 75th quantiles
+      for the quantile output type and all bins for the PMF output type. The 
+      `location`, `reference_date` and `target_end_date` columns have been omitted 
+      for brevity, and the `value` column is rounded to two digits."
+  )
 ```
 
 ## Changing the aggregation function
 
-We can change the function used to aggregate across model outputs. For example, we may want to calculate a median of component model submitted values for each quantile. We will also use the `model_id` argument to distinguish this ensemble.
+We can change the function that is used to aggregate model outputs. For example, we may want to calculate a median of the component models' submitted values for each quantile. We do so by specifying `agg_fun = median`.
 
 ```{r}
-median_ens <- hubEnsembles::simple_ensemble(model_outputs,
-  agg_fun = median,
-  model_id = "hub-ensemble-median"
-)
-head(median_ens)
+median_ens <- hubExamples::forecast_outputs |>
+  hubEnsembles::simple_ensemble(
+    agg_fun = median,
+    model_id = "simple-ensemble-median"
+  )
 ```
 
-Custom functions can also be passed into the `agg_fun` argument. For example, a geometric mean may be a more appropriate way to combine component model outputs. Any custom function to be used requires an argument `x` for the vector of numeric values to summarize, and if relevant, an argument `w` of numeric weights.
+Custom functions can also be passed into the `agg_fun` argument. We illustrate this by defining a custom function to compute the ensemble prediction as a geometric mean of the component model predictions. Any custom function to be used must have an argument `x` for the vector of numeric values to summarize, and if relevant, an argument `w` of numeric weights.
 
 ```{r}
 geometric_mean <- function(x) {
-  n <- length(x)
-  return(prod(x)^(1 / n))
-}
+    n <- length(x)
+    return(prod(x)^(1 / n))
+  }
+geometric_mean_ens <- hubExamples::forecast_outputs |>
+  hubEnsembles::simple_ensemble(
+    agg_fun = geometric_mean,
+    model_id = "simple-ensemble-geometric"
+  )
+```
 
-geometric_mean_ens <- hubEnsembles::simple_ensemble(model_outputs,
-  agg_fun = geometric_mean,
-  model_id = "hub-ensemble-geometric"
-)
-head(geometric_mean_ens)
+As expected, the mean, median, and geometric mean each give us slightly different resulting ensembles. The median point estimates, 50% prediction intervals, and 90% prediction intervals in \@ref(fig:plot-ensembles) demonstrate this.
+
+```{r plot-ensembles, echo=FALSE, warning=FALSE, fig.height=4, fig.width=8, fig.cap="Three different ensembles for weekly incident influenza hospitalizations in Massachusetts. Each ensemble combines individual predictions from the example hub using a different method: arithmetic mean, geometric mean, or median. All methods correspond to variations of the quantile average approach. Ensembles are represented by a median (line), 50% and 90% prediction intervals (ribbons). Geometric mean ensemble and simple mean ensemble generate similar estimates in this case."}
+model_out_plot <- dplyr::bind_rows(
+  mean_ens, median_ens,
+  geometric_mean_ens
+) |>
+  dplyr::filter(
+    location == "25",
+    output_type %in% c("mean", "quantile"),
+    reference_date == "2022-12-17"
+  ) |>
+  dplyr::mutate(target_date = reference_date + horizon)
+
+target_data_plot <- hubExamples::forecast_target_ts |>
+  dplyr::filter(
+    location == "25", 
+    date >= "2022-11-01", date <= "2023-03-01"
+  )
+
+hubVis::plot_step_ahead_model_output(
+  model_output_data = model_out_plot,
+  target_data = target_data_plot,
+  use_median_as_point = TRUE,
+  interactive = FALSE,
+  intervals = c(0.5, 0.90),
+  show_legend = TRUE,
+  x_col_name = "target_end_date", 
+  x_target_col_name = "date"
+) +
+  theme_bw() +
+  labs(y = "incident hospitalizations")
 ```
 
 ## Weighting model contributions
 
-In addition, we can weight the contributions of each model by providing a table of weights, which are provided in a `data.frame` with a `model_id` column and a `weight` column.
+We can weight the contributions of each model in the ensemble using the `weights` argument of `simple_ensemble()`. This argument takes a `data.frame` that should include a `model_id` column containing each unique model ID and a `weight` column. In the following example, we include the baseline model in the ensemble, but give it less weight than the other forecasts.
 
 ```{r}
+#| prompt: true
 model_weights <- data.frame(
-  model_id = c("UMass-ar", "UMass-gbq", "simple_hub-baseline"),
-  weight = c(0.4, 0.4, 0.2)
-)
-
-weighted_mean_ens <- hubEnsembles::simple_ensemble(model_outputs,
-  weights = model_weights,
-  model_id = "hub-ensemble-weighted-mean"
-)
+    model_id = c("MOBS-GLEAM_FLUH", "PSI-DICE", "simple_hub-baseline"),
+    weight = c(0.4, 0.4, 0.2)
+  )
+weighted_mean_ens <- hubExamples::forecast_outputs |>
+    hubEnsembles::simple_ensemble(
+      weights = model_weights,
+      model_id = "simple-ensemble-weighted-mean"
+    )
 head(weighted_mean_ens)
 ```
 
 # Creating ensembles with `linear_pool`
 
-An alternative approach to generate an ensemble is a linear pool, or a distributional mixture; this function can be applied to predictions with an `output_type` of `mean`, `quantile`, `cdf`, or `pmf`. Our example hub includes `median` output type, so we exclude it from the calculation.
+The `linear_pool()` function implements the linear opinion pool (LOP, also known as the distributional mixture) method when ensembling predictions. This function can be used to combine predictions with output types mean, quantile, CDF, and PMF. Unlike `simple_ensemble()`, this function handles its computation differently based on the output type. For the CDF, PMF, and mean output types, the linear pool method is equivalent to calling `simple_ensemble()` with a mean aggregation function, since `simple_ensemble()` produces a linear pool prediction (an average of individual model cumulative or bin probabilities).
 
-For `mean`, `cdf` and `pmf` output types, the linear pool is equivalent to using a mean `simple_ensemble`. For `quantile` model outputs, the `linear_pool` function needs to approximate a full probability distribution using the value-quantile pairs from each component model. As a default, this is done with functions in the `distfromq` package, which defaults to fitting a monotonic cubic spline.
+For the quantile output type, the `linear_pool()` function first must approximate a full probability distribution using the value-quantile level pairs from each component model. As a default, this is done with functions in the `distfromq` package, which defaults to fitting a monotonic cubic spline for the interior and a Gaussian normal distribution for the tails. Quasi-random samples are drawn from each distributional estimate, which are then collected and used to extract the desired quantiles from the final ensemble distribution.
+
+Using the default options for `linear_pool()`, we can generate an equally-weighted linear pool for each of the output types in our example hub (except for the median output type which must be excluded). The resulting distribution for the linear pool of quantiles is estimated using a default of `n_samples = 1e4` quasi random samples drawn from the distribution of each component model.
 
 ```{r}
-linear_pool_ens <- model_outputs %>%
-  filter(output_type != "median") %>%
-  hubEnsembles::linear_pool()
-head(linear_pool_ens)
+#| prompt: true
+linear_pool_norm <- hubExamples::forecast_outputs |>
+  dplyr::filter(output_type != "median") |>
+  hubEnsembles::linear_pool(model_id = "linear-pool-normal")
+head(linear_pool_norm)
 ```
 
-# Plots
+In \@ref(tab:plot-ex-quantile-and-linear-pool), we compare ensemble results generated by `simple_ensemble()` and `linear_pool()` for model outputs of output types PMF and quantile. As expected, the results from the two functions are equivalent for the PMF output type: for this output type, the `simple_ensemble()` method averages the predicted probability of each category across the component models, which is the definition of the linear pool ensemble method. This is not the case for the quantile output type, because the `simple_ensemble()` is computing a quantile average.
 
-```{r}
-basic_plot_function <- function(plot_df, truth_df, plain_line = 0.5, ribbon = c(0.975, 0.025),
-                                forecast_date) {
-  plain_df <- dplyr::filter(plot_df, .data$output_type_id == plain_line)
+```{r plot-ex-quantile-and-linear-pool, echo=FALSE, fig.height=4, fig.width=10, fig.cap = "Comparison of results from `linear_pool()` (blue) and `simple_ensemble()` (red). (Panel A) Ensemble predictions of Massachusetts incident influenza hospitalization intensity (classified as low, moderate, high, or very high), which provide an example of PMF output type. (Panel B) Ensemble predictions of weekly incident influenza hospitalizations in Massachusetts, which provide an example of quantile output type. Note, for quantile output type, `simple_ensemble()` corresponds to a quantile average. Ensembles combine individual models from the example hub, and are represented by a median (line), 50% and 90% prediction intervals (ribbons)."}
 
-  ribbon_df <- dplyr::filter(plot_df, .data$output_type_id %in% ribbon) %>%
-    dplyr::mutate(output_type_id = ifelse(.data$output_type_id == min(ribbon),
-      "min", "max"
-    )) %>%
-    tidyr::pivot_wider(names_from = .data$output_type_id, values_from = .data$value)
-
-  plot_model <- plot_ly(height = 600, colors = scales::hue_pal()(50))
-
-  if (!is.null(truth_df)) {
-    plot_model <- plot_model %>%
-      add_trace(
-        data = truth_df, x = ~time_idx, y = ~value, type = "scatter",
-        mode = "lines+markers", line = list(color = "#6e6e6e"),
-        hoverinfo = "text", name = "ground truth",
-        hovertext = paste("Date: ", truth_df$time_value, "<br>",
-          "Ground truth: ",
-          format(truth_df$value, big.mark = ","),
-          sep = ""
-        ),
-        marker = list(color = "#6e6e6e", size = 7)
+# Generate plot of ensemble probability in each bin
+p1 <- dplyr::bind_rows(mean_ens, linear_pool_norm) |>
+  dplyr::filter(
+    output_type == "pmf", reference_date == "2022-12-17",
+    location == "25"
+  ) |>
+  # Reorder bin names to be in correct order
+  dplyr::mutate(
+    output_type_id = 
+      factor(
+        output_type_id,
+        levels = c("low", "moderate", "high", "very high")
       )
-  }
-  plot_model <- plot_model %>%
-    add_lines(
-      data = plain_df, x = ~target_date, y = ~value,
-      color = ~model_id
-    ) %>%
-    add_ribbons(
-      data = ribbon_df, x = ~target_date, ymin = ~min,
-      ymax = ~max, color = ~model_id, opacity = 0.25,
-      line = list(width = 0), showlegend = FALSE
-    ) %>%
-    plotly::layout(shapes = list(
-      type = "line", y0 = 0, y1 = 1, yref = "paper",
-      x0 = forecast_date, x1 = forecast_date,
-      line = list(color = "gray")
-    ))
-}
+  ) |>
+  ggplot(aes(x = output_type_id, y = value, fill = model_id)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  facet_wrap(vars(horizon), labeller = label_both) +
+  labs(x = "incident hospitalization intensity", y = "probability") +
+  scale_fill_brewer(palette = "Set1", direction = -1) +
+  theme_bw() +
+  theme(
+    legend.position = "bottom", legend.title = element_blank(),
+    strip.background = element_blank(), strip.placement = "outside",
+    panel.grid.major.x = element_blank()
+  )
+
+## Create new data frame of ensemble output to be plotted
+# Use median results as point estimate in plot
+# Pull quantile == 0.5 results for linear pool and add them to the end of 
+# the data.frame as "median" output type (because linear_pool() does not
+# automatically provide median estimates)
+model_output_plot <- linear_pool_norm |>
+  dplyr::filter(output_type_id == 0.5, target == "wk inc flu hosp") |>
+  dplyr::mutate(output_type = "median", output_type_id = NA)
+model_output_plot <- dplyr::bind_rows(linear_pool_norm, model_output_plot)
+# Filter to desired forecasts
+model_output_plot <- dplyr::bind_rows(mean_ens, model_output_plot) |>
+  dplyr::filter(
+    location == "25",
+    output_type %in% c("median", "mean", "quantile"),
+    reference_date == "2022-12-17"
+  ) |>
+  dplyr::mutate(
+    target_date = reference_date + horizon, 
+    output_type_id = as.numeric(output_type_id)
+  )
+target_data_plot <- hubExamples::forecast_target_ts |>
+  dplyr::filter(
+    location == "25", 
+    date >= "2022-11-01", date <= "2023-03-01"
+  )
+
+# Generate plot of incidence forecasts 0-3 week horizons
+p2 <-
+  hubVis::plot_step_ahead_model_output(
+    model_output_data = model_output_plot,
+    target_data = target_data_plot,
+    use_median_as_point = TRUE,
+    interactive = FALSE,
+    intervals = c(0.5, 0.9),
+    pal_color = "Set1",
+    show_legend = TRUE,
+    x_col_name = "target_end_date", 
+    x_target_col_name = "date"
+  ) +
+  theme_bw() +
+  labs(y = "incident hospitalizations")
+
+# Pull legend
+l <- cowplot::get_plot_component(p1, "guide-box", return_all = TRUE)[[3]]
+
+# Assemble plots
+cowplot::plot_grid(
+  cowplot::plot_grid(
+    p1 + labs(subtitle = "example PMF output type") +
+      theme(legend.position = "none"),
+    p2 + labs(subtitle = "example quantile output type") +
+      theme(legend.position = "none"),
+    labels = LETTERS[1:2]
+  ), l,
+  ncol = 1,
+  rel_heights = c(0.95, 0.05)
+)
 ```
+
+## Changing the defaults
+
+Like with `simple_ensemble()`, weights may be provided for each model that determine its contribution to the resulting ensemble.
 
 ```{r}
-plot_df <- dplyr::bind_rows(model_outputs, mean_ens) %>%
-  dplyr::filter(location == "US", origin_date == "2022-12-12") %>%
-  dplyr::mutate(target_date = origin_date + horizon)
-
-plot <- basic_plot_function(
-  plot_df,
-  truth_df = target_data %>%
-    dplyr::filter(
-      location == "US",
-      time_idx >= "2022-10-01",
-      time_idx <= "2023-03-01"
-    ),
-  forecast_date = "2022-12-12"
-)
-plot
+model_weights <- data.frame(
+    model_id = c("MOBS-GLEAM_FLUH", "PSI-DICE", "simple_hub-baseline"),
+    weight = c(0.4, 0.4, 0.2)
+  )
+weighted_linear_pool_norm <- hubExamples::forecast_outputs |>
+  dplyr::filter(output_type != "median") |>
+  hubEnsembles::linear_pool(
+    weights = model_weights,
+    model_id = "linear-pool-weighted"
+  )
 ```
+
+We can also change the distribution that `distfromq` uses to estimate the component models' distributional tails to either log normal or cauchy using the `tail_dist` argument.
+
+```{r}
+#| prompt: true
+linear_pool_lnorm <- hubExamples::forecast_outputs |>
+  dplyr::filter(output_type != "median") |>
+  hubEnsembles::linear_pool(
+    model_id = "linear-pool-lognormal",
+    tail_dist = "lnorm"
+  )
+linear_pool_cauchy <- hubExamples::forecast_outputs |>
+  dplyr::filter(output_type != "median") |>
+  hubEnsembles::linear_pool(
+    model_id = "linear-pool-cauchy",
+    tail_dist = "cauchy"
+  )
+```
+
+
+```{r plot-linear-pools, echo=FALSE, warning=FALSE, fig.height=4, fig.width=8, fig.cap = "Three different linear pools for weekly incident influenza hospitalizations in Massachusetts. Each linear pool combines individual predictions from the example hub using different distributional tails: normal, log normal, or cauchy. Linear pools are represented by a  median (line), 50% and 90% prediction intervals (ribbons). All generate  similar estimates, except for cauchy near the distribution tails."}
+linear_pool_plot <- dplyr::bind_rows(
+  linear_pool_norm, linear_pool_lnorm,
+  linear_pool_cauchy
+) |>
+  dplyr::filter(
+    location == "25",
+    output_type %in% c("median", "mean", "quantile"),
+    reference_date == "2022-12-17"
+  ) |>
+  dplyr::mutate(target_date = reference_date + horizon)
+
+target_data_plot <- hubExamples::forecast_target_ts |>
+  dplyr::filter(
+    location == "25", 
+    date >= "2022-11-01", date <= "2023-03-01"
+  )
+
+hubVis::plot_step_ahead_model_output(
+  model_output_data = linear_pool_plot,
+  target_data = target_data_plot,
+  use_median_as_point = TRUE,
+  interactive = FALSE,
+  intervals = c(0.5, 0.90),
+  show_legend = TRUE,
+  x_col_name = "target_end_date", 
+  x_target_col_name = "date"
+) +
+  theme_bw() +
+  labs(y = "incident hospitalizations")
+```
+
+The three resulting linear pools are mostly the same, except for the outer quantiles. This is expected given that the only difference is the selection of tail distribution. The linear pools with normal and lognormal tails are nearly identical while the linear pool with cauchy tails has a slightly wider 90% prediction intervals, which is as expected since cauchy distributions have heavy tails.
