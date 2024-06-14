@@ -36,7 +36,7 @@ We will use an example hub provided by the hubverse to demonstrate the functiona
 
 The model output data includes quantile, mean and median forecasts of future incident influenza hospitalizations and PMF forecasts of hospitalization intensity (categories determined by threshold of weekly hospital admissions per 100,000 population). Each forecast is made for five task ID variables, including the location for which the forecast was made (`location`), the date on which the forecast was made (`reference_date`), the number of steps ahead (`horizon`), the date of the forecast prediction (a combination of the date the forecast was made and the forecast horizon, `target_end_date`), and the forecast target (`target`). 
 
-```{r example-model-outputs}
+```{r example-model-outputs, cols.print = 12}
 hubExamples::forecast_outputs |>
   dplyr::filter(
     output_type %in% c("quantile", "median", "pmf"),
@@ -49,7 +49,7 @@ hubExamples::forecast_outputs |>
   dplyr::select(model_id, target, horizon, output_type, output_type_id, value)
 ```
 
-```{r}
+```{r, cols.print = 12}
 hubExamples::forecast_outputs
 ```
 
@@ -78,7 +78,7 @@ mean_ens <- hubExamples::forecast_outputs |>
 
 The resulting model output has the same structure as the original model output data, with columns for model ID, task ID variables, output type, output type ID, and value. We also use `model_id = "simple-ensemble-mean"` to change the name of this ensemble in the resulting model output; if not specified, the default will be "hub-ensemble".
 
-```{r mean-ensemble, echo=FALSE, rows.print = 9}
+```{r mean-ensemble, echo=FALSE, rows.print = 9, cols.print = 12}
 mean_ens |>
   dplyr::filter(
     output_type %in% c("quantile", "median", "pmf"),
