@@ -57,7 +57,27 @@ hubExamples::forecast_outputs |>
       `reference_date` and `target_end_date` columns are omitted for brevity. 
       This example data is provided in the `hubExamples` package."
   )
+```
 
+```{r}
+hubExamples::forecast_outputs
+print(hubExamples::forecast_outputs)
+head(hubExamples::forecast_outputs)
+```
+
+```{r, warning=FALSE}
+hubExamples::forecast_outputs
+print(hubExamples::forecast_outputs)
+head(hubExamples::forecast_outputs)
+```
+
+```{r, message=FALSE}
+hubExamples::forecast_outputs
+print(hubExamples::forecast_outputs)
+head(hubExamples::forecast_outputs)
+```
+
+```{r, warning=FALSE, message=FALSE}
 hubExamples::forecast_outputs
 print(hubExamples::forecast_outputs)
 head(hubExamples::forecast_outputs)
