@@ -36,7 +36,8 @@ We will use an example hub provided by the hubverse to demonstrate the functiona
 
 The model output data includes quantile, mean and median forecasts of future incident influenza hospitalizations and PMF forecasts of hospitalization intensity (categories determined by threshold of weekly hospital admissions per 100,000 population). Each forecast is made for five task ID variables, including the location for which the forecast was made (`location`), the date on which the forecast was made (`reference_date`), the number of steps ahead (`horizon`), the date of the forecast prediction (a combination of the date the forecast was made and the forecast horizon, `target_end_date`), and the forecast target (`target`). 
 
-```{r example-model-outputs, max.width='300px'}
+```{r example-model-outputs}
+options(width = 300)
 hubExamples::forecast_outputs |>
   dplyr::filter(
     output_type %in% c("quantile", "median", "pmf"),
@@ -44,18 +45,12 @@ hubExamples::forecast_outputs |>
     reference_date == "2022-12-17",
     location == "25",
     horizon == 1
-  ) |>
-  dplyr::mutate(value = round(value, 2)) |>
-  dplyr::select(model_id, target, horizon, output_type, output_type_id, value)
-```
-
-```{r, max.width='300px'}
-hubExamples::forecast_outputs
+  )
 ```
 
 We also have corresponding target data included in the `hubExamples` package. The example target data provide observed incident influenza hospitalizations (`observation`) in a given week (`date`) and for a given location (`location`). This target data could be used as calibration data for generating forecasts or for evaluating the forecasts post hoc. The forecast-specific task ID variables `reference_date` and `horizon` are not relevant for the target data.
 
-```{r example-target-data, cols.print=13}
+```{r example-target-data}
 head(hubExamples::forecast_target_ts)
 ```
 
@@ -78,7 +73,8 @@ mean_ens <- hubExamples::forecast_outputs |>
 
 The resulting model output has the same structure as the original model output data, with columns for model ID, task ID variables, output type, output type ID, and value. We also use `model_id = "simple-ensemble-mean"` to change the name of this ensemble in the resulting model output; if not specified, the default will be "hub-ensemble".
 
-```{r mean-ensemble, echo=FALSE, rows.print = 9, max.width='300px'}
+```{r mean-ensemble}
+options(width = 300)
 mean_ens |>
   dplyr::filter(
     output_type %in% c("quantile", "median", "pmf"),
@@ -89,10 +85,7 @@ mean_ens |>
     reference_date == "2022-12-17",
     location == "25",
     horizon == 1
-  ) |>
-  dplyr::mutate(value = round(value, 2)) |>
-  dplyr::select(model_id, target, horizon, output_type, output_type_id, value)
-head(mean_ens)
+  )
 ```
 
 ## Changing the aggregation function
@@ -161,7 +154,8 @@ hubVis::plot_step_ahead_model_output(
 
 We can weight the contributions of each model in the ensemble using the `weights` argument of `simple_ensemble()`. This argument takes a `data.frame` that should include a `model_id` column containing each unique model ID and a `weight` column. In the following example, we include the baseline model in the ensemble, but give it less weight than the other forecasts.
 
-```{r, max.width='300px'}
+```{r}
+options(width = 300)
 model_weights <- data.frame(
   model_id = c("MOBS-GLEAM_FLUH", "PSI-DICE", "simple_hub-baseline"),
   weight = c(0.4, 0.4, 0.2)
@@ -183,7 +177,8 @@ For the quantile output type, the `linear_pool()` function first must approximat
 
 Using the default options for `linear_pool()`, we can generate an equally-weighted linear pool for each of the output types in our example hub (except for the median and sample output types which must be excluded). The resulting distribution for the linear pool of quantiles is estimated using a default of `n_samples = 1e4` quasi random samples drawn from the distribution of each component model.
 
-```{r, max.width='300px'}
+```{r}
+options(width = 300)
 linear_pool_norm <- hubExamples::forecast_outputs |>
   dplyr::filter(!output_type %in% c("median", "sample")) |>
   hubEnsembles::linear_pool(model_id = "linear-pool-normal")
