@@ -273,9 +273,7 @@ cowplot::plot_grid(
 )
 ```
 
-## Changing the defaults
-
-Like with `simple_ensemble()`, weights may be provided for each model that determine its contribution to the resulting ensemble.
+Like with `simple_ensemble()`, we can change the default aggregation settings. For example, weights that determine a model's contribution to the resulting ensemble may be provided.
 
 ```{r}
 options(width = 300)
@@ -292,7 +290,7 @@ weighted_linear_pool_norm <- hubExamples::forecast_outputs |>
 head(weighted_linear_pool_norm, 10)
 ```
 
-We can also change the distribution that `distfromq` uses to estimate the component models' distributional tails to either log normal or cauchy using the `tail_dist` argument.
+We can also change the distribution that `distfromq` uses to estimate the component models' distributional tails to either log normal or cauchy using the `tail_dist` argument. See documentation in the `distfromq` package for more details and function options.
 
 ```{r}
 linear_pool_lnorm <- hubExamples::forecast_outputs |>
@@ -309,7 +307,7 @@ linear_pool_cauchy <- hubExamples::forecast_outputs |>
   )
 ```
 
-The figure below compares three linear pools with different distribution tails—normal,lognormal, and cauchy—predicting weekly incident influence hospitalizations in Massachusetts. The plotted quantiles show that the three linear pools generate similar predictive distributions, except for the model with cauchy tails near the outer edges of the distribution. This is expected given that the only difference between the linear pools is the selection of tail distribution, and cauchy distributions have heavy tails.
+The figure below compares three linear pools with different distribution tails — normal, lognormal, and cauchy — predicting weekly incident influence hospitalizations in Massachusetts. The plotted quantiles show that the three linear pools generate similar predictive distributions, except for the model with cauchy tails near the outer edges of the distribution. This is expected given that the only difference between the linear pools is the selection of tail distribution, and cauchy distributions have heavy tails.
 
 ```{r plot-linear-pools, echo=FALSE, warning=FALSE, fig.height=4, fig.width=8}
 linear_pool_plot <- dplyr::bind_rows(
