@@ -67,12 +67,16 @@ of the component distributions.
 
 When the \code{output_type} is \code{quantile}, we obtain the quantiles of a linear pool
 in three steps:
-1. Interpolate and extrapolate from the provided quantiles for each component
+\enumerate{
+\item Interpolate and extrapolate from the provided quantiles for each component
 model to obtain an estimate of the cdf of that distribution.
-2. Draw samples from the distribution for each component model. To reduce
+\item Draw samples from the distribution for each component model. To reduce
 Monte Carlo variability, we use quasi-random samples corresponding to
 quantiles of the estimated distribution.
-3. Collect the samples from all component models and extract the desired quantiles.
+\item Collect the samples from all component models and extract the desired
+quantiles.
+}
+
 Steps 1 and 2 in this process are performed by \code{distfromq::make_q_fn}.
 }
 \examples{

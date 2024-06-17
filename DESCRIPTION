@@ -27,9 +27,12 @@ Description: Functions for combining model outputs (e.g. predictions or
 License: MIT + file LICENSE
 VignetteBuilder: knitr
 Suggests: 
+    cowplot,
+    ggplot2,
     hubData,
+    hubExamples,
+    hubVis (>= 0.0.0.9100),
     knitr,
-    plotly,
     rmarkdown,
     scales,
     testthat (>= 3.0.0)
@@ -52,8 +55,10 @@ Imports:
     tidyr,
     tidyselect
 Remotes:
-    Infectious-Disease-Modeling-Hubs/hubUtils,
     Infectious-Disease-Modeling-Hubs/hubData,
+    Infectious-Disease-Modeling-Hubs/hubExamples,
+    Infectious-Disease-Modeling-Hubs/hubUtils,
+    Infectious-Disease-Modeling-Hubs/hubVis,
     reichlab/distfromq
 Config/Needs/website: Infectious-Disease-Modeling-Hubs/hubStyle
 Depends: 
