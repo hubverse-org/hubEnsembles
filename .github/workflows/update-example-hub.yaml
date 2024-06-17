@@ -22,7 +22,7 @@ jobs:
     - name: Checkout example-simple-forecast-hub
       uses: actions/checkout@v3
       with:
-        repository: 'Infectious-Disease-Modeling-Hubs/example-simple-forecast-hub'
+        repository: 'hubverse-org/example-simple-forecast-hub'
         ref: 'main'
         path: './inst/example-data/example-simple-forecast-hub'
 
@@ -35,6 +35,6 @@ jobs:
         git add inst/example-data/example-simple-forecast-hub
         git commit -m "Github Actions build update example-simple-forecast-hub: $GITHUB_RUN_NUMBER"
         echo "Pushing files..."
-        git push https://${GITHUB_TOKEN}@github.com/Infectious-Disease-Modeling-Hubs/hubEnsembles.git HEAD:update_example_simple_forecast_hub
+        git push https://${GITHUB_TOKEN}@github.com/hubverse-org/hubEnsembles.git HEAD:update_example_simple_forecast_hub
         echo "Submitting pull request..."
         gh pr create --fill --base main --head update_example_simple_forecast_hub

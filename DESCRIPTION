@@ -40,9 +40,9 @@ Config/testthat/edition: 3
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.1
-URL: https://github.com/Infectious-Disease-Modeling-Hubs/hubEnsembles,
-    https://infectious-disease-modeling-hubs.github.io/hubEnsembles/
-BugReports: https://github.com/Infectious-Disease-Modeling-Hubs/hubEnsembles/issues
+URL: https://github.com/hubverse-org/hubEnsembles,
+    https://hubverse-org.github.io/hubEnsembles/
+BugReports: https://github.com/hubverse-org/hubEnsembles/issues
 Imports: 
     cli,
     distfromq (>= 1.0.2),
@@ -55,12 +55,12 @@ Imports:
     tidyr,
     tidyselect
 Remotes:
-    Infectious-Disease-Modeling-Hubs/hubData,
-    Infectious-Disease-Modeling-Hubs/hubExamples,
-    Infectious-Disease-Modeling-Hubs/hubUtils,
-    Infectious-Disease-Modeling-Hubs/hubVis,
+    hubverse-org/hubData,
+    hubverse-org/hubExamples,
+    hubverse-org/hubUtils,
+    hubverse-org/hubVis,
     reichlab/distfromq
-Config/Needs/website: Infectious-Disease-Modeling-Hubs/hubStyle
+Config/Needs/website: hubverse-org/hubStyle
 Depends: 
     R (>= 2.10)
 LazyData: true
