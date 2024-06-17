@@ -135,14 +135,14 @@ pmf of a linear pool. For the <code>mean</code> output type, this is justified b
 that the (weighted) mean of the linear pool is the (weighted) mean of the means
 of the component distributions.</p>
 <p>When the <code>output_type</code> is <code>quantile</code>, we obtain the quantiles of a linear pool
-in three steps:
-1. Interpolate and extrapolate from the provided quantiles for each component
-model to obtain an estimate of the cdf of that distribution.
-2. Draw samples from the distribution for each component model. To reduce
+in three steps:</p><ol><li><p>Interpolate and extrapolate from the provided quantiles for each component
+model to obtain an estimate of the cdf of that distribution.</p></li>
+<li><p>Draw samples from the distribution for each component model. To reduce
 Monte Carlo variability, we use quasi-random samples corresponding to
-quantiles of the estimated distribution.
-3. Collect the samples from all component models and extract the desired quantiles.
-Steps 1 and 2 in this process are performed by <code><a href="http://reichlab.io/distfromq/reference/make_q_fn.html" class="external-link">distfromq::make_q_fn</a></code>.</p>
+quantiles of the estimated distribution.</p></li>
+<li><p>Collect the samples from all component models and extract the desired
+quantiles.</p></li>
+</ol><p>Steps 1 and 2 in this process are performed by <code><a href="http://reichlab.io/distfromq/reference/make_q_fn.html" class="external-link">distfromq::make_q_fn</a></code>.</p>
     </div>
 
     <div class="section level2">
