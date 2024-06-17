@@ -14,6 +14,7 @@ knitr::opts_chunk$set(
   fig.width = 7,
   fig.height = 4
 )
+options(width = 300)
 ```
 
 # Introduction
@@ -37,7 +38,6 @@ We will use an example hub provided by the hubverse to demonstrate the functiona
 The model output data includes quantile, mean and median forecasts of future incident influenza hospitalizations and PMF forecasts of hospitalization intensity (categories determined by threshold of weekly hospital admissions per 100,000 population). Each forecast is made for five task ID variables, including the location for which the forecast was made (`location`), the date on which the forecast was made (`reference_date`), the number of steps ahead (`horizon`), the date of the forecast prediction (a combination of the date the forecast was made and the forecast horizon, `target_end_date`), and the forecast target (`target`). Below we print a subset of this example model output.
 
 ```{r example-model-outputs}
-options(width = 300)
 hubExamples::forecast_outputs |>
   dplyr::filter(
     output_type %in% c("quantile", "median", "pmf"),
@@ -74,7 +74,6 @@ mean_ens <- hubExamples::forecast_outputs |>
 The resulting model output has the same structure as the original model output data, with columns for model ID, task ID variables, output type, output type ID, and value. We also use `model_id = "simple-ensemble-mean"` to change the name of this ensemble in the resulting model output; if not specified, the default will be "hub-ensemble". A subset of the predictions is printed below.
 
 ```{r mean-ensemble}
-options(width = 300)
 mean_ens |>
   dplyr::filter(
     output_type %in% c("quantile", "median", "pmf"),
@@ -155,7 +154,6 @@ hubVis::plot_step_ahead_model_output(
 We can weight the contributions of each model in the ensemble using the `weights` argument of `simple_ensemble()`. This argument takes a `data.frame` that should include a `model_id` column containing each unique model ID and a `weight` column. In the following example, we include the baseline model in the ensemble, but give it less weight than the other forecasts.
 
 ```{r}
-options(width = 300)
 model_weights <- data.frame(
   model_id = c("MOBS-GLEAM_FLUH", "PSI-DICE", "simple_hub-baseline"),
   weight = c(0.4, 0.4, 0.2)
@@ -178,7 +176,6 @@ For the quantile output type, the `linear_pool()` function first must approximat
 Using the default options for `linear_pool()`, we can generate an equally-weighted linear pool for each of the output types in our example hub (except for the median and sample output types, which must be excluded). The resulting distribution for the linear pool of quantiles is estimated using a default of `n_samples = 1e4` quasi-random samples drawn from the distribution of each component model.
 
 ```{r}
-options(width = 300)
 linear_pool_norm <- hubExamples::forecast_outputs |>
   dplyr::filter(!output_type %in% c("median", "sample")) |>
   hubEnsembles::linear_pool(model_id = "linear-pool-normal")
@@ -276,7 +273,6 @@ cowplot::plot_grid(
 Like with `simple_ensemble()`, we can change the default aggregation settings. For example, weights that determine a model's contribution to the resulting ensemble may be provided.
 
 ```{r}
-options(width = 300)
 model_weights <- data.frame(
   model_id = c("MOBS-GLEAM_FLUH", "PSI-DICE", "simple_hub-baseline"),
   weight = c(0.4, 0.4, 0.2)
