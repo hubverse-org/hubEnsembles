@@ -3,8 +3,8 @@ pkgdown: 2.0.9
 pkgdown_sha: ~
 articles:
   hubEnsembles: hubEnsembles.html
-last_built: 2024-06-17T20:19Z
+last_built: 2024-06-19T07:30Z
 urls:
-  reference: https://infectious-disease-modeling-hubs.github.io/hubEnsembles/reference
-  article: https://infectious-disease-modeling-hubs.github.io/hubEnsembles/articles
+  reference: https://hubverse-org.github.io/hubEnsembles/reference
+  article: https://hubverse-org.github.io/hubEnsembles/articles
 
