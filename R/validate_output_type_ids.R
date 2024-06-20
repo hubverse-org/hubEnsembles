@@ -12,6 +12,7 @@
 #'   are `mean`, `quantile`, `cdf`, `pmf`, and `sample`.
 #'
 #' @return no return value
+#' @importFrom rlang .data
 
 validate_output_type_ids <- function(model_outputs, task_id_cols) {
   same_output_id <- model_outputs |>

@@ -5,6 +5,7 @@
 #' @inherit linear_pool params details
 #'
 #' @return a `model_out_tbl` object of ensemble predictions for the `quantile` output type.
+#' @importFrom rlang .data
 
 linear_pool_quantile <- function(model_outputs, weights = NULL,
                                  weights_col_name = "weight",
