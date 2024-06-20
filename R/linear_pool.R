@@ -90,7 +90,7 @@ linear_pool <- function(model_outputs, weights = NULL,
   # calculate linear opinion pool for different types
   ensemble_model_outputs <- model_outputs_validated |>
     dplyr::group_split(.data$output_type) |>
-    purrr::map_dfr(.f = function(split_outputs) {
+    purrr::map(.f = function(split_outputs) {
       type <- split_outputs$output_type[1]
       if (type %in% c("mean", "cdf", "pmf")) {
         simple_ensemble(split_outputs, weights = weights_validated,
@@ -107,6 +107,7 @@ linear_pool <- function(model_outputs, weights = NULL,
                              ...)
       }
     }) |>
+    purrr::list_rbind() |>
     hubUtils::as_model_out_tbl()
 
   return(ensemble_model_outputs)
