@@ -3,7 +3,6 @@
 #' output type.
 #'
 #' @inherit linear_pool params details
-#' @noRd
 #'
 #' @return a `model_out_tbl` object of ensemble predictions for the `quantile` output type.
 

@@ -12,8 +12,6 @@
 #'   are `mean`, `quantile`, `cdf`, `pmf`, and `sample`.
 #'
 #' @return no return value
-#'
-#' @noRd
 
 validate_output_type_ids <- function(model_outputs, task_id_cols) {
   same_output_id <- model_outputs |>
