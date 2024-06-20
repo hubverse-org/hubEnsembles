@@ -78,7 +78,7 @@ test_that("component model outputs and resulting ensemble model outputs have ide
     c(250, 350, 500, 350)
 
   expected_output_type_ids <- data.frame(quantile_outputs) |>
-    dplyr::pull(output_type_id) |>
+    dplyr::pull("output_type_id") |>
     unique() |>
     sort()
 
@@ -87,7 +87,7 @@ test_that("component model outputs and resulting ensemble model outputs have ide
                 weights_col_name = NULL,
                 model_id = "hub-ensemble",
                 task_id_cols = NULL) |>
-    dplyr::pull(output_type_id) |>
+    dplyr::pull("output_type_id") |>
     unique() |>
     sort()
 

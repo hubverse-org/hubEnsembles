@@ -66,7 +66,6 @@
 #' all.equal(lp_from_component_qs$value, lp_qs, tolerance = 1e-3,
 #'           check.attributes=FALSE)
 #'
-#' @importFrom rlang .data
 
 linear_pool <- function(model_outputs, weights = NULL,
                         weights_col_name = "weight",
@@ -89,7 +88,7 @@ linear_pool <- function(model_outputs, weights = NULL,
 
   # calculate linear opinion pool for different types
   ensemble_model_outputs <- model_outputs_validated |>
-    dplyr::group_split(.data$output_type) |>
+    dplyr::group_split("output_type") |>
     purrr::map(.f = function(split_outputs) {
       type <- split_outputs$output_type[1]
       if (type %in% c("mean", "cdf", "pmf")) {
