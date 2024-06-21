@@ -28,6 +28,8 @@
 #' @return a list of validated model inputs: `model_outputs` object of class
 #'   `model_output_df`, optional `weights` data frame, and `task_id_cols`
 #'   character vector
+#'
+#' @noRd
 
 validate_ensemble_inputs <- function(model_outputs, weights = NULL,
                                      weights_col_name = "weight",
