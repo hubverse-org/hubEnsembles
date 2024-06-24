@@ -97,7 +97,7 @@ test_that("component model outputs and resulting ensemble model outputs have ide
                     weights_col_name = NULL,
                     model_id = "hub-ensemble",
                     task_id_cols = NULL) |>
-    dplyr::pull(output_type_id) |>
+    dplyr::pull("output_type_id") |>
     unique() |>
     sort()
 
@@ -227,11 +227,11 @@ test_that("(weighted) medians and means correctly calculated", {
 
 test_that("(weighted) medians and means work with alternate name for weights columns", {
   weighted_median_actual <- model_outputs |>
-    simple_ensemble(weights = fweight %>% dplyr::rename(w = weight),
+    simple_ensemble(weights = fweight %>% dplyr::rename(w = "weight"),
                     weights_col_name = "w",
                     agg_fun = "median")
   weighted_mean_actual <- model_outputs |>
-    simple_ensemble(weights = fweight %>% dplyr::rename(w = weight),
+    simple_ensemble(weights = fweight %>% dplyr::rename(w = "weight"),
                     weights_col_name = "w",
                     agg_fun = "mean")
 
