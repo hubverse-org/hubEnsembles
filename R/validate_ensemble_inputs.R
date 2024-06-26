@@ -104,6 +104,15 @@ validate_ensemble_inputs <- function(model_outputs, weights = NULL,
                is already a column in {.arg model_outputs}."
       ))
     }
+
+    if (any(c("cdf", "pmf") %in% unique_output_types) && "output_type_id" %in% colnames(weights)) {
+      cdf_pmf_types <- unique_output_types[unique_output_types %in% c("cdf", "pmf")]
+      cli::cli_abort(c(
+        "x" = "{.args weights} contains weights dependent on the output type id, 
+               but {.arg model_outputs} contains {.val {cdf_pmf_types}} forecasts.",
+        "i" = "This may lead to an invalid ensemble distribution."
+      ))
+    }
   }
 
   validated_inputs <- list(model_outputs = model_outputs,
