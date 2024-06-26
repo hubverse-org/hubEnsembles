@@ -106,7 +106,9 @@ validate_ensemble_inputs <- function(model_outputs, weights = NULL,
     }
 
     if (any(c("cdf", "pmf") %in% unique_output_types) && "output_type_id" %in% colnames(weights)) {
+      # nolint start
       cdf_pmf_types <- unique_output_types[unique_output_types %in% c("cdf", "pmf")]
+      # nolint end
       cli::cli_abort(c(
         "x" = "{.args weights} contains weights dependent on the output type id, 
                but {.arg model_outputs} contains {.val {cdf_pmf_types}} forecasts.",
