@@ -71,3 +71,15 @@ test_that("error if models provide different output_type_ids", {
       validate_output_type_ids(task_id_cols = c("location", "horizon", "target", "target_date"))
   )
 })
+
+test_that("weights column already in model_outputs generates error", {
+  fweight <- expand.grid(model_id = letters[1:4],
+                         output_type_id = c(0.1, 0.5, 0.9),
+                         weight = NA,
+                         stringsAsFactors = FALSE)
+  expect_error(
+    model_outputs |>
+      dplyr::mutate(output_type = "pmf", value = 1 / value) |>
+      validate_ensemble_inputs(weights = fweight, valid_output_types = c("pmf"))
+  )
+})
