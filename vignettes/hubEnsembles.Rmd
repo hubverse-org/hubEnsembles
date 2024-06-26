@@ -155,7 +155,7 @@ We can weight the contributions of each model in the ensemble using the `weights
 
 ```{r}
 model_weights <- data.frame(
-  model_id = c("MOBS-GLEAM_FLUH", "PSI-DICE", "simple_hub-baseline"),
+  model_id = c("MOBS-GLEAM_FLUH", "PSI-DICE", "Flusight-baseline"),
   weight = c(0.4, 0.4, 0.2)
 )
 weighted_mean_ens <- hubExamples::forecast_outputs |>
@@ -274,7 +274,7 @@ Like with `simple_ensemble()`, we can change the default aggregation settings. F
 
 ```{r}
 model_weights <- data.frame(
-  model_id = c("MOBS-GLEAM_FLUH", "PSI-DICE", "simple_hub-baseline"),
+  model_id = c("MOBS-GLEAM_FLUH", "PSI-DICE", "Flusight-baseline"),
   weight = c(0.4, 0.4, 0.2)
 )
 weighted_linear_pool_norm <- hubExamples::forecast_outputs |>
