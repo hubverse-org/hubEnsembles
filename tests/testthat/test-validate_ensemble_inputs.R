@@ -72,7 +72,7 @@ test_that("error if models provide different output_type_ids", {
   )
 })
 
-test_that("weights column already in model_outputs generates error", {
+test_that("weights depend on output_type_id for cdf and pmf output_type generates error", {
   fweight <- expand.grid(model_id = letters[1:4],
                          output_type_id = c(0.1, 0.5, 0.9),
                          weight = NA,
