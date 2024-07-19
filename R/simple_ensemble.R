@@ -78,6 +78,11 @@ simple_ensemble <- function(model_outputs, weights = NULL,
                                  w = quote(.data[[weights_col_name]])))
   }
 
+  # don't interpolate when calling `matrixStats::weightedMedian`
+  if (isTRUE(all.equal(agg_fun, matrixStats::weightedMedian))) {
+    agg_args <- c(agg_args, list(interpolate = FALSE))
+  }
+
   group_by_cols <- c(task_id_cols_validated, "output_type", "output_type_id")
   ensemble_model_outputs <- model_outputs_validated %>%
     dplyr::group_by(dplyr::across(dplyr::all_of(group_by_cols))) %>%
