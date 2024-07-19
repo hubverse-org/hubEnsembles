@@ -28,7 +28,7 @@ validate_output_type_ids <- function(model_outputs, task_id_cols) {
     }) |>
     unlist()
 
-  false_counter <- length(same_output_id[same_output_id == FALSE])
+  false_counter <- sum(!same_output_id)
   if (false_counter != 0) {
     cli::cli_abort(c(
       "x" = "{.arg model_outputs} contains {.val {false_counter}} invalid distributions.",
