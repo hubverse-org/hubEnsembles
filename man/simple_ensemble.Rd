@@ -64,5 +64,7 @@ argument \code{w} with a numeric vector of weights. If it desired to use an
 aggregation function that does not accept these arguments, a wrapper
 would need to be written. For weighted methods, \code{agg_fun = "mean"} and
 \code{agg_fun = "median"} are translated to use \code{matrixStats::weightedMean} and
-\code{matrixStats::weightedMedian} respectively.
+\code{matrixStats::weightedMedian} respectively. For \code{matrixStats::weightedMedian},
+the argument \code{interpolate} is automatically set to FALSE to circumvent a
+calculation issue that results in invalid distributions.
 }

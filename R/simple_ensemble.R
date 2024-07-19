@@ -33,7 +33,9 @@
 #'   aggregation function that does not accept these arguments, a wrapper
 #'   would need to be written. For weighted methods, `agg_fun = "mean"` and
 #'   `agg_fun = "median"` are translated to use `matrixStats::weightedMean` and
-#'   `matrixStats::weightedMedian` respectively.
+#'   `matrixStats::weightedMedian` respectively. For `matrixStats::weightedMedian`,
+#'   the argument `interpolate` is automatically set to FALSE to circumvent a
+#'   calculation issue that results in invalid distributions.
 #'
 #' @return a `model_out_tbl` object of ensemble predictions. Note that
 #'   any additional columns in the input `model_outputs` are dropped.
