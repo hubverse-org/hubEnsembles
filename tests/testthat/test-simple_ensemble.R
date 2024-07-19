@@ -187,10 +187,12 @@ test_that("(weighted) medians and means correctly calculated", {
 
   weighted_median_vals <- c(sapply(list(v2_1, v2_5, v2_9),
                                    matrixStats::weightedMedian,
-                                   w = fweight2$weight),
+                                   w = fweight2$weight,
+                                   interpolate = FALSE),
                             sapply(list(v8_1, v8_5, v8_9),
                                    matrixStats::weightedMedian,
-                                   w = fweight8$weight))
+                                   w = fweight8$weight,
+                                   interpolate = FALSE))
   weighted_mean_vals <- c(sapply(list(v2_1, v2_5, v2_9),
                                  matrixStats::weightedMean,
                                  w = fweight2$weight),
