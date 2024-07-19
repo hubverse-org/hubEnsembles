@@ -76,7 +76,7 @@ linear_pool <- function(model_outputs, weights = NULL,
 
   # validate_ensemble_inputs
   valid_types <- c("mean", "quantile", "cdf", "pmf")
-  validated_inputs <- model_outputs |>
+  validated_inputs <- model_outputs %>%
     validate_ensemble_inputs(weights = weights,
                              weights_col_name = weights_col_name,
                              task_id_cols = task_id_cols,
@@ -87,8 +87,8 @@ linear_pool <- function(model_outputs, weights = NULL,
   task_id_cols_validated <- validated_inputs$task_id_cols
 
   # calculate linear opinion pool for different types
-  ensemble_model_outputs <- model_outputs_validated |>
-    dplyr::group_split("output_type") |>
+  ensemble_model_outputs <- model_outputs_validated %>%
+    dplyr::group_split("output_type") %>%
     purrr::map(.f = function(split_outputs) {
       type <- split_outputs$output_type[1]
       if (type %in% c("mean", "cdf", "pmf")) {
@@ -105,8 +105,8 @@ linear_pool <- function(model_outputs, weights = NULL,
                              task_id_cols = task_id_cols_validated,
                              ...)
       }
-    }) |>
-    purrr::list_rbind() |>
+    }) %>%
+    purrr::list_rbind() %>%
     hubUtils::as_model_out_tbl()
 
   return(ensemble_model_outputs)

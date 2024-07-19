@@ -34,8 +34,8 @@ linear_pool_quantile <- function(model_outputs, weights = NULL,
   }
 
   sample_q_lvls <- seq(from = 0, to = 1, length.out = n_samples + 2)[2:n_samples]
-  quantile_outputs <- model_outputs |>
-    dplyr::group_by(model_id, dplyr::across(dplyr::all_of(group_by_cols))) |>
+  quantile_outputs <- model_outputs %>%
+    dplyr::group_by(model_id, dplyr::across(dplyr::all_of(group_by_cols))) %>%
     dplyr::summarize(
       pred_qs = list(
         distfromq::make_q_fn(
@@ -44,17 +44,17 @@ linear_pool_quantile <- function(model_outputs, weights = NULL,
         )(sample_q_lvls)
       ),
       .groups = "drop"
-    ) |>
-    tidyr::unnest("pred_qs") |>
-    dplyr::group_by(dplyr::across(dplyr::all_of(task_id_cols))) |>
+    ) %>%
+    tidyr::unnest("pred_qs") %>%
+    dplyr::group_by(dplyr::across(dplyr::all_of(task_id_cols))) %>%
     dplyr::summarize(
       output_type_id = list(quantile_levels),
       value = list(do.call("wtd.quantile", args = agg_args)),
       .groups = "drop"
-    ) |>
-    tidyr::unnest(cols = tidyselect::all_of(c("output_type_id", "value"))) |>
-    dplyr::mutate(model_id = model_id, .before = 1) |>
-    dplyr::mutate(output_type = "quantile", .before = "output_type_id") |>
+    ) %>%
+    tidyr::unnest(cols = tidyselect::all_of(c("output_type_id", "value"))) %>%
+    dplyr::mutate(model_id = model_id, .before = 1) %>%
+    dplyr::mutate(output_type = "quantile", .before = "output_type_id") %>%
     dplyr::ungroup()
 
   return(quantile_outputs)
