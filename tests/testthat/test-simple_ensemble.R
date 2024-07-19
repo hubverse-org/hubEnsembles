@@ -245,3 +245,16 @@ test_that("(weighted) medians and means work with alternate name for weights col
   expect_equal(weighted_mean_actual, weighted_mean_expected)
   expect_equal(weighted_median_actual, weighted_median_expected)
 })
+
+test_that("passing agg_fun as symbol or character results in identical behaviour", {
+
+  weighted_mean_actual_char <- simple_ensemble(model_outputs = model_outputs,
+                                               weights = fweight,
+                                               agg_fun = "mean")
+  weighted_mean_actual_symbol <- simple_ensemble(model_outputs = model_outputs,
+                                                 weights = fweight,
+                                                 agg_fun = mean)
+
+  expect_identical(weighted_mean_actual_char, weighted_mean_actual_symbol)
+
+})
