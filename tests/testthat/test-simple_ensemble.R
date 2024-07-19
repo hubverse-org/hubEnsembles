@@ -245,3 +245,30 @@ test_that("(weighted) medians and means work with alternate name for weights col
   expect_equal(weighted_mean_actual, weighted_mean_expected)
   expect_equal(weighted_median_actual, weighted_median_expected)
 })
+
+
+test_that("duplicate forecast values still result in correct weighted median", {
+  toy_outputs <- data.frame(
+    model_id = letters[1:6],
+    output_type = rep("quantile", 6),
+    output_type_id = rep(0.5, 6),
+    value = c(-0.103, -0.89, 0, 0, 0.039, 0.055)
+  )
+  weights <- data.frame(
+    model_id = letters[1:6],
+    weight = c(0.08, 0.14, 0.22, 0.12, 0.28, 0.16)
+  )
+
+  weighted_median_expected <- data.frame(
+    model_id = "hub-ensemble",
+    output_type = "quantile",
+    output_type_id = 0.5,
+    value = 0
+  ) |>
+    hubUtils::as_model_out_tbl()
+
+  weighted_median_actual <- toy_outputs |>
+    simple_ensemble(weights, agg_fun = "median")
+
+  expect_equal(weighted_median_expected, weighted_median_actual)
+})
