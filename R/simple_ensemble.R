@@ -66,12 +66,12 @@ simple_ensemble <- function(model_outputs, weights = NULL,
     model_outputs_validated <- model_outputs_validated %>%
       dplyr::left_join(weights_validated, by = weight_by_cols)
 
-    if (is.character(agg_fun)) {
-      if (agg_fun == "mean") {
-        agg_fun <- matrixStats::weightedMean
-      } else if (agg_fun == "median") {
-        agg_fun <- matrixStats::weightedMedian
-      }
+    agg_fun <- match.fun(agg_fun)
+
+    if (identical(agg_fun, mean)) {
+      agg_fun <- matrixStats::weightedMean
+    } else if (identical(agg_fun, median)) {
+      agg_fun <- matrixStats::weightedMedian
     }
 
     agg_args <- c(agg_args, list(x = quote(.data[["value"]]),
