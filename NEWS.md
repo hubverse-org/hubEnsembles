@@ -1,3 +1,7 @@
+# hubEnsembles 0.1.6
+
+* Fix bug in `simple_ensemble()` that produces invalid distributions for certain weighted medians (#122)
+
 # hubEnsembles 0.1.5
 
 * Check that weights don't depend on output type ID for PMF and CDF forecasts (#35)
