@@ -33,7 +33,9 @@
 #'   aggregation function that does not accept these arguments, a wrapper
 #'   would need to be written. For weighted methods, `agg_fun = "mean"` and
 #'   `agg_fun = "median"` are translated to use `matrixStats::weightedMean` and
-#'   `matrixStats::weightedMedian` respectively.
+#'   `matrixStats::weightedMedian` respectively. For `matrixStats::weightedMedian`,
+#'   the argument `interpolate` is automatically set to FALSE to circumvent a
+#'   calculation issue that results in invalid distributions.
 #'
 #' @return a `model_out_tbl` object of ensemble predictions. Note that
 #'   any additional columns in the input `model_outputs` are dropped.
@@ -76,6 +78,11 @@ simple_ensemble <- function(model_outputs, weights = NULL,
 
     agg_args <- c(agg_args, list(x = quote(.data[["value"]]),
                                  w = quote(.data[[weights_col_name]])))
+  }
+
+  # don't interpolate when calling `matrixStats::weightedMedian`
+  if (isTRUE(all.equal(agg_fun, matrixStats::weightedMedian))) {
+    agg_args <- c(agg_args, list(interpolate = FALSE))
   }
 
   group_by_cols <- c(task_id_cols_validated, "output_type", "output_type_id")
