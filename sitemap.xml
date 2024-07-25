@@ -1,45 +1,17 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://hubverse-org.github.io/hubEnsembles/404.html</loc>
-  </url>
-  <url>
-    <loc>https://hubverse-org.github.io/hubEnsembles/CODE_OF_CONDUCT.html</loc>
-  </url>
-  <url>
-    <loc>https://hubverse-org.github.io/hubEnsembles/CONTRIBUTING.html</loc>
-  </url>
-  <url>
-    <loc>https://hubverse-org.github.io/hubEnsembles/LICENSE-text.html</loc>
-  </url>
-  <url>
-    <loc>https://hubverse-org.github.io/hubEnsembles/LICENSE.html</loc>
-  </url>
-  <url>
-    <loc>https://hubverse-org.github.io/hubEnsembles/articles/hubEnsembles.html</loc>
-  </url>
-  <url>
-    <loc>https://hubverse-org.github.io/hubEnsembles/articles/index.html</loc>
-  </url>
-  <url>
-    <loc>https://hubverse-org.github.io/hubEnsembles/authors.html</loc>
-  </url>
-  <url>
-    <loc>https://hubverse-org.github.io/hubEnsembles/index.html</loc>
-  </url>
-  <url>
-    <loc>https://hubverse-org.github.io/hubEnsembles/news/index.html</loc>
-  </url>
-  <url>
-    <loc>https://hubverse-org.github.io/hubEnsembles/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>https://hubverse-org.github.io/hubEnsembles/reference/linear_pool.html</loc>
-  </url>
-  <url>
-    <loc>https://hubverse-org.github.io/hubEnsembles/reference/pipe.html</loc>
-  </url>
-  <url>
-    <loc>https://hubverse-org.github.io/hubEnsembles/reference/simple_ensemble.html</loc>
-  </url>
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>https://hubverse-org.github.io/hubEnsembles/404.html</loc></url>
+<url><loc>https://hubverse-org.github.io/hubEnsembles/CODE_OF_CONDUCT.html</loc></url>
+<url><loc>https://hubverse-org.github.io/hubEnsembles/CONTRIBUTING.html</loc></url>
+<url><loc>https://hubverse-org.github.io/hubEnsembles/LICENSE-text.html</loc></url>
+<url><loc>https://hubverse-org.github.io/hubEnsembles/LICENSE.html</loc></url>
+<url><loc>https://hubverse-org.github.io/hubEnsembles/articles/hubEnsembles.html</loc></url>
+<url><loc>https://hubverse-org.github.io/hubEnsembles/articles/index.html</loc></url>
+<url><loc>https://hubverse-org.github.io/hubEnsembles/authors.html</loc></url>
+<url><loc>https://hubverse-org.github.io/hubEnsembles/index.html</loc></url>
+<url><loc>https://hubverse-org.github.io/hubEnsembles/news/index.html</loc></url>
+<url><loc>https://hubverse-org.github.io/hubEnsembles/reference/index.html</loc></url>
+<url><loc>https://hubverse-org.github.io/hubEnsembles/reference/linear_pool.html</loc></url>
+<url><loc>https://hubverse-org.github.io/hubEnsembles/reference/pipe.html</loc></url>
+<url><loc>https://hubverse-org.github.io/hubEnsembles/reference/simple_ensemble.html</loc></url>
 </urlset>
+
