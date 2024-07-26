@@ -42,11 +42,11 @@ fweight <- bind_rows(fweight2, fweight8)
 
 
 test_that("non-default columns are dropped from output", {
-  output_names <- model_outputs %>%
-    dplyr::mutate(extra_col_1 = "a", extra_col_2 = "a") %>%
+  output_names <- model_outputs |>
+    dplyr::mutate(extra_col_1 = "a", extra_col_2 = "a") |>
     simple_ensemble(
       task_id_cols = c("target_date", "target", "horizon", "location")
-    ) %>%
+    ) |>
     names()
 
   expect_equal(sort(names(model_outputs)), sort(output_names))
@@ -229,11 +229,11 @@ test_that("(weighted) medians and means correctly calculated", {
 
 test_that("(weighted) medians and means work with alternate name for weights columns", {
   weighted_median_actual <- model_outputs |>
-    simple_ensemble(weights = fweight %>% dplyr::rename(w = "weight"),
+    simple_ensemble(weights = fweight |> dplyr::rename(w = "weight"),
                     weights_col_name = "w",
                     agg_fun = "median")
   weighted_mean_actual <- model_outputs |>
-    simple_ensemble(weights = fweight %>% dplyr::rename(w = "weight"),
+    simple_ensemble(weights = fweight |> dplyr::rename(w = "weight"),
                     weights_col_name = "w",
                     agg_fun = "mean")
 

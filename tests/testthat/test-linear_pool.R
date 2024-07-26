@@ -36,11 +36,11 @@ test_that("non-default columns are dropped from output", {
 
   cdf_outputs <- dplyr::mutate(quantile_outputs, output_type = "cdf")
 
-  output_names <- quantile_outputs %>%
-    dplyr::mutate(extra_col_1 = "a", extra_col_2 = "a") %>%
+  output_names <- quantile_outputs |>
+    dplyr::mutate(extra_col_1 = "a", extra_col_2 = "a") |>
     linear_pool(
       task_id_cols = c("target_date", "target", "horizon", "location")
-    ) %>%
+    ) |>
     names()
 
   expect_equal(sort(names(quantile_outputs)), sort(output_names))

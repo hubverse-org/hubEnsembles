@@ -49,7 +49,7 @@ simple_ensemble <- function(model_outputs, weights = NULL,
 
   # validate_ensemble_inputs
   valid_types <- c("mean", "median", "quantile", "cdf", "pmf")
-  validated_inputs <- model_outputs %>%
+  validated_inputs <- model_outputs |>
     validate_ensemble_inputs(weights = weights,
                              weights_col_name = weights_col_name,
                              task_id_cols = task_id_cols,
@@ -65,7 +65,7 @@ simple_ensemble <- function(model_outputs, weights = NULL,
     weight_by_cols <-
       colnames(weights_validated)[colnames(weights_validated) != weights_col_name]
 
-    model_outputs_validated <- model_outputs_validated %>%
+    model_outputs_validated <- model_outputs_validated |>
       dplyr::left_join(weights_validated, by = weight_by_cols)
 
     agg_fun <- match.fun(agg_fun)
@@ -86,11 +86,11 @@ simple_ensemble <- function(model_outputs, weights = NULL,
   }
 
   group_by_cols <- c(task_id_cols_validated, "output_type", "output_type_id")
-  ensemble_model_outputs <- model_outputs_validated %>%
-    dplyr::group_by(dplyr::across(dplyr::all_of(group_by_cols))) %>%
-    dplyr::summarize(value = do.call(agg_fun, args = agg_args)) %>%
-    dplyr::mutate(model_id = model_id, .before = 1) %>%
-    dplyr::ungroup() %>%
+  ensemble_model_outputs <- model_outputs_validated |>
+    dplyr::group_by(dplyr::across(dplyr::all_of(group_by_cols))) |>
+    dplyr::summarize(value = do.call(agg_fun, args = agg_args)) |>
+    dplyr::mutate(model_id = model_id, .before = 1) |>
+    dplyr::ungroup() |>
     hubUtils::as_model_out_tbl()
 
   return(ensemble_model_outputs)
