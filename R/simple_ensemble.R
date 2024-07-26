@@ -65,15 +65,15 @@ simple_ensemble <- function(model_outputs, weights = NULL,
     weight_by_cols <-
       colnames(weights_validated)[colnames(weights_validated) != weights_col_name]
 
-    model_outputs_validated <- model_outputs_validated %>%
+    model_outputs_validated <- model_outputs_validated |>
       dplyr::left_join(weights_validated, by = weight_by_cols)
 
-    if (is.character(agg_fun)) {
-      if (agg_fun == "mean") {
-        agg_fun <- matrixStats::weightedMean
-      } else if (agg_fun == "median") {
-        agg_fun <- matrixStats::weightedMedian
-      }
+    agg_fun <- match.fun(agg_fun)
+
+    if (identical(agg_fun, mean)) {
+      agg_fun <- matrixStats::weightedMean
+    } else if (identical(agg_fun, median)) {
+      agg_fun <- matrixStats::weightedMedian
     }
 
     agg_args <- c(agg_args, list(x = quote(.data[["value"]]),
@@ -86,11 +86,11 @@ simple_ensemble <- function(model_outputs, weights = NULL,
   }
 
   group_by_cols <- c(task_id_cols_validated, "output_type", "output_type_id")
-  ensemble_model_outputs <- model_outputs_validated %>%
-    dplyr::group_by(dplyr::across(dplyr::all_of(group_by_cols))) %>%
-    dplyr::summarize(value = do.call(agg_fun, args = agg_args)) %>%
-    dplyr::mutate(model_id = model_id, .before = 1) %>%
-    dplyr::ungroup() %>%
+  ensemble_model_outputs <- model_outputs_validated |>
+    dplyr::group_by(dplyr::across(dplyr::all_of(group_by_cols))) |>
+    dplyr::summarize(value = do.call(agg_fun, args = agg_args)) |>
+    dplyr::mutate(model_id = model_id, .before = 1) |>
+    dplyr::ungroup() |>
     hubUtils::as_model_out_tbl()
 
   return(ensemble_model_outputs)

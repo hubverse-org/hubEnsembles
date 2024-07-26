@@ -48,7 +48,6 @@ Imports:
     distfromq (>= 1.0.2),
     dplyr,
     hubUtils (>= 0.0.1),
-    magrittr,
     matrixStats,
     purrr,
     rlang,

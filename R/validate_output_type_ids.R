@@ -23,12 +23,11 @@ validate_output_type_ids <- function(model_outputs, task_id_cols) {
     dplyr::summarize(output_type_id_list = list(sort(.data[["output_type_id"]]))) |>
     dplyr::ungroup() |>
     dplyr::group_split(dplyr::across(dplyr::all_of(task_id_cols)), "output_type") |>
-    purrr::map(.f = function(split_outputs) {
+    purrr::map_lgl(.f = function(split_outputs) {
       length(unique(split_outputs$output_type_id_list)) == 1
-    }) |>
-    unlist()
+    })
 
-  false_counter <- length(same_output_id[same_output_id == FALSE])
+  false_counter <- sum(!same_output_id)
   if (false_counter != 0) {
     cli::cli_abort(c(
       "x" = "{.arg model_outputs} contains {.val {false_counter}} invalid distributions.",

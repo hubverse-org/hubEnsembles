@@ -94,7 +94,7 @@ for (m in seq_len(3)) {
   ps <- ps + component_weights[m] * pnorm(lp_qs, mean = component_means[m])
 }
 
-component_qs <- purrr::map(component_means, ~ qnorm(ps, mean=.x)) \%>\% unlist()
+component_qs <- purrr::map(component_means, ~ qnorm(ps, mean=.x)) |> unlist()
 component_outputs <- data.frame(
   stringsAsFactors = FALSE,
   model_id = rep(component_ids, each = length(lp_qs)),

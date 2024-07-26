@@ -22,7 +22,7 @@ linear_pool_quantile <- function(model_outputs, weights = NULL,
   } else {
     weight_by_cols <- colnames(weights)[colnames(weights) != weights_col_name]
 
-    model_outputs <- model_outputs %>%
+    model_outputs <- model_outputs |>
       dplyr::left_join(weights, by = weight_by_cols)
 
     agg_args <- c(list(x = quote(.data[["pred_qs"]]),
