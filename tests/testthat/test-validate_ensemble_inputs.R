@@ -82,21 +82,33 @@ test_that("error if models provide different output_type_ids", {
 test_that("weights missing required columns generates error", {
   expect_error(
     model_outputs |>
-      validate_ensemble_inputs(weights = fweight |> dplyr::select(weight))
+      validate_ensemble_inputs(
+        weights = fweight |> dplyr::select(weight),
+        valid_output_types = "quantile"
+      ),
+    "`weights` did not include required columns", fixed = TRUE
   )
 })
 
 test_that("value column in weights generates error", {
   expect_error(
     model_outputs |>
-      validate_ensemble_inputs(weights = fweight |> dplyr::mutate(value = 0.25))
+      validate_ensemble_inputs(
+        weights = fweight |> dplyr::mutate(value = 0.25),
+        valid_output_types = "quantile"
+      ),
+    "`weights` included a column named \"value\", which is not allowed", fixed = TRUE
   )
 })
 
 test_that("column not from model_outputs in weights generates error", {
   expect_error(
     model_outputs |>
-      validate_ensemble_inputs(weights = fweight |> dplyr::mutate(age_group = "65+"))
+      validate_ensemble_inputs(
+        weights = fweight |> dplyr::mutate(age_group = "65+"),
+        valid_output_types = "quantile"
+      ),
+    "not present in `model_outputs`:", fixed = TRUE
   )
 })
 
@@ -104,7 +116,8 @@ test_that("weights column already in model_outputs generates error", {
   expect_error(
     model_outputs |>
       dplyr::mutate(weight = "a") |>
-      validate_ensemble_inputs(weights = fweight, valid_output_types = c("quantile"))
+      validate_ensemble_inputs(weights = fweight, valid_output_types = c("quantile")),
+    "is already a column in `model_outputs`", fixed = TRUE
   )
 })
 
