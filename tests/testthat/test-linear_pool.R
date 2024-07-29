@@ -160,6 +160,49 @@ test_that("group_by(output_type_id) produces expected results", {
 })
 
 
+
+test_that("The results are equivalent to those calculated by simple_ensemble for mean, cdf, and pmf output types", {
+  mean_outputs <- data.frame(stringsAsFactors = FALSE,
+                             model_id = letters[1:3],
+                             location = "111",
+                             horizon = 1,
+                             target = "inc death",
+                             target_date = as.Date("2021-12-25"),
+                             output_type = "mean",
+                             output_type_id = NA,
+                             value = c(1, 3, 5))
+
+  fweight1 <- data.frame(model_id = letters[1:3],
+                         location = "111",
+                         weight = c(0.25, 0.5, 0.25))
+
+  mean_expected <- simple_ensemble(mean_outputs, weights = NULL,
+                                   weights_col_name = NULL,
+                                   agg_fun = mean,
+                                   model_id = "hub-ensemble",
+                                   task_id_cols = NULL)
+
+  mean_actual <- linear_pool(mean_outputs, weights = NULL,
+                             weights_col_name = NULL,
+                             model_id = "hub-ensemble",
+                             task_id_cols = NULL)
+
+  weighted_mean_expected <- simple_ensemble(mean_outputs, weights = fweight1,
+                                            weights_col_name = "weight",
+                                            agg_fun = weightedMean,
+                                            model_id = "hub-ensemble",
+                                            task_id_cols = NULL)
+
+  weighted_mean_actual <- linear_pool(mean_outputs, weights = fweight1,
+                                      weights_col_name = "weight",
+                                      model_id = "hub-ensemble",
+                                      task_id_cols = NULL)
+
+  expect_equal(mean_expected, mean_actual, tolerance = 1e-3)
+  expect_equal(weighted_mean_expected, weighted_mean_actual, tolerance = 1e-3)
+})
+
+
 test_that("(weighted) quantiles correctly calculated", {
   # The three component models provide quantiles from the distributions
   # F_1 = N(-3, 1), F_2 = N(0,1), and F_3 = N(3, 1)
