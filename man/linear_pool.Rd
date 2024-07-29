@@ -26,7 +26,7 @@ provided, it should have a column named \code{model_id} and a column containing
 model weights. Optionally, it may contain additional columns corresponding
 to task id variables, \code{output_type}, or \code{output_type_id}, if weights are
 specific to values of those variables. The default is \code{NULL}, in which case
-an equally-weighted ensemble is calculated. Should be pre-validated.}
+an equally-weighted ensemble is calculated. Should be prevalidated.}
 
 \item{weights_col_name}{\code{character} string naming the column in \code{weights}
 with model weights. Defaults to \code{"weight"}}
@@ -60,8 +60,8 @@ output types include \code{mean}, \code{quantile}, \code{cdf}, and \code{pmf}.
 The underlying mechanism for the computations varies for different
 \code{output_type}s. When the \code{output_type} is \code{cdf}, \code{pmf}, or \code{mean}, this
 function simply calls \code{simple_ensemble} to calculate a (weighted) mean of the
-component model outputs. This is the definitional calculation for the cdf or
-pmf of a linear pool. For the \code{mean} output type, this is justified by the fact
+component model outputs. This is the definitional calculation for the CDF or
+PMF of a linear pool. For the \code{mean} output type, this is justified by the fact
 that the (weighted) mean of the linear pool is the (weighted) mean of the means
 of the component distributions.
 
@@ -69,7 +69,7 @@ When the \code{output_type} is \code{quantile}, we obtain the quantiles of a lin
 in three steps:
 \enumerate{
 \item Interpolate and extrapolate from the provided quantiles for each component
-model to obtain an estimate of the cdf of that distribution.
+model to obtain an estimate of the CDF of that distribution.
 \item Draw samples from the distribution for each component model. To reduce
 Monte Carlo variability, we use quasi-random samples corresponding to
 quantiles of the estimated distribution.

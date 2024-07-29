@@ -12,15 +12,15 @@
 #' @details The underlying mechanism for the computations varies for different
 #'   `output_type`s. When the `output_type` is `cdf`, `pmf`, or `mean`, this
 #'   function simply calls `simple_ensemble` to calculate a (weighted) mean of the
-#'   component model outputs. This is the definitional calculation for the cdf or
-#'   pmf of a linear pool. For the `mean` output type, this is justified by the fact
+#'   component model outputs. This is the definitional calculation for the CDF or
+#'   PMF of a linear pool. For the `mean` output type, this is justified by the fact
 #'   that the (weighted) mean of the linear pool is the (weighted) mean of the means
 #'   of the component distributions.
 #'
 #' When the `output_type` is `quantile`, we obtain the quantiles of a linear pool
 #' in three steps:
 #'   1. Interpolate and extrapolate from the provided quantiles for each component
-#'      model to obtain an estimate of the cdf of that distribution.
+#'      model to obtain an estimate of the CDF of that distribution.
 #'   2. Draw samples from the distribution for each component model. To reduce
 #'      Monte Carlo variability, we use quasi-random samples corresponding to
 #'      quantiles of the estimated distribution.

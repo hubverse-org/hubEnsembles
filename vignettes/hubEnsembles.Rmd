@@ -286,7 +286,7 @@ weighted_linear_pool_norm <- hubExamples::forecast_outputs |>
 head(weighted_linear_pool_norm, 10)
 ```
 
-We can also change the distribution that `distfromq` uses to estimate the component models' distributional tails to either log normal or cauchy using the `tail_dist` argument. (See documentation in the `distfromq` package for more details and function options.) Note, though, that the choice of tail distribution usually does not have a large impact on the resulting ensemble distribution, except in its outer edges.
+We can also change the distribution that `distfromq` uses to estimate the component models' distributional tails to either log normal or Cauchy using the `tail_dist` argument. (See documentation in the `distfromq` package for more details and function options.) Note, though, that the choice of tail distribution usually does not have a large impact on the resulting ensemble distribution, except in its outer edges.
 
 ```{r}
 linear_pool_lnorm <- hubExamples::forecast_outputs |>

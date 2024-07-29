@@ -25,7 +25,7 @@ provided, it should have a column named \code{model_id} and a column containing
 model weights. Optionally, it may contain additional columns corresponding
 to task id variables, \code{output_type}, or \code{output_type_id}, if weights are
 specific to values of those variables. The default is \code{NULL}, in which case
-an equally-weighted ensemble is calculated. Should be pre-validated.}
+an equally-weighted ensemble is calculated. Should be prevalidated.}
 
 \item{weights_col_name}{\code{character} string naming the column in \code{weights}
 with model weights. Defaults to \code{"weight"}}
