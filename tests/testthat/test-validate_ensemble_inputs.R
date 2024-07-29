@@ -122,5 +122,5 @@ test_that("error if weights depend on output_type_id for cdf and pmf output_type
 
 test_that("validated model_output is a model_out_tbl", {
   validated_outputs <- validate_ensemble_inputs(model_outputs, valid_output_types = "quantile")[[1]]
-  expect_true(inherits(validated_outputs, "model_out_tbl"))
+  expect_s3_class(validated_outputs, "model_out_tbl")
 })
