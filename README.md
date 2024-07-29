@@ -7,8 +7,6 @@
 
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
-[![CRAN
-status](https://www.r-pkg.org/badges/version/hubEnsembles)](https://CRAN.R-project.org/package=hubEnsembles)
 [![R-CMD-check](https://github.com/hubverse-org/hubEnsembles/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/hubverse-org/hubEnsembles/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
