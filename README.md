@@ -48,6 +48,6 @@ contributing to this project, you agree to abide by its terms.
 
 Interested in contributing back to the open-source hubverse project?
 Learn more about how to [get involved in the hubverse
-community](https://hubverse.io/en/latest/overview/contribute.html)
-or [how to contribute to the hubEnsembles
+community](https://hubverse.io/en/latest/overview/contribute.html) or
+[how to contribute to the hubEnsembles
 package](.github/CONTRIBUTING.md).
