@@ -1,5 +1,5 @@
 Package: hubEnsembles
-Title: Ensemble methods for combining hub model outputs
+Title: Ensemble Methods for Combining Hub Model Outputs
 Version: 0.1.6
 Authors@R: c(
     person("Evan L", "Ray", , "elray@umass.edu", role = "aut"),
