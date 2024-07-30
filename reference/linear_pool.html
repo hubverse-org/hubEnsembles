@@ -74,7 +74,7 @@ provided, it should have a column named <code>model_id</code> and a column conta
 model weights. Optionally, it may contain additional columns corresponding
 to task id variables, <code>output_type</code>, or <code>output_type_id</code>, if weights are
 specific to values of those variables. The default is <code>NULL</code>, in which case
-an equally-weighted ensemble is calculated. Should be pre-validated.</p></dd>
+an equally-weighted ensemble is calculated. Should be prevalidated.</p></dd>
 
 
 <dt id="arg-weights-col-name">weights_col_name<a class="anchor" aria-label="anchor" href="#arg-weights-col-name"></a></dt>
@@ -115,13 +115,13 @@ additional columns in the input <code>model_outputs</code> are dropped.</p>
     <p>The underlying mechanism for the computations varies for different
 <code>output_type</code>s. When the <code>output_type</code> is <code>cdf</code>, <code>pmf</code>, or <code>mean</code>, this
 function simply calls <code>simple_ensemble</code> to calculate a (weighted) mean of the
-component model outputs. This is the definitional calculation for the cdf or
-pmf of a linear pool. For the <code>mean</code> output type, this is justified by the fact
+component model outputs. This is the definitional calculation for the CDF or
+PMF of a linear pool. For the <code>mean</code> output type, this is justified by the fact
 that the (weighted) mean of the linear pool is the (weighted) mean of the means
 of the component distributions.</p>
 <p>When the <code>output_type</code> is <code>quantile</code>, we obtain the quantiles of a linear pool
 in three steps:</p><ol><li><p>Interpolate and extrapolate from the provided quantiles for each component
-model to obtain an estimate of the cdf of that distribution.</p></li>
+model to obtain an estimate of the CDF of that distribution.</p></li>
 <li><p>Draw samples from the distribution for each component model. To reduce
 Monte Carlo variability, we use quasi-random samples corresponding to
 quantiles of the estimated distribution.</p></li>
