@@ -16,3 +16,4 @@
 ^\.secrets$
 ^\.lintr$
 ^data-raw$
+^revdep$
