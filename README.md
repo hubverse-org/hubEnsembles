@@ -7,8 +7,6 @@
 
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
-[![CRAN
-status](https://www.r-pkg.org/badges/version/hubEnsembles)](https://CRAN.R-project.org/package=hubEnsembles)
 [![R-CMD-check](https://github.com/hubverse-org/hubEnsembles/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/hubverse-org/hubEnsembles/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
@@ -48,8 +46,8 @@ contributing to this project, you agree to abide by its terms.
 
 ## Contributing
 
-Interested in contributing back to the open-source Hubverse project?
-Learn more about how to [get involved in the Hubverse
-Community](https://hubdocs.readthedocs.io/en/latest/overview/contribute.html)
-or [how to contribute to the hubEnsembles
+Interested in contributing back to the open-source hubverse project?
+Learn more about how to [get involved in the hubverse
+community](https://hubverse.io/en/latest/overview/contribute.html) or
+[how to contribute to the hubEnsembles
 package](.github/CONTRIBUTING.md).

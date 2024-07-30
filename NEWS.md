@@ -1,6 +1,7 @@
 # hubEnsembles 0.1.6
 
 * Fix bug in `simple_ensemble()` that produces invalid distributions for certain weighted medians (#122)
+* Replace magrittr pipe (`%>%`) with base R 4.1 pipe (`|>`)
 
 # hubEnsembles 0.1.5
 

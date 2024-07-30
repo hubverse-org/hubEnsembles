@@ -1,48 +1,26 @@
 Package: hubEnsembles
-Title: Ensemble methods for combining hub model outputs
+Title: Ensemble Methods for Combining Hub Model Outputs
 Version: 0.1.6
 Authors@R: c(
-    person(given = "Evan L",
-           family = "Ray",
-           email = "elray@umass.edu",
-           role = c("aut")),
-    person(given = "Li",
-           family = "Shandross",
-           role = c("aut", "cre"),
-           email = "lshandross@umass.edu",
+    person(given = "Evan L", family = "Ray", email = "elray@umass.edu", role = "aut"),
+    person(given = "Li", family = "Shandross", email = "lshandross@umass.edu", role = c("aut", "cre"),
            comment = c(ORCID = "0009-0008-1348-1954")),
-    person(given = "Emily",
-           family = "Howerton",
-           role = c("aut"),
-           email = "ehowerton@psu.edu",
+    person(given = "Emily", family = "Howerton", email = "ehowerton@psu.edu", role = "aut",
            comment = c(ORCID = "0000-0002-0639-3728")),
-    person("Anna", "Krystalli", , "annakrystalli@googlemail.com", 
-           role = c("ctb"),
+    person(given = "Anna", family = "Krystalli", email = "annakrystalli@googlemail.com", role = "ctb",
            comment = c(ORCID = "0000-0002-2378-4915")),
-    person("Nicholas G.", "Reich", email = "nick@umass.edu",
-           role = c("ctb"),
-           comment = c(ORCID = "0000-0003-3503-9899")))
+    person(given = "Nicholas G.", family = "Reich", email = "nick@umass.edu", role = "ctb",
+           comment = c(ORCID = "0000-0003-3503-9899"))
+  )
 Description: Functions for combining model outputs (e.g. predictions or
-    estimates) from multiple models into an aggregated ensemble model output.
+    estimates) from multiple models into an aggregated ensemble model
+    output.
 License: MIT + file LICENSE
-VignetteBuilder: knitr
-Suggests: 
-    cowplot,
-    ggplot2,
-    hubData,
-    hubExamples,
-    hubVis (>= 0.0.0.9100),
-    knitr,
-    rmarkdown,
-    scales,
-    testthat (>= 3.0.0)
-Config/testthat/edition: 3
-Encoding: UTF-8
-Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.1
 URL: https://github.com/hubverse-org/hubEnsembles,
     https://hubverse-org.github.io/hubEnsembles/
 BugReports: https://github.com/hubverse-org/hubEnsembles/issues
+Depends: 
+    R (>= 4.1)
 Imports: 
     cli,
     distfromq (>= 1.0.2),
@@ -51,15 +29,28 @@ Imports:
     matrixStats,
     purrr,
     rlang,
+    stats,
     tidyr,
     tidyselect
+Suggests: 
+    cowplot,
+    ggplot2,
+    hubExamples,
+    hubVis (>= 0.0.0.9100),
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0)
+Additional_repositories: https://hubverse-org.r-universe.dev/
+VignetteBuilder: 
+    knitr
 Remotes:
-    hubverse-org/hubData,
     hubverse-org/hubExamples,
     hubverse-org/hubUtils,
     hubverse-org/hubVis,
     reichlab/distfromq
 Config/Needs/website: hubverse-org/hubStyle
-Depends: 
-    R (>= 2.10)
+Config/testthat/edition: 3
+Encoding: UTF-8
 LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.1

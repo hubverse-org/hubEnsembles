@@ -9,7 +9,7 @@
 #'   model weights. Optionally, it may contain additional columns corresponding
 #'   to task id variables, `output_type`, or `output_type_id`, if weights are
 #'   specific to values of those variables. The default is `NULL`, in which case
-#'   an equally-weighted ensemble is calculated. Should be pre-validated.
+#'   an equally-weighted ensemble is calculated. Should be prevalidated.
 #' @param weights_col_name `character` string naming the column in `weights`
 #'   with model weights. Defaults to `"weight"`
 #' @param agg_fun a function or character string name of a function to use for
