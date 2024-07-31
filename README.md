@@ -13,7 +13,7 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 The goal of hubEnsembles is to provide standard implementations of
 commonly used methods for ensembling model outputs. The hubEnsembles
 package is part of [the hubverse
-project](https://hubdocs.readthedocs.io/en/latest/) and expects all
+project](https://hubverse.io/en/latest/) and expects all
 input data to the key functions to be formatted as an object of a
 [`model_out_tbl`
 class](https://hubverse-org.github.io/hubUtils/reference/as_model_out_tbl.html).
