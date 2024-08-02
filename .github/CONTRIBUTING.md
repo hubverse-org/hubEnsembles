@@ -43,5 +43,5 @@ Our procedures for contributing bigger changes, code in particular, generally fo
 ## Code of Conduct
 
 Please note that the hubEnsembles project is released with a
-[Contributor Code of Conduct](.github/CODE_OF_CONDUCT.md). By contributing to this
-project you agree to abide by its terms.
+[Contributor Code of Conduct](https://hubverse-org.github.io/hubEnsembles/CODE_OF_CONDUCT.html). 
+By contributing to this project you agree to abide by its terms.
