@@ -2,7 +2,7 @@
 #' each combination of model task, output type, and output type id. Supported
 #' output types include `mean`, `median`, `quantile`, `cdf`, and `pmf`.
 #'
-#' @param model_outputs an object of class `model_out_tbl` with component
+#' @param model_out_tbl an object of class `model_out_tbl` with component
 #'   model outputs (e.g., predictions).
 #' @param weights an optional `data.frame` with component model weights. If
 #'   provided, it should have a column named `model_id` and a column containing
@@ -20,8 +20,8 @@
 #' @param model_id `character` string with the identifier to use for the
 #'   ensemble model.
 #' @param task_id_cols `character` vector with names of columns in
-#'   `model_outputs` that specify modeling tasks. Defaults to `NULL`, in which
-#'   case all columns in `model_outputs` other than `"model_id"`, `"output_type"`,
+#'   `model_out_tbl` that specify modeling tasks. Defaults to `NULL`, in which
+#'   case all columns in `model_out_tbl` other than `"model_id"`, `"output_type"`,
 #'   `"output_type_id"`, and `"value"` are used as task ids.
 #'
 #' @details The default for `agg_fun` is `"mean"`, in which case the ensemble's
@@ -38,7 +38,7 @@
 #'   calculation issue that results in invalid distributions.
 #'
 #' @return a `model_out_tbl` object of ensemble predictions. Note that
-#'   any additional columns in the input `model_outputs` are dropped.
+#'   any additional columns in the input `model_out_tbl` are dropped.
 #'
 #' @export
 #'
@@ -70,7 +70,7 @@
 #' all.equal(weighted_median1, weighted_median2)
 #'
 
-simple_ensemble <- function(model_outputs, weights = NULL,
+simple_ensemble <- function(model_out_tbl, weights = NULL,
                             weights_col_name = "weight",
                             agg_fun = mean, agg_args = list(),
                             model_id = "hub-ensemble",
@@ -78,13 +78,13 @@ simple_ensemble <- function(model_outputs, weights = NULL,
 
   # validate_ensemble_inputs
   valid_types <- c("mean", "median", "quantile", "cdf", "pmf")
-  validated_inputs <- model_outputs |>
+  validated_inputs <- model_out_tbl |>
     validate_ensemble_inputs(weights = weights,
                              weights_col_name = weights_col_name,
                              task_id_cols = task_id_cols,
                              valid_output_types = valid_types)
 
-  model_outputs_validated <- validated_inputs$model_outputs
+  model_out_tbl_validated <- validated_inputs$model_out_tbl
   weights_validated <- validated_inputs$weights
   task_id_cols_validated <- validated_inputs$task_id_cols
 
@@ -94,7 +94,7 @@ simple_ensemble <- function(model_outputs, weights = NULL,
     weight_by_cols <-
       colnames(weights_validated)[colnames(weights_validated) != weights_col_name]
 
-    model_outputs_validated <- model_outputs_validated |>
+    model_out_tbl_validated <- model_out_tbl_validated |>
       dplyr::left_join(weights_validated, by = weight_by_cols)
 
     agg_fun <- match.fun(agg_fun)
@@ -115,7 +115,7 @@ simple_ensemble <- function(model_outputs, weights = NULL,
   }
 
   group_by_cols <- c(task_id_cols_validated, "output_type", "output_type_id")
-  ensemble_model_outputs <- model_outputs_validated |>
+  ensemble_model_outputs <- model_out_tbl_validated |>
     dplyr::group_by(dplyr::across(dplyr::all_of(group_by_cols))) |>
     dplyr::summarize(value = do.call(agg_fun, args = agg_args)) |>
     dplyr::mutate(model_id = model_id, .before = 1) |>

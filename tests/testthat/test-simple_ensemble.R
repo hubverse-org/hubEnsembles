@@ -205,17 +205,17 @@ test_that("(weighted) medians and means correctly calculated", {
   weighted_mean_expected$value <- weighted_mean_vals
   weighted_median_expected$value <- weighted_median_vals
 
-  median_actual <- simple_ensemble(model_outputs = model_outputs,
+  median_actual <- simple_ensemble(model_out_tbl = model_outputs,
                                    weights = NULL,
                                    agg_fun = "median")
-  mean_actual <- simple_ensemble(model_outputs = model_outputs,
+  mean_actual <- simple_ensemble(model_out_tbl = model_outputs,
                                  weights = NULL,
                                  agg_fun = "mean")
 
-  weighted_median_actual <- simple_ensemble(model_outputs = model_outputs,
+  weighted_median_actual <- simple_ensemble(model_out_tbl = model_outputs,
                                             weights = fweight,
                                             agg_fun = "median")
-  weighted_mean_actual <- simple_ensemble(model_outputs = model_outputs,
+  weighted_mean_actual <- simple_ensemble(model_out_tbl = model_outputs,
                                           weights = fweight,
                                           agg_fun = "mean")
 
@@ -237,10 +237,10 @@ test_that("(weighted) medians and means work with alternate name for weights col
                     weights_col_name = "w",
                     agg_fun = "mean")
 
-  weighted_median_expected <- simple_ensemble(model_outputs = model_outputs,
+  weighted_median_expected <- simple_ensemble(model_out_tbl = model_outputs,
                                               weights = fweight,
                                               agg_fun = "median")
-  weighted_mean_expected <- simple_ensemble(model_outputs = model_outputs,
+  weighted_mean_expected <- simple_ensemble(model_out_tbl = model_outputs,
                                             weights = fweight,
                                             agg_fun = "mean")
 
@@ -250,10 +250,10 @@ test_that("(weighted) medians and means work with alternate name for weights col
 
 test_that("passing agg_fun as symbol or character results in identical behaviour", {
 
-  weighted_mean_actual_char <- simple_ensemble(model_outputs = model_outputs,
+  weighted_mean_actual_char <- simple_ensemble(model_out_tbl = model_outputs,
                                                weights = fweight,
                                                agg_fun = "mean")
-  weighted_mean_actual_symbol <- simple_ensemble(model_outputs = model_outputs,
+  weighted_mean_actual_symbol <- simple_ensemble(model_out_tbl = model_outputs,
                                                  weights = fweight,
                                                  agg_fun = mean)
 

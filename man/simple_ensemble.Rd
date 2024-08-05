@@ -7,7 +7,7 @@ each combination of model task, output type, and output type id. Supported
 output types include \code{mean}, \code{median}, \code{quantile}, \code{cdf}, and \code{pmf}.}
 \usage{
 simple_ensemble(
-  model_outputs,
+  model_out_tbl,
   weights = NULL,
   weights_col_name = "weight",
   agg_fun = mean,
@@ -17,7 +17,7 @@ simple_ensemble(
 )
 }
 \arguments{
-\item{model_outputs}{an object of class \code{model_out_tbl} with component
+\item{model_out_tbl}{an object of class \code{model_out_tbl} with component
 model outputs (e.g., predictions).}
 
 \item{weights}{an optional \code{data.frame} with component model weights. If
@@ -41,13 +41,13 @@ to \code{agg_fun}.}
 ensemble model.}
 
 \item{task_id_cols}{\code{character} vector with names of columns in
-\code{model_outputs} that specify modeling tasks. Defaults to \code{NULL}, in which
-case all columns in \code{model_outputs} other than \code{"model_id"}, \code{"output_type"},
+\code{model_out_tbl} that specify modeling tasks. Defaults to \code{NULL}, in which
+case all columns in \code{model_out_tbl} other than \code{"model_id"}, \code{"output_type"},
 \code{"output_type_id"}, and \code{"value"} are used as task ids.}
 }
 \value{
 a \code{model_out_tbl} object of ensemble predictions. Note that
-any additional columns in the input \code{model_outputs} are dropped.
+any additional columns in the input \code{model_out_tbl} are dropped.
 }
 \description{
 Compute ensemble model outputs by summarizing component model outputs for
