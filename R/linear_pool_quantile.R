@@ -8,13 +8,13 @@
 #' @return a `model_out_tbl` object of ensemble predictions for the `quantile` output type.
 #' @importFrom rlang .data
 
-linear_pool_quantile <- function(model_outputs, weights = NULL,
+linear_pool_quantile <- function(model_out_tbl, weights = NULL,
                                  weights_col_name = "weight",
                                  model_id = "hub-ensemble",
                                  task_id_cols = NULL,
                                  n_samples = 1e4,
                                  ...) {
-  quantile_levels <- unique(model_outputs$output_type_id)
+  quantile_levels <- unique(model_out_tbl$output_type_id)
 
   if (is.null(weights)) {
     group_by_cols <- task_id_cols
@@ -22,7 +22,7 @@ linear_pool_quantile <- function(model_outputs, weights = NULL,
   } else {
     weight_by_cols <- colnames(weights)[colnames(weights) != weights_col_name]
 
-    model_outputs <- model_outputs |>
+    model_out_tbl <- model_out_tbl |>
       dplyr::left_join(weights, by = weight_by_cols)
 
     agg_args <- c(list(x = quote(.data[["pred_qs"]]),
@@ -34,7 +34,7 @@ linear_pool_quantile <- function(model_outputs, weights = NULL,
   }
 
   sample_q_lvls <- seq(from = 0, to = 1, length.out = n_samples + 2)[2:n_samples]
-  quantile_outputs <- model_outputs |>
+  quantile_outputs <- model_out_tbl |>
     dplyr::group_by(model_id, dplyr::across(dplyr::all_of(group_by_cols))) |>
     dplyr::summarize(
       pred_qs = list(

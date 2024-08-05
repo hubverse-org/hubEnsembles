@@ -7,17 +7,17 @@ each combination of model task, output type, and output type id. Supported
 output types include \code{mean}, \code{median}, \code{quantile}, \code{cdf}, and \code{pmf}.}
 \usage{
 simple_ensemble(
-  model_outputs,
+  model_out_tbl,
   weights = NULL,
   weights_col_name = "weight",
-  agg_fun = "mean",
+  agg_fun = mean,
   agg_args = list(),
   model_id = "hub-ensemble",
   task_id_cols = NULL
 )
 }
 \arguments{
-\item{model_outputs}{an object of class \code{model_out_tbl} with component
+\item{model_out_tbl}{an object of class \code{model_out_tbl} with component
 model outputs (e.g., predictions).}
 
 \item{weights}{an optional \code{data.frame} with component model weights. If
@@ -41,13 +41,13 @@ to \code{agg_fun}.}
 ensemble model.}
 
 \item{task_id_cols}{\code{character} vector with names of columns in
-\code{model_outputs} that specify modeling tasks. Defaults to \code{NULL}, in which
-case all columns in \code{model_outputs} other than \code{"model_id"}, \code{"output_type"},
+\code{model_out_tbl} that specify modeling tasks. Defaults to \code{NULL}, in which
+case all columns in \code{model_out_tbl} other than \code{"model_id"}, \code{"output_type"},
 \code{"output_type_id"}, and \code{"value"} are used as task ids.}
 }
 \value{
 a \code{model_out_tbl} object of ensemble predictions. Note that
-any additional columns in the input \code{model_outputs} are dropped.
+any additional columns in the input \code{model_out_tbl} are dropped.
 }
 \description{
 Compute ensemble model outputs by summarizing component model outputs for
@@ -67,4 +67,32 @@ would need to be written. For weighted methods, \code{agg_fun = "mean"} and
 \code{matrixStats::weightedMedian} respectively. For \code{matrixStats::weightedMedian},
 the argument \code{interpolate} is automatically set to FALSE to circumvent a
 calculation issue that results in invalid distributions.
+}
+\examples{
+# Calculate a weighted median in two ways
+model_outputs <- expand.grid(stringsAsFactors = FALSE,
+                             model_id = letters[1:4],
+                             location = c("222", "888"),
+                             horizon = 1, #week
+                             target = "inc death",
+                             target_date = as.Date("2021-12-25"),
+                             output_type = "quantile",
+                             output_type_id = c(.1, .5, .9),
+                             value = NA_real_)
+
+model_outputs$value <- c(10, 30, 15, 20, 100, 300, 400, 250, 40, 40, 45, 50,
+                         150, 325, 500, 300, 60, 70, 75, 80, 250, 350, 500, 350)
+
+fweights <- expand.grid(stringsAsFactors = FALSE,
+                        model_id = letters[1:4],
+                        location = c("222", "888"),
+                        weight = NA_real_)
+fweights$weight <- c(0.1 * (1:4), 0.1 * (4:1))
+
+weighted_median1 <- simple_ensemble(model_outputs, weights = fweights,
+                                    agg_fun = stats::median)
+weighted_median2 <- simple_ensemble(model_outputs, weights = fweights,
+                                     agg_fun = matrixStats::weightedMedian)
+all.equal(weighted_median1, weighted_median2)
+
 }
