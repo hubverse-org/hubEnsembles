@@ -41,11 +41,12 @@
 #' load("data/linear_pool-example_outputs.rda")
 #' load("data/linear_pool-example_weights.rda")
 #'
+#' expected_quantiles <- seq(from = -5, to = 5, by = 0.25)
 #' lp_from_component_qs <- linear_pool(component_outputs, weights)
 #'
 #' head(lp_from_component_qs)
-#' all.equal(lp_from_component_qs$value, lp_qs, tolerance = 1e-3,
-#'           check.attributes=FALSE)
+#' all.equal(lp_from_component_qs$value, expected_quantiles, tolerance = 1e-3,
+#'           check.attributes = FALSE)
 #'
 
 linear_pool <- function(model_out_tbl, weights = NULL,

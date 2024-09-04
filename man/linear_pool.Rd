@@ -80,16 +80,14 @@ quantiles.
 Steps 1 and 2 in this process are performed by \code{distfromq::make_q_fn}.
 }
 \examples{
-# We illustrate the calculation of a linear pool when we have quantiles from the
-# component models. We take the components to be normal distributions with
-# means -3, 0, and 3, all standard deviations 1, and weights 0.25, 0.5, and 0.25.
 load("data/linear_pool-example_outputs.rda")
 load("data/linear_pool-example_weights.rda")
 
+expected_quantiles <- seq(from = -5, to = 5, by = 0.25)
 lp_from_component_qs <- linear_pool(component_outputs, weights)
 
 head(lp_from_component_qs)
-all.equal(lp_from_component_qs$value, lp_qs, tolerance = 1e-3,
-          check.attributes=FALSE)
+all.equal(lp_from_component_qs$value, expected_quantiles, tolerance = 1e-3,
+          check.attributes = FALSE)
 
 }
