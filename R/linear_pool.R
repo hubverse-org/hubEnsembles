@@ -38,8 +38,8 @@
 #' # We illustrate the calculation of a linear pool when we have quantiles from the
 #' # component models. We take the components to be normal distributions with
 #' # means -3, 0, and 3, all standard deviations 1, and weights 0.25, 0.5, and 0.25.
-#' load("data/linear_pool-example_outputs.rda")
-#' load("data/linear_pool-example_weights.rda")
+#' system.file("data/linear_pool-example_outputs.rda", package = "hubEnsembles")
+#' system.file("data/linear_pool-example_weights.rda", package = "hubEnsembles")
 #'
 #' expected_quantiles <- seq(from = -5, to = 5, by = 0.25)
 #' lp_from_component_qs <- linear_pool(component_outputs, weights)
