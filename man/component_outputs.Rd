@@ -22,6 +22,8 @@ component_outputs
 }
 \description{
 Toy model output data formatted according to hubverse standards
-to be used in the examples for \code{linear_pool()}
+to be used in the examples for \code{linear_pool()}. The predictions included
+are taken from three normal distributions with means -3, 0, 3 and
+all standard deviations 1.
 }
 \keyword{datasets}

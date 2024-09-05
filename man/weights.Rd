@@ -20,6 +20,6 @@ weights
 }
 \description{
 Toy weights data formatted according to hubverse standards
-to be used in the examples for \code{linear_pool()}
+to be used in the examples for \code{linear_pool()}. Weights are 0.25, 0.5, 0.25.
 }
 \keyword{datasets}

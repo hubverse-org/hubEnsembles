@@ -70,8 +70,8 @@ calculation issue that results in invalid distributions.
 }
 \examples{
 # Calculate a weighted median in two ways
-system.file("data/simple_ensemble-example_outputs.rda", package = "hubEnsembles")
-system.file("data/simple_ensemble-example_weights.rda", package = "hubEnsembles")
+data(model_outputs)
+data(fweights)
 
 weighted_median1 <- simple_ensemble(model_outputs, weights = fweights,
                                     agg_fun = stats::median)
