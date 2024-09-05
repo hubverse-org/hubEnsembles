@@ -49,7 +49,7 @@ output types include <code>mean</code>, <code>quantile</code>, <code>cdf</code>,
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">linear_pool</span><span class="op">(</span></span>
-<span>  <span class="va">model_outputs</span>,</span>
+<span>  <span class="va">model_out_tbl</span>,</span>
 <span>  weights <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  weights_col_name <span class="op">=</span> <span class="st">"weight"</span>,</span>
 <span>  model_id <span class="op">=</span> <span class="st">"hub-ensemble"</span>,</span>
@@ -63,7 +63,7 @@ output types include <code>mean</code>, <code>quantile</code>, <code>cdf</code>,
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
 
 
-<dl><dt id="arg-model-outputs">model_outputs<a class="anchor" aria-label="anchor" href="#arg-model-outputs"></a></dt>
+<dl><dt id="arg-model-out-tbl">model_out_tbl<a class="anchor" aria-label="anchor" href="#arg-model-out-tbl"></a></dt>
 <dd><p>an object of class <code>model_out_tbl</code> with component
 model outputs (e.g., predictions).</p></dd>
 
@@ -89,8 +89,8 @@ ensemble model.</p></dd>
 
 <dt id="arg-task-id-cols">task_id_cols<a class="anchor" aria-label="anchor" href="#arg-task-id-cols"></a></dt>
 <dd><p><code>character</code> vector with names of columns in
-<code>model_outputs</code> that specify modeling tasks. Defaults to <code>NULL</code>, in which
-case all columns in <code>model_outputs</code> other than <code>"model_id"</code>, <code>"output_type"</code>,
+<code>model_out_tbl</code> that specify modeling tasks. Defaults to <code>NULL</code>, in which
+case all columns in <code>model_out_tbl</code> other than <code>"model_id"</code>, <code>"output_type"</code>,
 <code>"output_type_id"</code>, and <code>"value"</code> are used as task ids.</p></dd>
 
 
@@ -108,7 +108,7 @@ and quantile values for <code>output_type</code> <code>"quantile"</code>.</p></d
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>a <code>model_out_tbl</code> object of ensemble predictions. Note that any
-additional columns in the input <code>model_outputs</code> are dropped.</p>
+additional columns in the input <code>model_out_tbl</code> are dropped.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -135,29 +135,13 @@ quantiles.</p></li>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># We illustrate the calculation of a linear pool when we have quantiles from the</span></span></span>
 <span class="r-in"><span><span class="co"># component models. We take the components to be normal distributions with</span></span></span>
 <span class="r-in"><span><span class="co"># means -3, 0, and 3, all standard deviations 1, and weights 0.25, 0.5, and 0.25.</span></span></span>
-<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://purrr.tidyverse.org/" class="external-link">purrr</a></span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">component_ids</span> <span class="op">&lt;-</span> <span class="va">letters</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">]</span></span></span>
-<span class="r-in"><span><span class="va">component_weights</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.25</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">component_means</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">3</span>, <span class="fl">0</span>, <span class="fl">3</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">component_outputs</span><span class="op">)</span></span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>data set ‘component_outputs’ not found</span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">weights</span><span class="op">)</span></span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>data set ‘weights’ not found</span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">lp_qs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span>from <span class="op">=</span> <span class="op">-</span><span class="fl">5</span>, to <span class="op">=</span> <span class="fl">5</span>, by <span class="op">=</span> <span class="fl">0.25</span><span class="op">)</span> <span class="co"># linear pool quantiles, expected outputs</span></span></span>
-<span class="r-in"><span><span class="va">ps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">lp_qs</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="kw">for</span> <span class="op">(</span><span class="va">m</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
-<span class="r-in"><span>  <span class="va">ps</span> <span class="op">&lt;-</span> <span class="va">ps</span> <span class="op">+</span> <span class="va">component_weights</span><span class="op">[</span><span class="va">m</span><span class="op">]</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">pnorm</a></span><span class="op">(</span><span class="va">lp_qs</span>, mean <span class="op">=</span> <span class="va">component_means</span><span class="op">[</span><span class="va">m</span><span class="op">]</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">component_qs</span> <span class="op">&lt;-</span> <span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">component_means</span>, <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">qnorm</a></span><span class="op">(</span><span class="va">ps</span>, mean<span class="op">=</span><span class="va">.x</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">component_outputs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span>,</span></span>
-<span class="r-in"><span>  model_id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="va">component_ids</span>, each <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">lp_qs</span><span class="op">)</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  target <span class="op">=</span> <span class="st">"inc death"</span>,</span></span>
-<span class="r-in"><span>  output_type <span class="op">=</span> <span class="st">"quantile"</span>,</span></span>
-<span class="r-in"><span>  output_type_id <span class="op">=</span> <span class="va">ps</span>,</span></span>
-<span class="r-in"><span>  value <span class="op">=</span> <span class="va">component_qs</span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">lp_from_component_qs</span> <span class="op">&lt;-</span> <span class="fu">linear_pool</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  <span class="va">component_outputs</span>,</span></span>
-<span class="r-in"><span>  weights <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>model_id <span class="op">=</span> <span class="va">component_ids</span>, weight <span class="op">=</span> <span class="va">component_weights</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">expected_quantiles</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span>from <span class="op">=</span> <span class="op">-</span><span class="fl">5</span>, to <span class="op">=</span> <span class="fl">5</span>, by <span class="op">=</span> <span class="fl">0.25</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">lp_from_component_qs</span> <span class="op">&lt;-</span> <span class="fu">linear_pool</span><span class="op">(</span><span class="va">component_outputs</span>, <span class="va">weights</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">lp_from_component_qs</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 × 5</span></span>
@@ -169,8 +153,8 @@ quantiles.</p></li>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> hub-ensemble inc death quantile           0.026<span style="text-decoration: underline;">4</span>  -<span style="color: #BB0000;">4.25</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> hub-ensemble inc death quantile           0.039<span style="text-decoration: underline;">7</span>  -<span style="color: #BB0000;">4.00</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> hub-ensemble inc death quantile           0.056<span style="text-decoration: underline;">7</span>  -<span style="color: #BB0000;">3.75</span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/all.equal.html" class="external-link">all.equal</a></span><span class="op">(</span><span class="va">lp_from_component_qs</span><span class="op">$</span><span class="va">value</span>, <span class="va">lp_qs</span>, tolerance <span class="op">=</span> <span class="fl">1e-3</span>,</span></span>
-<span class="r-in"><span>          check.attributes<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/all.equal.html" class="external-link">all.equal</a></span><span class="op">(</span><span class="va">lp_from_component_qs</span><span class="op">$</span><span class="va">value</span>, <span class="va">expected_quantiles</span>, tolerance <span class="op">=</span> <span class="fl">1e-3</span>,</span></span>
+<span class="r-in"><span>          check.attributes <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

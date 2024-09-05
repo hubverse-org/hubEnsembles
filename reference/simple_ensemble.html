@@ -46,10 +46,10 @@ output types include <code>mean</code>, <code>median</code>, <code>quantile</cod
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">simple_ensemble</span><span class="op">(</span></span>
-<span>  <span class="va">model_outputs</span>,</span>
+<span>  <span class="va">model_out_tbl</span>,</span>
 <span>  weights <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  weights_col_name <span class="op">=</span> <span class="st">"weight"</span>,</span>
-<span>  agg_fun <span class="op">=</span> <span class="st">"mean"</span>,</span>
+<span>  agg_fun <span class="op">=</span> <span class="va">mean</span>,</span>
 <span>  agg_args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  model_id <span class="op">=</span> <span class="st">"hub-ensemble"</span>,</span>
 <span>  task_id_cols <span class="op">=</span> <span class="cn">NULL</span></span>
@@ -60,7 +60,7 @@ output types include <code>mean</code>, <code>median</code>, <code>quantile</cod
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
 
 
-<dl><dt id="arg-model-outputs">model_outputs<a class="anchor" aria-label="anchor" href="#arg-model-outputs"></a></dt>
+<dl><dt id="arg-model-out-tbl">model_out_tbl<a class="anchor" aria-label="anchor" href="#arg-model-out-tbl"></a></dt>
 <dd><p>an object of class <code>model_out_tbl</code> with component
 model outputs (e.g., predictions).</p></dd>
 
@@ -97,15 +97,15 @@ ensemble model.</p></dd>
 
 <dt id="arg-task-id-cols">task_id_cols<a class="anchor" aria-label="anchor" href="#arg-task-id-cols"></a></dt>
 <dd><p><code>character</code> vector with names of columns in
-<code>model_outputs</code> that specify modeling tasks. Defaults to <code>NULL</code>, in which
-case all columns in <code>model_outputs</code> other than <code>"model_id"</code>, <code>"output_type"</code>,
+<code>model_out_tbl</code> that specify modeling tasks. Defaults to <code>NULL</code>, in which
+case all columns in <code>model_out_tbl</code> other than <code>"model_id"</code>, <code>"output_type"</code>,
 <code>"output_type_id"</code>, and <code>"value"</code> are used as task ids.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>a <code>model_out_tbl</code> object of ensemble predictions. Note that
-any additional columns in the input <code>model_outputs</code> are dropped.</p>
+any additional columns in the input <code>model_out_tbl</code> are dropped.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -123,6 +123,23 @@ the argument <code>interpolate</code> is automatically set to FALSE to circumven
 calculation issue that results in invalid distributions.</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Calculate a weighted median in two ways</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">model_outputs</span><span class="op">)</span></span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>data set ‘model_outputs’ not found</span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">fweights</span><span class="op">)</span></span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>data set ‘fweights’ not found</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">weighted_median1</span> <span class="op">&lt;-</span> <span class="fu">simple_ensemble</span><span class="op">(</span><span class="va">model_outputs</span>, weights <span class="op">=</span> <span class="va">fweights</span>,</span></span>
+<span class="r-in"><span>                                    agg_fun <span class="op">=</span> <span class="fu">stats</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/r/stats/median.html" class="external-link">median</a></span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">weighted_median2</span> <span class="op">&lt;-</span> <span class="fu">simple_ensemble</span><span class="op">(</span><span class="va">model_outputs</span>, weights <span class="op">=</span> <span class="va">fweights</span>,</span></span>
+<span class="r-in"><span>                                     agg_fun <span class="op">=</span> <span class="fu">matrixStats</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/matrixStats/man/weightedMedian.html" class="external-link">weightedMedian</a></span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/all.equal.html" class="external-link">all.equal</a></span><span class="op">(</span><span class="va">weighted_median1</span>, <span class="va">weighted_median2</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 
