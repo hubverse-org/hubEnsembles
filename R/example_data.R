@@ -35,7 +35,9 @@
 #' Example model output data for `linear_pool()`
 #'
 #' Toy model output data formatted according to hubverse standards
-#' to be used in the examples for `linear_pool()`
+#' to be used in the examples for `linear_pool()`. The predictions included
+#' are taken from three normal distributions with means -3, 0, 3 and
+#' all standard deviations 1.
 #'
 #' @format ## `component_outputs`
 #' A data frame with 123 rows and 5 columns:
@@ -51,7 +53,7 @@
 #' Example weights data for `linear_pool()`
 #'
 #' Toy weights data formatted according to hubverse standards
-#' to be used in the examples for `linear_pool()`
+#' to be used in the examples for `linear_pool()`. Weights are 0.25, 0.5, 0.25.
 #'
 #' @format ## `weights`
 #' A data frame with 3 rows and 2 columns:
