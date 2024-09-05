@@ -2,10 +2,10 @@
 #' of values for task id variables and output type, all models provided the same
 #' set of output type ids. This check only applies to the `cdf`, `pmf`, and
 #' `quantile` output types to ensure the resulting distribution is valid.
-#' @param model_outputs an object of class `model_out_tbl` with component
+#' @param model_out_tbl an object of class `model_out_tbl` with component
 #'   model outputs (e.g., predictions).
 #' @param task_id_cols `character` vector with names of columns in
-#'   `model_outputs` that specify modeling tasks.
+#'   `model_out_tbl` that specify modeling tasks.
 #' @details If the ensembling function intended to be used is `"simple_ensemble"`,
 #'   the valid output types are `mean`, `median`, `quantile`, `cdf`, and `pmf`.
 #'   If the ensembling function will be `"linear_pool"`, the valid output types
@@ -16,8 +16,8 @@
 #'
 #' @importFrom rlang .data
 
-validate_output_type_ids <- function(model_outputs, task_id_cols) {
-  same_output_id <- model_outputs |>
+validate_output_type_ids <- function(model_out_tbl, task_id_cols) {
+  same_output_id <- model_out_tbl |>
     dplyr::filter(.data[["output_type"]] %in% c("cdf", "pmf", "quantile")) |>
     dplyr::group_by(dplyr::across(c(dplyr::all_of(task_id_cols), "model_id", "output_type"))) |>
     dplyr::summarize(output_type_id_list = list(sort(.data[["output_type_id"]]))) |>
@@ -30,7 +30,7 @@ validate_output_type_ids <- function(model_outputs, task_id_cols) {
   false_counter <- sum(!same_output_id)
   if (false_counter != 0) {
     cli::cli_abort(c(
-      "x" = "{.arg model_outputs} contains {.val {false_counter}} invalid distributions.",
+      "x" = "{.arg model_out_tbl} contains {.val {false_counter}} invalid distributions.",
       "i" = "Within each group defined by a combination of task id variables
              and output type, all models must provide the same set of
              output type ids"

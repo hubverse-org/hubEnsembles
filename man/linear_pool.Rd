@@ -8,7 +8,7 @@ each combination of model task, output type, and output type id. Supported
 output types include \code{mean}, \code{quantile}, \code{cdf}, and \code{pmf}.}
 \usage{
 linear_pool(
-  model_outputs,
+  model_out_tbl,
   weights = NULL,
   weights_col_name = "weight",
   model_id = "hub-ensemble",
@@ -18,7 +18,7 @@ linear_pool(
 )
 }
 \arguments{
-\item{model_outputs}{an object of class \code{model_out_tbl} with component
+\item{model_out_tbl}{an object of class \code{model_out_tbl} with component
 model outputs (e.g., predictions).}
 
 \item{weights}{an optional \code{data.frame} with component model weights. If
@@ -35,8 +35,8 @@ with model weights. Defaults to \code{"weight"}}
 ensemble model.}
 
 \item{task_id_cols}{\code{character} vector with names of columns in
-\code{model_outputs} that specify modeling tasks. Defaults to \code{NULL}, in which
-case all columns in \code{model_outputs} other than \code{"model_id"}, \code{"output_type"},
+\code{model_out_tbl} that specify modeling tasks. Defaults to \code{NULL}, in which
+case all columns in \code{model_out_tbl} other than \code{"model_id"}, \code{"output_type"},
 \code{"output_type_id"}, and \code{"value"} are used as task ids.}
 
 \item{n_samples}{\code{numeric} that specifies the number of samples to use when
@@ -48,7 +48,7 @@ and quantile values for \code{output_type} \code{"quantile"}.}
 }
 \value{
 a \code{model_out_tbl} object of ensemble predictions. Note that any
-additional columns in the input \code{model_outputs} are dropped.
+additional columns in the input \code{model_out_tbl} are dropped.
 }
 \description{
 Compute ensemble model outputs as a linear pool, otherwise known as a
@@ -83,32 +83,14 @@ Steps 1 and 2 in this process are performed by \code{distfromq::make_q_fn}.
 # We illustrate the calculation of a linear pool when we have quantiles from the
 # component models. We take the components to be normal distributions with
 # means -3, 0, and 3, all standard deviations 1, and weights 0.25, 0.5, and 0.25.
-library(purrr)
-component_ids <- letters[1:3]
-component_weights <- c(0.25, 0.5, 0.25)
-component_means <- c(-3, 0, 3)
+data(component_outputs)
+data(weights)
 
-lp_qs <- seq(from = -5, to = 5, by = 0.25) # linear pool quantiles, expected outputs
-ps <- rep(0, length(lp_qs))
-for (m in seq_len(3)) {
-  ps <- ps + component_weights[m] * pnorm(lp_qs, mean = component_means[m])
-}
-
-component_qs <- purrr::map(component_means, ~ qnorm(ps, mean=.x)) |> unlist()
-component_outputs <- data.frame(
-  stringsAsFactors = FALSE,
-  model_id = rep(component_ids, each = length(lp_qs)),
-  target = "inc death",
-  output_type = "quantile",
-  output_type_id = ps,
-  value = component_qs)
-
-lp_from_component_qs <- linear_pool(
-  component_outputs,
-  weights = data.frame(model_id = component_ids, weight = component_weights))
+expected_quantiles <- seq(from = -5, to = 5, by = 0.25)
+lp_from_component_qs <- linear_pool(component_outputs, weights)
 
 head(lp_from_component_qs)
-all.equal(lp_from_component_qs$value, lp_qs, tolerance = 1e-3,
-          check.attributes=FALSE)
+all.equal(lp_from_component_qs$value, expected_quantiles, tolerance = 1e-3,
+          check.attributes = FALSE)
 
 }
