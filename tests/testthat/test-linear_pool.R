@@ -1,3 +1,12 @@
+test_that("(#128) linear pool will group by output_type", {
+  forecast <- hubExamples::forecast_outputs
+  forecast <- forecast[!forecast$output_type %in% c("median", "sample"), ]
+  expect_no_error({
+    hubEnsembles::linear_pool(forecast, model_id = "linear-pool-normal")
+  })
+})
+
+
 test_that("non-default columns are dropped from output", {
   # set up simple data for test cases
   quantile_outputs <- expand.grid(stringsAsFactors = FALSE,
