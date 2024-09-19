@@ -1,8 +1,3 @@
-library(distfromq)
-library(matrixStats)
-library(dplyr)
-library(tidyr)
-
 test_that("non-default columns are dropped from output", {
   # set up simple data for test cases
   quantile_outputs <- expand.grid(stringsAsFactors = FALSE,
@@ -189,7 +184,7 @@ test_that("The results are equivalent to those calculated by simple_ensemble for
 
   weighted_mean_expected <- simple_ensemble(mean_outputs, weights = fweight1,
                                             weights_col_name = "weight",
-                                            agg_fun = weightedMean,
+                                            agg_fun = matrixStats::weightedMean,
                                             model_id = "hub-ensemble",
                                             task_id_cols = NULL)
 
