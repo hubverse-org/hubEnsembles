@@ -5,6 +5,8 @@
 * Rewrite `linear_pool_quantile()` to not use `Hmisc-utils` functions
 * Replace magrittr pipe (`%>%`) with base R 4.1 pipe (`|>`)
 * Simplify examples
+* fix bug in `linear_pool()` where the pools were not being properly split (#128)
+* fix warnings from dplyr about usage of `all_of()`
 
 # hubEnsembles 0.1.5
 
