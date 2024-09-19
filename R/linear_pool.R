@@ -69,9 +69,11 @@ linear_pool <- function(model_out_tbl, weights = NULL,
   task_id_cols_validated <- validated_inputs$task_id_cols
 
   # calculate linear opinion pool for different types
-  ensemble_model_outputs <- model_out_tbl_validated |>
-    dplyr::group_split("output_type") |>
-    purrr::map(.f = function(split_outputs) {
+  split_models <- split(model_out_tbl_validated,
+    f = model_out_tbl_validated$output_type
+  )
+  ensemble_model_outputs <- purrr::map(split_models,
+    .f = function(split_outputs) {
       type <- split_outputs$output_type[1]
       if (type %in% c("mean", "cdf", "pmf")) {
         simple_ensemble(split_outputs, weights = weights_validated,
