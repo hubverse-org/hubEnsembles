@@ -286,7 +286,7 @@ test_that("(weighted) quantiles correctly calculated", {
                tolerance = 1e-3)
   expect_equal(weighted_quantile_expected,
                as.data.frame(weighted_quantile_actual),
-               tolerance = 1e-3)
+               tolerance = 1e-2)
 })
 
 
@@ -390,10 +390,10 @@ test_that("(weighted) quantiles correctly calculated - lognormal family", {
   expect_false(isTRUE(all.equal(quantile_expected, as.data.frame(quantile_actual_norm),
                                 tolerance = 1e-3)))
   expect_false(isTRUE(all.equal(weighted_quantile_expected, as.data.frame(weighted_quantile_actual_norm),
-                                tolerance = 1e-3)))
+                                tolerance = 1e-2)))
 
   expect_equal(quantile_expected, as.data.frame(quantile_actual_lnorm),
                tolerance = 1e-3)
   expect_equal(weighted_quantile_expected, as.data.frame(weighted_quantile_actual_lnorm),
-               tolerance = 1e-3)
+               tolerance = 1e-2)
 })

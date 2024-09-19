@@ -15,20 +15,15 @@ linear_pool_quantile <- function(model_out_tbl, weights = NULL,
                                  n_samples = 1e4,
                                  ...) {
   quantile_levels <- unique(model_out_tbl$output_type_id)
+  agg_args <- c(list(x = quote(.data[["pred_qs"]]), probs = as.numeric(quantile_levels)))
 
   if (is.null(weights)) {
+    weight_by_cols <- NULL
     group_by_cols <- task_id_cols
-    agg_args <- c(list(x = quote(.data[["pred_qs"]]), probs = as.numeric(quantile_levels)))
   } else {
     weight_by_cols <- colnames(weights)[colnames(weights) != weights_col_name]
-
     model_out_tbl <- model_out_tbl |>
       dplyr::left_join(weights, by = weight_by_cols)
-
-    agg_args <- c(list(x = quote(.data[["pred_qs"]]),
-                       weights = quote(.data[[weights_col_name]]),
-                       normwt = TRUE,
-                       probs = as.numeric(quantile_levels)))
 
     group_by_cols <- c(task_id_cols, weights_col_name)
   }
@@ -46,10 +41,21 @@ linear_pool_quantile <- function(model_out_tbl, weights = NULL,
       .groups = "drop"
     ) |>
     tidyr::unnest("pred_qs") |>
+    dplyr::group_split(dplyr::all_of(dplyr::across(weight_by_cols))) |>
+    purrr::map(.f = function(outputs_by_weight) {
+      if (!is.null(weights)) {
+        weight_temp <- outputs_by_weight$weight[1]
+        sample_index <- sample(1:(n_samples - 1), weight_temp * n_samples * nrow(weights), replace = TRUE)
+        outputs_by_weight[sample_index, ]
+      } else {
+        outputs_by_weight
+      }
+    }) |>
+    purrr::list_rbind() |>
     dplyr::group_by(dplyr::across(dplyr::all_of(task_id_cols))) |>
     dplyr::summarize(
       output_type_id = list(quantile_levels),
-      value = list(do.call("wtd.quantile", args = agg_args)),
+      value = list(do.call("quantile", args = agg_args)),
       .groups = "drop"
     ) |>
     tidyr::unnest(cols = tidyselect::all_of(c("output_type_id", "value"))) |>
