@@ -9,7 +9,8 @@ test_that("(#128) linear pool will group by output_type", {
 
   # Reversing the input gives the same results
   expect_no_error({
-    ser <- hubEnsembles::linear_pool(forecast[nrow(forecast):1, ], model_id = "linear-pool-normal")
+    tsacerof <- rev(seq_len(nrow(forecast)))
+    ser <- hubEnsembles::linear_pool(forecast[tsacerof, ], model_id = "linear-pool-normal")
   })
   expect_equal(res[res$output_type == "cdf", -1], ser[ser$output_type == "cdf", -1], tolerance = 1e-10)
 })
