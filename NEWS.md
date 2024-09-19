@@ -2,6 +2,7 @@
 
 * Fix bug in `simple_ensemble()` that produces invalid distributions for certain weighted medians (#122)
 * Make `hubEnsembles.Rmd` an article
+* Rewrite `linear_pool_quantile()` to not use `Hmisc-utils` functions
 * Replace magrittr pipe (`%>%`) with base R 4.1 pipe (`|>`)
 * Simplify examples
 
