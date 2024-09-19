@@ -41,7 +41,7 @@ linear_pool_quantile <- function(model_out_tbl, weights = NULL,
       .groups = "drop"
     ) |>
     tidyr::unnest("pred_qs") |>
-    dplyr::group_split(dplyr::all_of(dplyr::across(weight_by_cols))) |>
+    dplyr::group_split(dplyr::across(dplyr::all_of(weight_by_cols))) |>
     purrr::map(.f = function(outputs_by_weight) {
       if (!is.null(weights)) {
         weight_temp <- outputs_by_weight$weight[1]
