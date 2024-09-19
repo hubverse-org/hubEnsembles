@@ -2,8 +2,16 @@ test_that("(#128) linear pool will group by output_type", {
   forecast <- hubExamples::forecast_outputs
   forecast <- forecast[!forecast$output_type %in% c("median", "sample"), ]
   expect_no_error({
-    hubEnsembles::linear_pool(forecast, model_id = "linear-pool-normal")
+    res <- hubEnsembles::linear_pool(forecast, model_id = "linear-pool-normal")
   })
+  expect_lt(nrow(res), nrow(forecast))
+  expect_equal(unique(res$model_id), "linear-pool-normal")
+
+  # Reversing the input gives the same results
+  expect_no_error({
+    ser <- hubEnsembles::linear_pool(forecast[nrow(forecast):1, ], model_id = "linear-pool-normal")
+  })
+  expect_equal(res[res$output_type == "cdf", -1], ser[ser$output_type == "cdf", -1], tolerance = 1e-10)
 })
 
 
