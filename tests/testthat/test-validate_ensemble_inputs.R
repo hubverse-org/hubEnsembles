@@ -1,5 +1,3 @@
-library(dplyr)
-
 # set up simple data for test cases
 model_outputs <- expand.grid(stringsAsFactors = FALSE,
                              model_id = letters[1:4],
@@ -36,7 +34,7 @@ fweight2 <- data.frame(model_id = letters[1:4],
 fweight8 <- data.frame(model_id = letters[1:4],
                        location = "888",
                        weight = 0.1 * (4:1))
-fweight <- bind_rows(fweight2, fweight8)
+fweight <- dplyr::bind_rows(fweight2, fweight8)
 
 
 test_that("mismatched task_id_cols throws error", {
