@@ -8,6 +8,7 @@
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![R-CMD-check](https://github.com/hubverse-org/hubEnsembles/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/hubverse-org/hubEnsembles/actions/workflows/R-CMD-check.yaml)
+
 <!-- badges: end -->
 
 The goal of hubEnsembles is to provide standard implementations of
@@ -19,21 +20,24 @@ class](https://hubverse-org.github.io/hubUtils/reference/as_model_out_tbl.html).
 
 ## Installation
 
-You can install the development version of hubEnsembles using this code:
+### Latest
+
+You can install the [latest version of hubEnsembles from the
+R-universe](https://hubverse-org.r-universe.dev/hubAdmin):
+
+``` r
+install.packages("hubEnsembles", repos = c("https://hubverse-org.r-universe.dev", "https://cloud.r-project.org"))
+```
+
+### Development
+
+If you want to test out new features that have not yet been released,
+you can install the development version of hubEnsembles from
+[GitHub](https://github.com/) with:
 
 ``` r
 remotes::install_github("hubverse-org/hubEnsembles")
 ```
-
-<!--
-## Example
-&#10;This is a basic example which shows you how to solve a common problem:
-&#10;
-``` r
-library(hubEnsembles)
-## basic example code
-```
-&#10;-->
 
 ------------------------------------------------------------------------
 
