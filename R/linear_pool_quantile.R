@@ -15,7 +15,7 @@ linear_pool_quantile <- function(model_out_tbl, weights = NULL,
                                  n_samples = 1e4,
                                  ...) {
   quantile_levels <- unique(model_out_tbl$output_type_id)
-  agg_args <- c(list(x = quote(.data[["pred_qs"]]), probs = as.numeric(quantile_levels)))
+  agg_args <- list(x = quote(.data[["pred_qs"]]), probs = as.numeric(quantile_levels))
 
   if (is.null(weights)) {
     weight_by_cols <- NULL
