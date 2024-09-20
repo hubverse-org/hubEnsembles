@@ -72,9 +72,8 @@ linear_pool <- function(model_out_tbl, weights = NULL,
   split_models <- split(model_out_tbl_validated,
     f = model_out_tbl_validated$output_type
   )
-  #nolint start
-  ensemble_model_outputs <- purrr::map(split_models,
-    .f = function(split_outputs) {
+  ensemble_model_outputs <- split_models |>
+    purrr::map(.f = function(split_outputs) {
       type <- split_outputs$output_type[1]
       if (type %in% c("mean", "cdf", "pmf")) {
         simple_ensemble(split_outputs, weights = weights_validated,
@@ -93,7 +92,6 @@ linear_pool <- function(model_out_tbl, weights = NULL,
     }) |>
     purrr::list_rbind() |>
     hubUtils::as_model_out_tbl()
-  #nolint end
 
   return(ensemble_model_outputs)
 }
