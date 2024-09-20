@@ -1,12 +1,15 @@
+# hubEnsembles 0.1.7
+
+* Make `hubEnsembles.Rmd` an article
+* Rewrite `linear_pool_quantile()` to not use `Hmisc-utils` functions
+* Fix bug in `linear_pool()` where the pools were not being properly split (#128)
+* Fix warnings from dplyr about usage of `all_of()`
+
 # hubEnsembles 0.1.6
 
 * Fix bug in `simple_ensemble()` that produces invalid distributions for certain weighted medians (#122)
-* Make `hubEnsembles.Rmd` an article
-* Rewrite `linear_pool_quantile()` to not use `Hmisc-utils` functions
 * Replace magrittr pipe (`%>%`) with base R 4.1 pipe (`|>`)
 * Simplify examples
-* fix bug in `linear_pool()` where the pools were not being properly split (#128)
-* fix warnings from dplyr about usage of `all_of()`
 
 # hubEnsembles 0.1.5
 
