@@ -27,8 +27,8 @@ weighted_quantile <- function(x, weights, normalize = TRUE, probs) {
   if (normalize) weights <- weights / sum(weights)
 
   # check that the sum of weights is 1
-  if (!all.equal(sum(weights), 1, tolerance = 1e-3)) {
-    cli::cli_abort("{.arg weights} must sum to 1.")
+  if (!isTRUE(all.equal(sum(weights), 1, tolerance = 1e-3))) {
+    cli::cli_abort("{.arg weights} must sum to 1 or be normalized")
   }
 
   # check that probs is numeric, and all are > 0 and < 1
