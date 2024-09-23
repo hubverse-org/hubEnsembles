@@ -47,8 +47,6 @@ test_that("non-default columns are dropped from output", {
                            quantile_outputs$output_type_id == .9] <-
     c(250, 350, 500, 350)
 
-  cdf_outputs <- dplyr::mutate(quantile_outputs, output_type = "cdf")
-
   output_names <- quantile_outputs |>
     dplyr::mutate(extra_col_1 = "a", extra_col_2 = "a") |>
     linear_pool(
@@ -299,7 +297,7 @@ test_that("(weighted) quantiles correctly calculated", {
                tolerance = 1e-3)
   expect_equal(weighted_quantile_expected,
                as.data.frame(weighted_quantile_actual),
-               tolerance = 1e-2)
+               tolerance = 1e-3)
 })
 
 
@@ -403,10 +401,10 @@ test_that("(weighted) quantiles correctly calculated - lognormal family", {
   expect_false(isTRUE(all.equal(quantile_expected, as.data.frame(quantile_actual_norm),
                                 tolerance = 1e-3)))
   expect_false(isTRUE(all.equal(weighted_quantile_expected, as.data.frame(weighted_quantile_actual_norm),
-                                tolerance = 1e-2)))
+                                tolerance = 1e-3)))
 
   expect_equal(quantile_expected, as.data.frame(quantile_actual_lnorm),
                tolerance = 1e-3)
   expect_equal(weighted_quantile_expected, as.data.frame(weighted_quantile_actual_lnorm),
-               tolerance = 1e-2)
+               tolerance = 1e-3)
 })
