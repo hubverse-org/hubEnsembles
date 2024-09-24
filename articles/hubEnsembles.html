@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>The `hubEnsembles` package • hubEnsembles</title>
+<title>hubEnsembles • hubEnsembles</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
 <link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png">
@@ -16,7 +16,7 @@
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="The `hubEnsembles` package">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="hubEnsembles">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -26,7 +26,7 @@
     <a href="https://hubdocs.readthedocs.io/en/latest/" class="external-link"><img src="https://raw.githubusercontent.com/hubverse-org/hubStyle/main/inst/hubverse.png" id="logo" height="30" alt="hubverse"></a>
     <a class="navbar-brand me-2" href="../index.html">hubEnsembles</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.6</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.7</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -55,10 +55,10 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-      <img src="../logo.png" class="logo" alt=""><h1>The `hubEnsembles` package</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>hubEnsembles</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/hubverse-org/hubEnsembles/blob/main/vignettes/hubEnsembles.Rmd" class="external-link"><code>vignettes/hubEnsembles.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/hubverse-org/hubEnsembles/blob/main/vignettes/articles/hubEnsembles.Rmd" class="external-link"><code>vignettes/articles/hubEnsembles.Rmd</code></a></small>
       <div class="d-none name"><code>hubEnsembles.Rmd</code></div>
     </div>
 
@@ -119,18 +119,18 @@ output.</p>
 <span>    <span class="va">horizon</span> <span class="op">==</span> <span class="fl">1</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 21 × 9</span></span></span>
-<span><span class="co">#&gt;    model_id          location reference_date horizon target_end_date target                    output_type output_type_id   value</span></span>
-<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> Flusight-baseline 25       2022-12-17           1 2022-12-24      wk flu hosp rate category pmf         low            9.70<span style="color: #949494;">e</span><span style="color: #BB0000;">-6</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> Flusight-baseline 25       2022-12-17           1 2022-12-24      wk flu hosp rate category pmf         moderate       2.94<span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> Flusight-baseline 25       2022-12-17           1 2022-12-24      wk flu hosp rate category pmf         high           7.35<span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> Flusight-baseline 25       2022-12-17           1 2022-12-24      wk flu hosp rate category pmf         very high      9.24<span style="color: #949494;">e</span><span style="color: #BB0000;">-1</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> Flusight-baseline 25       2022-12-17           1 2022-12-24      wk inc flu hosp           quantile    0.25           5.66<span style="color: #949494;">e</span>+2</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> Flusight-baseline 25       2022-12-17           1 2022-12-24      wk inc flu hosp           quantile    0.75           5.98<span style="color: #949494;">e</span>+2</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> Flusight-baseline 25       2022-12-17           1 2022-12-24      wk inc flu hosp           median      <span style="color: #BB0000;">NA</span>             5.82<span style="color: #949494;">e</span>+2</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> MOBS-GLEAM_FLUH   25       2022-12-17           1 2022-12-24      wk flu hosp rate category pmf         low            7.86<span style="color: #949494;">e</span><span style="color: #BB0000;">-8</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> MOBS-GLEAM_FLUH   25       2022-12-17           1 2022-12-24      wk flu hosp rate category pmf         moderate       1.97<span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> MOBS-GLEAM_FLUH   25       2022-12-17           1 2022-12-24      wk flu hosp rate category pmf         high           1.63<span style="color: #949494;">e</span><span style="color: #BB0000;">-1</span></span></span>
+<span><span class="co">#&gt;    model_id          reference_date target                    horizon location target_end_date output_type output_type_id        value</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> Flusight-baseline 2022-12-17     wk inc flu hosp                 1 25       2022-12-24      quantile    0.25           566         </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> Flusight-baseline 2022-12-17     wk inc flu hosp                 1 25       2022-12-24      quantile    0.75           598         </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> Flusight-baseline 2022-12-17     wk inc flu hosp                 1 25       2022-12-24      median      <span style="color: #BB0000;">NA</span>             582         </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> Flusight-baseline 2022-12-17     wk flu hosp rate category       1 25       2022-12-24      pmf         low              0.000<span style="text-decoration: underline;">009</span>70</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> Flusight-baseline 2022-12-17     wk flu hosp rate category       1 25       2022-12-24      pmf         moderate         0.002<span style="text-decoration: underline;">94</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> Flusight-baseline 2022-12-17     wk flu hosp rate category       1 25       2022-12-24      pmf         high             0.073<span style="text-decoration: underline;">5</span>    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> Flusight-baseline 2022-12-17     wk flu hosp rate category       1 25       2022-12-24      pmf         very high        0.924     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> MOBS-GLEAM_FLUH   2022-12-17     wk inc flu hosp                 1 25       2022-12-24      quantile    0.25           563         </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> MOBS-GLEAM_FLUH   2022-12-17     wk inc flu hosp                 1 25       2022-12-24      quantile    0.75           803         </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> MOBS-GLEAM_FLUH   2022-12-17     wk inc flu hosp                 1 25       2022-12-24      median      <span style="color: #BB0000;">NA</span>             664         </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 11 more rows</span></span></span></code></pre></div>
 <p>We also have corresponding target data included in the
 <code>hubExamples</code> package. The example target data provide
@@ -142,17 +142,19 @@ The forecast-specific task ID variables <code>reference_date</code> and
 <code>horizon</code> are not relevant for the target data.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">hubExamples</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/hubExamples/man/forecast_data.html" class="external-link">forecast_target_ts</a></span>, <span class="fl">10</span><span class="op">)</span></span>
-<span><span class="co">#&gt;          date location observation</span></span>
-<span><span class="co">#&gt; 1  2020-01-11       01           0</span></span>
-<span><span class="co">#&gt; 2  2020-01-11       15           0</span></span>
-<span><span class="co">#&gt; 3  2020-01-11       18           0</span></span>
-<span><span class="co">#&gt; 4  2020-01-11       27           0</span></span>
-<span><span class="co">#&gt; 5  2020-01-11       30           0</span></span>
-<span><span class="co">#&gt; 6  2020-01-11       37           0</span></span>
-<span><span class="co">#&gt; 7  2020-01-11       48           0</span></span>
-<span><span class="co">#&gt; 8  2020-01-11       US           1</span></span>
-<span><span class="co">#&gt; 9  2020-01-18       01           0</span></span>
-<span><span class="co">#&gt; 10 2020-01-18       15           0</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 10 × 3</span></span></span>
+<span><span class="co">#&gt;    date       location observation</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> 2020-01-11 01                 0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> 2020-01-11 15                 0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> 2020-01-11 18                 0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> 2020-01-11 27                 0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> 2020-01-11 30                 0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> 2020-01-11 37                 0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> 2020-01-11 48                 0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> 2020-01-11 US                 1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> 2020-01-18 01                 0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> 2020-01-18 15                 0</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="creating-ensembles-with-simple_ensemble">Creating ensembles with <code>simple_ensemble</code><a class="anchor" aria-label="anchor" href="#creating-ensembles-with-simple_ensemble"></a>
@@ -204,15 +206,15 @@ below.</p>
 <span>    <span class="va">horizon</span> <span class="op">==</span> <span class="fl">1</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 7 × 9</span></span></span>
-<span><span class="co">#&gt;   model_id             location reference_date horizon target_end_date target                    output_type output_type_id     value</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> simple-ensemble-mean 25       2022-12-17           1 2022-12-24      wk flu hosp rate category pmf         high             0.151  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> simple-ensemble-mean 25       2022-12-17           1 2022-12-24      wk flu hosp rate category pmf         low              0.004<span style="text-decoration: underline;">37</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> simple-ensemble-mean 25       2022-12-17           1 2022-12-24      wk flu hosp rate category pmf         moderate         0.023<span style="text-decoration: underline;">3</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> simple-ensemble-mean 25       2022-12-17           1 2022-12-24      wk flu hosp rate category pmf         very high        0.821  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> simple-ensemble-mean 25       2022-12-17           1 2022-12-24      wk inc flu hosp           median      <span style="color: #BB0000;">NA</span>             620.     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> simple-ensemble-mean 25       2022-12-17           1 2022-12-24      wk inc flu hosp           quantile    0.25           542.     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span> simple-ensemble-mean 25       2022-12-17           1 2022-12-24      wk inc flu hosp           quantile    0.75           704.</span></span></code></pre></div>
+<span><span class="co">#&gt;   model_id             reference_date target                    horizon location target_end_date output_type output_type_id     value</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> simple-ensemble-mean 2022-12-17     wk flu hosp rate category       1 25       2022-12-24      pmf         high             0.151  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> simple-ensemble-mean 2022-12-17     wk flu hosp rate category       1 25       2022-12-24      pmf         low              0.004<span style="text-decoration: underline;">37</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> simple-ensemble-mean 2022-12-17     wk flu hosp rate category       1 25       2022-12-24      pmf         moderate         0.023<span style="text-decoration: underline;">3</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> simple-ensemble-mean 2022-12-17     wk flu hosp rate category       1 25       2022-12-24      pmf         very high        0.821  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> simple-ensemble-mean 2022-12-17     wk inc flu hosp                 1 25       2022-12-24      median      <span style="color: #BB0000;">NA</span>             620.     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> simple-ensemble-mean 2022-12-17     wk inc flu hosp                 1 25       2022-12-24      quantile    0.25           542.     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span> simple-ensemble-mean 2022-12-17     wk inc flu hosp                 1 25       2022-12-24      quantile    0.75           704.</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="changing-the-aggregation-function">Changing the aggregation function<a class="anchor" aria-label="anchor" href="#changing-the-aggregation-function"></a>
 </h3>
@@ -275,18 +277,18 @@ forecasts.</p>
 <span>  <span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">weighted_mean_ens</span>, <span class="fl">10</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 10 × 9</span></span></span>
-<span><span class="co">#&gt;    model_id                      location reference_date horizon target_end_date target           output_type output_type_id  value</span></span>
-<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> simple-ensemble-weighted-mean 25       2022-11-19           0 2022-11-19      wk flu hosp rate cdf         0.25           0.012<span style="text-decoration: underline;">9</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> simple-ensemble-weighted-mean 25       2022-11-19           0 2022-11-19      wk flu hosp rate cdf         0.5            0.115 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> simple-ensemble-weighted-mean 25       2022-11-19           0 2022-11-19      wk flu hosp rate cdf         0.75           0.546 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> simple-ensemble-weighted-mean 25       2022-11-19           0 2022-11-19      wk flu hosp rate cdf         1              0.805 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> simple-ensemble-weighted-mean 25       2022-11-19           0 2022-11-19      wk flu hosp rate cdf         1.25           0.910 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> simple-ensemble-weighted-mean 25       2022-11-19           0 2022-11-19      wk flu hosp rate cdf         1.5            0.964 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> simple-ensemble-weighted-mean 25       2022-11-19           0 2022-11-19      wk flu hosp rate cdf         1.75           0.989 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> simple-ensemble-weighted-mean 25       2022-11-19           0 2022-11-19      wk flu hosp rate cdf         10             1     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> simple-ensemble-weighted-mean 25       2022-11-19           0 2022-11-19      wk flu hosp rate cdf         10.25          1     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> simple-ensemble-weighted-mean 25       2022-11-19           0 2022-11-19      wk flu hosp rate cdf         10.5           1</span></span></code></pre></div>
+<span><span class="co">#&gt;    model_id                      reference_date target           horizon location target_end_date output_type output_type_id  value</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                         <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> simple-ensemble-weighted-mean 2022-11-19     wk flu hosp rate       0 25       2022-11-19      cdf         0.25           0.012<span style="text-decoration: underline;">9</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> simple-ensemble-weighted-mean 2022-11-19     wk flu hosp rate       0 25       2022-11-19      cdf         0.5            0.115 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> simple-ensemble-weighted-mean 2022-11-19     wk flu hosp rate       0 25       2022-11-19      cdf         0.75           0.546 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> simple-ensemble-weighted-mean 2022-11-19     wk flu hosp rate       0 25       2022-11-19      cdf         1              0.805 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> simple-ensemble-weighted-mean 2022-11-19     wk flu hosp rate       0 25       2022-11-19      cdf         1.25           0.910 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> simple-ensemble-weighted-mean 2022-11-19     wk flu hosp rate       0 25       2022-11-19      cdf         1.5            0.964 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> simple-ensemble-weighted-mean 2022-11-19     wk flu hosp rate       0 25       2022-11-19      cdf         1.75           0.989 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> simple-ensemble-weighted-mean 2022-11-19     wk flu hosp rate       0 25       2022-11-19      cdf         10             1     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> simple-ensemble-weighted-mean 2022-11-19     wk flu hosp rate       0 25       2022-11-19      cdf         10.25          1     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> simple-ensemble-weighted-mean 2022-11-19     wk flu hosp rate       0 25       2022-11-19      cdf         10.5           1</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -324,18 +326,18 @@ model.</p>
 <span>  <span class="fu">hubEnsembles</span><span class="fu">::</span><span class="fu"><a href="../reference/linear_pool.html">linear_pool</a></span><span class="op">(</span>model_id <span class="op">=</span> <span class="st">"linear-pool-normal"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">linear_pool_norm</span>, <span class="fl">10</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 10 × 9</span></span></span>
-<span><span class="co">#&gt;    model_id           location reference_date horizon target_end_date target           output_type output_type_id  value</span></span>
-<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> linear-pool-normal 25       2022-11-19           0 2022-11-19      wk flu hosp rate cdf         0.25           0.017<span style="text-decoration: underline;">6</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> linear-pool-normal 25       2022-11-19           0 2022-11-19      wk flu hosp rate cdf         0.5            0.118 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> linear-pool-normal 25       2022-11-19           0 2022-11-19      wk flu hosp rate cdf         0.75           0.550 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> linear-pool-normal 25       2022-11-19           0 2022-11-19      wk flu hosp rate cdf         1              0.819 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> linear-pool-normal 25       2022-11-19           0 2022-11-19      wk flu hosp rate cdf         1.25           0.919 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> linear-pool-normal 25       2022-11-19           0 2022-11-19      wk flu hosp rate cdf         1.5            0.968 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> linear-pool-normal 25       2022-11-19           0 2022-11-19      wk flu hosp rate cdf         1.75           0.990 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> linear-pool-normal 25       2022-11-19           0 2022-11-19      wk flu hosp rate cdf         10             1     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> linear-pool-normal 25       2022-11-19           0 2022-11-19      wk flu hosp rate cdf         10.25          1     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> linear-pool-normal 25       2022-11-19           0 2022-11-19      wk flu hosp rate cdf         10.5           1</span></span></code></pre></div>
+<span><span class="co">#&gt;    model_id           reference_date target           horizon location target_end_date output_type output_type_id  value</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> linear-pool-normal 2022-11-19     wk flu hosp rate       0 25       2022-11-19      cdf         0.25           0.017<span style="text-decoration: underline;">6</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> linear-pool-normal 2022-11-19     wk flu hosp rate       0 25       2022-11-19      cdf         0.5            0.118 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> linear-pool-normal 2022-11-19     wk flu hosp rate       0 25       2022-11-19      cdf         0.75           0.550 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> linear-pool-normal 2022-11-19     wk flu hosp rate       0 25       2022-11-19      cdf         1              0.819 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> linear-pool-normal 2022-11-19     wk flu hosp rate       0 25       2022-11-19      cdf         1.25           0.919 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> linear-pool-normal 2022-11-19     wk flu hosp rate       0 25       2022-11-19      cdf         1.5            0.968 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> linear-pool-normal 2022-11-19     wk flu hosp rate       0 25       2022-11-19      cdf         1.75           0.990 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> linear-pool-normal 2022-11-19     wk flu hosp rate       0 25       2022-11-19      cdf         10             1     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> linear-pool-normal 2022-11-19     wk flu hosp rate       0 25       2022-11-19      cdf         10.25          1     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> linear-pool-normal 2022-11-19     wk flu hosp rate       0 25       2022-11-19      cdf         10.5           1</span></span></code></pre></div>
 <p>In the figure below, we compare ensemble results generated by
 <code><a href="../reference/simple_ensemble.html">simple_ensemble()</a></code> and <code><a href="../reference/linear_pool.html">linear_pool()</a></code> for model
 outputs of output types PMF and quantile. Panel A shows PMF type
@@ -365,18 +367,18 @@ contribution to the resulting ensemble may be provided.</p>
 <span>  <span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">weighted_linear_pool_norm</span>, <span class="fl">10</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 10 × 9</span></span></span>
-<span><span class="co">#&gt;    model_id             location reference_date horizon target_end_date target           output_type output_type_id  value</span></span>
-<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> linear-pool-weighted 25       2022-11-19           0 2022-11-19      wk flu hosp rate cdf         0.25           0.012<span style="text-decoration: underline;">9</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> linear-pool-weighted 25       2022-11-19           0 2022-11-19      wk flu hosp rate cdf         0.5            0.115 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> linear-pool-weighted 25       2022-11-19           0 2022-11-19      wk flu hosp rate cdf         0.75           0.546 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> linear-pool-weighted 25       2022-11-19           0 2022-11-19      wk flu hosp rate cdf         1              0.805 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> linear-pool-weighted 25       2022-11-19           0 2022-11-19      wk flu hosp rate cdf         1.25           0.910 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> linear-pool-weighted 25       2022-11-19           0 2022-11-19      wk flu hosp rate cdf         1.5            0.964 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> linear-pool-weighted 25       2022-11-19           0 2022-11-19      wk flu hosp rate cdf         1.75           0.989 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> linear-pool-weighted 25       2022-11-19           0 2022-11-19      wk flu hosp rate cdf         10             1     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> linear-pool-weighted 25       2022-11-19           0 2022-11-19      wk flu hosp rate cdf         10.25          1     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> linear-pool-weighted 25       2022-11-19           0 2022-11-19      wk flu hosp rate cdf         10.5           1</span></span></code></pre></div>
+<span><span class="co">#&gt;    model_id             reference_date target           horizon location target_end_date output_type output_type_id  value</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> linear-pool-weighted 2022-11-19     wk flu hosp rate       0 25       2022-11-19      cdf         0.25           0.012<span style="text-decoration: underline;">9</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> linear-pool-weighted 2022-11-19     wk flu hosp rate       0 25       2022-11-19      cdf         0.5            0.115 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> linear-pool-weighted 2022-11-19     wk flu hosp rate       0 25       2022-11-19      cdf         0.75           0.546 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> linear-pool-weighted 2022-11-19     wk flu hosp rate       0 25       2022-11-19      cdf         1              0.805 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> linear-pool-weighted 2022-11-19     wk flu hosp rate       0 25       2022-11-19      cdf         1.25           0.910 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> linear-pool-weighted 2022-11-19     wk flu hosp rate       0 25       2022-11-19      cdf         1.5            0.964 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> linear-pool-weighted 2022-11-19     wk flu hosp rate       0 25       2022-11-19      cdf         1.75           0.989 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> linear-pool-weighted 2022-11-19     wk flu hosp rate       0 25       2022-11-19      cdf         10             1     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> linear-pool-weighted 2022-11-19     wk flu hosp rate       0 25       2022-11-19      cdf         10.25          1     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> linear-pool-weighted 2022-11-19     wk flu hosp rate       0 25       2022-11-19      cdf         10.5           1</span></span></code></pre></div>
 <p>We can also change the distribution that <code>distfromq</code> uses
 to estimate the component models’ distributional tails to either log
 normal or Cauchy using the <code>tail_dist</code> argument. (See
@@ -409,7 +411,7 @@ distribution, except in its outer edges.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0. PR Previews built by <a href="https://www.netlify.com" class="external-link">Netlify</a>. Provided without <strong>any warranty</strong>.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1. PR Previews built by <a href="https://www.netlify.com" class="external-link">Netlify</a>. Provided without <strong>any warranty</strong>.</p>
 </div>
 
     </footer>
