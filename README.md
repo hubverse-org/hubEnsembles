@@ -23,7 +23,7 @@ class](https://hubverse-org.github.io/hubUtils/reference/as_model_out_tbl.html).
 ### Latest
 
 You can install the [latest version of hubEnsembles from the
-R-universe](https://hubverse-org.r-universe.dev/hubAdmin):
+R-universe](https://hubverse-org.r-universe.dev/hubEnsembles):
 
 ``` r
 install.packages("hubEnsembles", repos = c("https://hubverse-org.r-universe.dev", "https://cloud.r-project.org"))
