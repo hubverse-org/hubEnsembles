@@ -31,9 +31,9 @@ weighted_quantile <- function(x, weights = NULL, normalize = TRUE, probs = c(0, 
     cli::cli_abort("{.arg weights} must sum to 1 or be normalized")
   }
 
-  # check that probs is numeric, and all are > 0 and < 1
-  if (!is.numeric(probs) || any(probs <= 0 | probs >= 1)) {
-    cli::cli_abort("{.arg probs} must be numeric and between 0 and 1, exclusive.")
+  # check that probs is numeric, and all are >= 0 and <= 1
+  if (!is.numeric(probs) || any(probs < 0 | probs > 1)) {
+    cli::cli_abort("{.arg probs} must be numeric and between 0 and 1.")
   }
 
   # sort both x and weights in increasing order of x

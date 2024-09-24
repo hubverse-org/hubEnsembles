@@ -32,11 +32,11 @@ test_that("weights that don't sum to 1 and aren't normalized throw an error", {
 
 test_that("invalid probs (quantile levels) throws an error", {
   x <- seq(from = 1, to = 16, by = 3)
-  probs <- seq(from = 0, to = 1, by = 0.25)
+  probs <- seq(from = -0.25, to = 1, by = 0.25)
 
   weighted_quantile(x, weights = NULL, normalize = TRUE, probs) |>
     expect_error(
-      regexp = "`probs` must be numeric and between 0 and 1, exclusive", fixed = TRUE
+      regexp = "`probs` must be numeric and between 0 and 1", fixed = TRUE
     )
 })
 
