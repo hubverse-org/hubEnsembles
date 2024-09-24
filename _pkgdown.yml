@@ -1,3 +1,6 @@
 url: https://hubverse-org.github.io/hubEnsembles/
 template:
   package: hubStyle
+development:
+  mode: auto
+

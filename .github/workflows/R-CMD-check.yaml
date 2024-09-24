@@ -5,6 +5,9 @@ on:
     branches: [main, master]
   pull_request:
     branches: [main, master]
+  workflow_dispatch:
+  schedule:
+    - cron: "47 14 * * 1"   # <=== Set to run at 14:47 on Mondays (avoiding 00:00 and top of the hour runs gives us a better chance for getting server time)
 
 name: R-CMD-check
 
@@ -29,21 +32,35 @@ jobs:
       R_KEEP_PKG_SOURCE: yes
 
     steps:
-      - uses: actions/checkout@v4
+      - id: checkout
+        uses: actions/checkout@v4
 
-      - uses: r-lib/actions/setup-pandoc@v2
+      - name: Setup for Hotfix/Release Testing
+        id: release-setup
+        if: "${{ contains(github.event.pull_request.head.ref, '/hotfix/') || contains(github.event.pull_request.head.ref, '/release/') }}"
+        run: |
+          # remove the remote declarations from the DESCRIPTION so that we
+          # test the released version
+          sed -i -e '/  hubverse-org/d' DESCRIPTION
 
-      - uses: r-lib/actions/setup-r@v2
+      - id: setup-pandoc
+        uses: r-lib/actions/setup-pandoc@v2
+
+      - id: setup-r
+        uses: r-lib/actions/setup-r@v2
         with:
           r-version: ${{ matrix.config.r }}
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
+          extra-repositories: https://hubverse-org.r-universe.dev
 
-      - uses: r-lib/actions/setup-r-dependencies@v2
+      - id: fetch-dependencies
+        uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::rcmdcheck
           needs: check
 
-      - uses: r-lib/actions/check-r-package@v2
+      - id: check
+        uses: r-lib/actions/check-r-package@v2
         with:
           upload-snapshots: true
