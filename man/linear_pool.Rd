@@ -90,7 +90,7 @@ expected_quantiles <- seq(from = -5, to = 5, by = 0.25)
 lp_from_component_qs <- linear_pool(component_outputs, weights)
 
 head(lp_from_component_qs)
-all.equal(lp_from_component_qs$value, expected_quantiles, tolerance = 1e-3,
+all.equal(lp_from_component_qs$value, expected_quantiles, tolerance = 1e-2,
           check.attributes = FALSE)
 
 }

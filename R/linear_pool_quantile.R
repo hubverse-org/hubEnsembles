@@ -18,24 +18,28 @@ linear_pool_quantile <- function(model_out_tbl, weights = NULL,
 
   if (is.null(weights)) {
     group_by_cols <- task_id_cols
-    agg_args <- c(list(x = quote(.data[["pred_qs"]]), probs = as.numeric(quantile_levels)))
+    agg_args <- list(x = quote(.data[["pred_qs"]]),
+                     weights = NULL,
+                     normalize = TRUE,
+                     probs = as.numeric(quantile_levels))
+
   } else {
     weight_by_cols <- colnames(weights)[colnames(weights) != weights_col_name]
 
     model_out_tbl <- model_out_tbl |>
       dplyr::left_join(weights, by = weight_by_cols)
 
-    agg_args <- c(list(x = quote(.data[["pred_qs"]]),
-                       weights = quote(.data[[weights_col_name]]),
-                       normwt = TRUE,
-                       probs = as.numeric(quantile_levels)))
+    agg_args <- list(x = quote(.data[["pred_qs"]]),
+                     weights = quote(.data[[weights_col_name]]),
+                     normalize = TRUE,
+                     probs = as.numeric(quantile_levels))
 
     group_by_cols <- c(task_id_cols, weights_col_name)
   }
 
-  sample_q_lvls <- seq(from = 0, to = 1, length.out = n_samples + 2)[2:n_samples]
+  sample_q_lvls <- seq(from = 0, to = 1, length.out = n_samples + 2)[2:n_samples + 1]
   quantile_outputs <- model_out_tbl |>
-    dplyr::group_by(model_id, dplyr::across(dplyr::all_of(group_by_cols))) |>
+    dplyr::group_by(dplyr::across(dplyr::all_of(c("model_id", group_by_cols)))) |>
     dplyr::summarize(
       pred_qs = list(
         distfromq::make_q_fn(
@@ -49,7 +53,7 @@ linear_pool_quantile <- function(model_out_tbl, weights = NULL,
     dplyr::group_by(dplyr::across(dplyr::all_of(task_id_cols))) |>
     dplyr::summarize(
       output_type_id = list(quantile_levels),
-      value = list(do.call("wtd.quantile", args = agg_args)),
+      value = list(do.call("weighted_quantile", args = agg_args)),
       .groups = "drop"
     ) |>
     tidyr::unnest(cols = tidyselect::all_of(c("output_type_id", "value"))) |>

@@ -1,10 +1,5 @@
 ---
-title: "The `hubEnsembles` package"
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{The `hubEnsembles` package}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+title: "hubEnsembles"
 ---
 
 ```{r, include = FALSE}
@@ -302,4 +297,3 @@ linear_pool_cauchy <- hubExamples::forecast_outputs |>
     tail_dist = "cauchy"
   )
 ```
-
