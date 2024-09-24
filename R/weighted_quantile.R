@@ -10,7 +10,7 @@
 #'
 #' @return a vector of weighted quantile values for the requested quantile levels
 
-weighted_quantile <- function(x, weights, normalize = TRUE, probs) {
+weighted_quantile <- function(x, weights = NULL, normalize = TRUE, probs = c(0, .25, .5, .75, 1)) {
   if (!is.numeric(x)) cli::cli_abort("{.arg x} must be numeric.")
 
   if (is.null(weights)) {
