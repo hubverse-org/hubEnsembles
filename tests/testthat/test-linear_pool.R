@@ -1,6 +1,5 @@
 test_that("(#128) linear pool will group by output_type", {
   skip_if_not_installed("hubExamples")
-  requireNamespace("hubExamples", quietly = TRUE)
   forecast <- hubExamples::forecast_outputs
   forecast <- forecast[!forecast$output_type %in% c("median", "sample"), ]
   expect_no_error({
