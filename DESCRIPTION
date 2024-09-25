@@ -46,7 +46,9 @@ Suggests:
 Additional_repositories: https://hubverse-org.r-universe.dev/
 Remotes:
     hubverse-org/hubExamples,
-    hubverse-org/hubVis
+    hubverse-org/hubUtils,
+    hubverse-org/hubVis,
+    reichlab/distfromq
 Config/Needs/website: hubverse-org/hubStyle
 Config/testthat/edition: 3
 Encoding: UTF-8

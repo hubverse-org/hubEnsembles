@@ -2,7 +2,6 @@
 
 * Update README to point to hubverse R-universe
 * Submission to CRAN
-* Remove unnecessary remotes for packages that have been added to CRAN
 
 # hubEnsembles 0.1.7
 
