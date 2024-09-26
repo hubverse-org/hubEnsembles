@@ -1,3 +1,8 @@
+# hubEnsembles 0.1.8
+
+* Update README to point to hubverse R-universe
+* Submission to CRAN
+
 # hubEnsembles 0.1.7
 
 * Make `hubEnsembles.Rmd` an article

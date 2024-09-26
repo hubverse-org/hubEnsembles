@@ -8,7 +8,8 @@
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![R-CMD-check](https://github.com/hubverse-org/hubEnsembles/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/hubverse-org/hubEnsembles/actions/workflows/R-CMD-check.yaml)
-
+[![CRAN
+status](https://www.r-pkg.org/badges/version/hubEnsembles)](https://CRAN.R-project.org/package=hubEnsembles)
 <!-- badges: end -->
 
 The goal of hubEnsembles is to provide standard implementations of
@@ -22,11 +23,11 @@ class](https://hubverse-org.github.io/hubUtils/reference/as_model_out_tbl.html).
 
 ### Latest
 
-You can install the [latest version of hubEnsembles from the
-R-universe](https://hubverse-org.r-universe.dev/hubEnsembles):
+You can install the released version of `hubEnsembles` from
+[CRAN](https://CRAN.R-project.org) with:
 
 ``` r
-install.packages("hubEnsembles", repos = c("https://hubverse-org.r-universe.dev", "https://cloud.r-project.org"))
+install.packages("hubEnsembles")
 ```
 
 ### Development

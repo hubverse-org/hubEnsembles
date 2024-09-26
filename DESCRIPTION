@@ -1,6 +1,6 @@
 Package: hubEnsembles
 Title: Ensemble Methods for Combining Hub Model Outputs
-Version: 0.1.7
+Version: 0.1.8
 Authors@R: c(
     person(given = "Evan L", family = "Ray", email = "elray@umass.edu", role = "aut"),
     person(given = "Li", family = "Shandross", email = "lshandross@umass.edu", role = c("aut", "cre"),
@@ -12,7 +12,8 @@ Authors@R: c(
     person(given = "Zhian N.", family = "Kamvar", email = "zkamvar@gmail.com", role = "ctb",
            comment = c(ORCID = "0000-0003-1458-7108")),
     person(given = "Nicholas G.", family = "Reich", email = "nick@umass.edu", role = "ctb",
-           comment = c(ORCID = "0000-0003-3503-9899"))
+           comment = c(ORCID = "0000-0003-3503-9899")),
+    person("Consortium of Infectious Disease Modeling Hubs", role = "cph")
   )
 Description: Functions for combining model outputs (e.g. predictions or
     estimates) from multiple models into an aggregated ensemble model

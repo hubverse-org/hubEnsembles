@@ -18,3 +18,4 @@
 ^data-raw$
 ^revdep$
 ^vignettes/articles$
+^CRAN-SUBMISSION$
