@@ -94,7 +94,7 @@ simple_ensemble <- function(model_out_tbl, weights = NULL,
   }
 
   # don't interpolate when calling `matrixStats::weightedMedian`
-  if (isTRUE(all.equal(agg_fun, matrixStats::weightedMedian))) {
+  if (identical(agg_fun, matrixStats::weightedMedian)) {
     agg_args <- c(agg_args, list(interpolate = FALSE))
   }
 
