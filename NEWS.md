@@ -1,5 +1,7 @@
 # hubEnsembles (development version)
 
+* Fix bug in `simple_ensemble()` where `all.equal()` was sometimes throwing an error (#134)
+
 # hubEnsembles 0.1.8
 
 * Update README to point to hubverse R-universe

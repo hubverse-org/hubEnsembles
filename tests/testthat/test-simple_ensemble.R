@@ -281,3 +281,17 @@ test_that("duplicate forecast values still result in correct weighted median", {
 
   expect_equal(weighted_median_expected, weighted_median_actual)
 })
+
+test_that("simple_ensemble accepts custom functions without error", {
+  geometric_mean <- function(x) {
+    n <- length(x)
+    return(prod(x)^(1 / n))
+  }
+
+  model_outputs |>
+    hubEnsembles::simple_ensemble(
+      agg_fun = geometric_mean,
+      model_id = "simple-ensemble-geometric"
+    ) |>
+    expect_no_error()
+})
