@@ -1,4 +1,4 @@
-# hubEnsembles (development version)
+# hubEnsembles 0.1.9
 
 * Fix bug in `simple_ensemble()` where `all.equal()` was sometimes throwing an error (#134)
 
