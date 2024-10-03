@@ -1,59 +1,59 @@
-# hubEnsembles (development version)
+# hubEnsembles 0.1.9
 
-* Fix bug in `simple_ensemble()` where `all.equal()` was sometimes throwing an error (#134)
+* `simple_ensemble()` now uses `identical()` to avoid triggering an `all.equal.environment()` error. This error would sometimes occur when providing the `agg_fun` argument with a custom function. (#134)
 
 # hubEnsembles 0.1.8
 
-* Update README to point to hubverse R-universe
-* Submission to CRAN
+* README now points to hubverse R-universe
+* Package submission to CRAN
 
 # hubEnsembles 0.1.7
 
-* Make `hubEnsembles.Rmd` an article
-* Rewrite `linear_pool_quantile()` to not use `Hmisc-utils` functions
-* Fix bug in `linear_pool()` where the pools were not being properly split (#128)
-* Fix warnings from dplyr about usage of `all_of()`
+* `hubEnsembles.Rmd` vignette is now an article
+* `linear_pool()` now properly splits its pools (#128)
+* `linear_pool_quantile()` uses internal package functions only, not `Hmisc-utils` functions
+* Functions using `all_of()` are updated to avoid throwing dplyr warnings
 
 # hubEnsembles 0.1.6
 
-* Fix bug in `simple_ensemble()` that produces invalid distributions for certain weighted medians (#122)
-* Replace magrittr pipe (`%>%`) with base R 4.1 pipe (`|>`)
-* Simplify examples
+* Base R 4.1 pipe (`|>`) is used in place of magrittr pipe (`%>%`)
+* Function examples are simplified
+* `simple_ensemble()` now produces valid distributions for all weighted medians (#122)
 
 # hubEnsembles 0.1.5
 
-* Check that weights don't depend on output type ID for PMF and CDF forecasts (#35)
+* Validate that `weights` argument doesn't contain weights dependent on output type ID for PMF and CDF forecasts (#35)
 
 # hubEnsembles 0.1.4
 
-* Replace superseded `map_dfr()` call
-* Replace usage of superseded ".data$"
+* Functions now use `map()` and `list_rbind()` in conjunction to avoid superseded warnings from purrr (#117)
+* Functions now use double quotes or `.data[[]]` as appropriate within dplyr functions to avoid warnings (#117)
 
 # hubEnsembles 0.1.3
 
-* Change organization name to "hubverse-org" (#115)
+* Organization name has been changed to "hubverse-org" (#115)
 
 # hubEnsembles 0.1.2
 
-* Updated vignette (#29, #113)
-* Remove out-of-date example data (#113)
-* Remove Hmisc dependency (#55)
+* `hubEnsembles.Rmd` vignette now better reflects package capabilities (#29, #113)
+* Example data that is out of date has been removed (#113)
+* Hmisc dependency has been removed (#55)
 
 # hubEnsembles 0.1.1
 
-* Bumped hubUtils to 0.0.1 or higher, which has been split into hubUtils and hubData (#98)
-* Bumped Roxygen to 7.3.1
-* Add lint workflow (#96, #98)
-* Upgrade GitHub workflows (#96, #98)
+* hubUtils dependency has been bumped to 0.0.1 or higher, after its split into hubUtils and hubData (#98)
+* Roxygen is bumped to 7.3.1
+* Lint workflow have been added (#96, #98)
+* GitHub workflows have been upgraded (#96, #98)
 
 # hubEnsembles 0.1.0
 
-* Add example data (#95)
-* Upgrades package docs to hubStyle theme (#93)
+* Example data has been added (#95)
+* Package docs are upgraded to hubStyle theme (#93)
 
 # hubEnsembles 0.0.9001
 
-* Fix handling of quantile output type in `linear_pool_quantile()` internal helper (#69)
+* `linear_pool_quantile()` now coerces quantile levels to numeric to prevent distfromq errors (#58, #63)
 
 # hubEnsembles 0.0.9000
 
