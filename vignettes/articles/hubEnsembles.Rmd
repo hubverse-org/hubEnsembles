@@ -131,7 +131,7 @@ target_data_plot <- hubExamples::forecast_target_ts |>
   )
 
 hubVis::plot_step_ahead_model_output(
-  model_output_data = model_out_plot,
+  model_out_tbl = model_out_plot,
   target_data = target_data_plot,
   use_median_as_point = TRUE,
   interactive = FALSE,
@@ -235,7 +235,7 @@ target_data_plot <- hubExamples::forecast_target_ts |>
 # Generate plot of incidence forecasts 0-3 week horizons
 p2 <-
   hubVis::plot_step_ahead_model_output(
-    model_output_data = model_output_plot,
+    model_out_tbl = model_output_plot,
     target_data = target_data_plot,
     use_median_as_point = TRUE,
     interactive = FALSE,
