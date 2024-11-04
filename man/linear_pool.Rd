@@ -5,7 +5,7 @@
 \title{Compute ensemble model outputs as a linear pool, otherwise known as a
 distributional mixture, of component model outputs for
 each combination of model task, output type, and output type id. Supported
-output types include \code{mean}, \code{quantile}, \code{cdf}, and \code{pmf}.}
+output types include \code{mean}, \code{quantile}, \code{cdf}, \code{pmf}, and sample.}
 \usage{
 linear_pool(
   model_out_tbl,
@@ -14,6 +14,8 @@ linear_pool(
   model_id = "hub-ensemble",
   task_id_cols = NULL,
   n_samples = 10000,
+  output_samples = NULL,
+  numeric_output_type_ids = NULL,
   ...
 )
 }
@@ -42,6 +44,15 @@ case all columns in \code{model_out_tbl} other than \code{"model_id"}, \code{"ou
 \item{n_samples}{\code{numeric} that specifies the number of samples to use when
 calculating quantiles from an estimated quantile function. Defaults to \code{1e4}.}
 
+\item{output_samples}{\code{numeric} that specifies how many sample forecasts to
+return per unique combination of task IDs. Defaults to NULL, in which case
+all provided component model samples are collected and returned.}
+
+\item{numeric_output_type_ids}{\code{logical} specifying whether the output type ID
+columns should be numeric. If FALSE, the output type ID column will be coerced
+to character. Defaults to NULL, in which case whether the output type ID column
+is numeric will be automatically detected. Used only for the sample output type.}
+
 \item{...}{parameters that are passed to \code{distfromq::make_q_fn}, specifying
 details of how to estimate a quantile function from provided quantile levels
 and quantile values for \code{output_type} \code{"quantile"}.}
@@ -54,7 +65,7 @@ additional columns in the input \code{model_out_tbl} are dropped.
 Compute ensemble model outputs as a linear pool, otherwise known as a
 distributional mixture, of component model outputs for
 each combination of model task, output type, and output type id. Supported
-output types include \code{mean}, \code{quantile}, \code{cdf}, and \code{pmf}.
+output types include \code{mean}, \code{quantile}, \code{cdf}, \code{pmf}, and sample.
 }
 \details{
 The underlying mechanism for the computations varies for different
@@ -78,6 +89,11 @@ quantiles.
 }
 
 Steps 1 and 2 in this process are performed by \code{distfromq::make_q_fn}.
+
+When the \code{output_type} is \code{sample}, we collect the sample forecasts from the
+component models and sample the appropriate number of forecasts (unique
+combinations of task ID values, and output type IDs in this case) from each
+component model to return the specified number of \code{output_samples}.
 }
 \examples{
 # We illustrate the calculation of a linear pool when we have quantiles from the

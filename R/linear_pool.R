@@ -1,7 +1,7 @@
 #' Compute ensemble model outputs as a linear pool, otherwise known as a
 #' distributional mixture, of component model outputs for
 #' each combination of model task, output type, and output type id. Supported
-#' output types include `mean`, `quantile`, `cdf`, and `pmf`.
+#' output types include `mean`, `quantile`, `cdf`, `pmf`, and sample.
 #'
 #' @inheritParams simple_ensemble
 #' @param n_samples `numeric` that specifies the number of samples to use when
@@ -9,6 +9,14 @@
 #' @param ... parameters that are passed to `distfromq::make_q_fn`, specifying
 #'   details of how to estimate a quantile function from provided quantile levels
 #'   and quantile values for `output_type` `"quantile"`.
+#' @param output_samples `numeric` that specifies how many sample forecasts to
+#'   return per unique combination of task IDs. Defaults to NULL, in which case
+#'   all provided component model samples are collected and returned.
+#' @param numeric_output_type_ids `logical` specifying whether the output type ID
+#'   columns should be numeric. If FALSE, the output type ID column will be coerced
+#'   to character. Defaults to NULL, in which case whether the output type ID column
+#'   is numeric will be automatically detected. Used only for the sample output type.
+#'
 #' @details The underlying mechanism for the computations varies for different
 #'   `output_type`s. When the `output_type` is `cdf`, `pmf`, or `mean`, this
 #'   function simply calls `simple_ensemble` to calculate a (weighted) mean of the
@@ -28,6 +36,11 @@
 #'      quantiles.
 #'
 #' Steps 1 and 2 in this process are performed by `distfromq::make_q_fn`.
+#'
+#' When the `output_type` is `sample`, we collect the sample forecasts from the
+#' component models and sample the appropriate number of forecasts (unique
+#' combinations of task ID values, and output type IDs in this case) from each
+#' component model to return the specified number of `output_samples`.
 #'
 #' @return a `model_out_tbl` object of ensemble predictions. Note that any
 #'   additional columns in the input `model_out_tbl` are dropped.
@@ -54,10 +67,12 @@ linear_pool <- function(model_out_tbl, weights = NULL,
                         model_id = "hub-ensemble",
                         task_id_cols = NULL,
                         n_samples = 1e4,
+                        output_samples = NULL,
+                        numeric_output_type_ids = NULL,
                         ...) {
 
   # validate_ensemble_inputs
-  valid_types <- c("mean", "quantile", "cdf", "pmf")
+  valid_types <- c("mean", "quantile", "cdf", "pmf", "sample")
   validated_inputs <- model_out_tbl |>
     validate_ensemble_inputs(weights = weights,
                              weights_col_name = weights_col_name,
@@ -88,6 +103,13 @@ linear_pool <- function(model_out_tbl, weights = NULL,
                              n_samples = n_samples,
                              task_id_cols = task_id_cols_validated,
                              ...)
+      } else if (type == "sample") {
+        linear_pool_sample(split_outputs, weights = weights_validated,
+                           weights_col_name = weights_col_name,
+                           model_id = model_id,
+                           task_id_cols = task_id_cols_validated,
+                           output_samples = output_samples,
+                           numeric_output_type_ids)
       }
     }) |>
     purrr::list_rbind() |>
