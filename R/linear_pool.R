@@ -1,7 +1,7 @@
 #' Compute ensemble model outputs as a linear pool, otherwise known as a
 #' distributional mixture, of component model outputs for
 #' each combination of model task, output type, and output type id. Supported
-#' output types include `mean`, `quantile`, `cdf`, `pmf`, and sample.
+#' output types include `mean`, `quantile`, `cdf`, `pmf`, and `sample`.
 #'
 #' @inheritParams simple_ensemble
 #' @param n_samples `numeric` that specifies the number of samples to use when
@@ -37,10 +37,9 @@
 #'
 #' Steps 1 and 2 in this process are performed by `distfromq::make_q_fn`.
 #'
-#' When the `output_type` is `sample`, we collect the sample forecasts from the
-#' component models and sample the appropriate number of forecasts (unique
-#' combinations of task ID values, and output type IDs in this case) from each
-#' component model to return the specified number of `output_samples`.
+#' When the `output_type` is `sample`, we randomly select a subset of the sample
+#' forecasts from each of the component models so that the ensemble has the
+#' specified number of `output_samples`.
 #'
 #' @return a `model_out_tbl` object of ensemble predictions. Note that any
 #'   additional columns in the input `model_out_tbl` are dropped.

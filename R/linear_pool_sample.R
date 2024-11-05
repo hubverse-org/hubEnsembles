@@ -20,7 +20,8 @@
 #'
 #' @return a `model_out_tbl` object of ensemble predictions for the `sample`
 #' output type. Note that the output type ID values will not match those of the
-#' input model_out_tbl but do preserve relationships across unique task ID combos
+#' input model_out_tbl but do preserve relationships across combinations of
+#' task ID variables.
 #'
 #' @importFrom rlang .data
 linear_pool_sample <- function(model_out_tbl, weights = NULL,
