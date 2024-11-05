@@ -94,7 +94,7 @@ make_sample_indices_unique <- function(model_out_tbl) {
 #'   model outputs (e.g., predictions).
 #' @param weights an optional `data.frame` with component model weights. If
 #'   provided, it should have a column named `model_id` and a column containing
-#'   model weights. The default is `NULL`, in which case an equally-weighted 
+#'   model weights. The default is `NULL`, in which case an equally-weighted
 #'   ensemble is calculated. Should be prevalidated.
 #' @param weights_col_name `character` string naming the column in `weights`
 #'   with model weights. Defaults to `"weight"`
@@ -136,14 +136,7 @@ subset_samples_stratified <- function(model_out_tbl, weights = NULL,
     dplyr::mutate(target_n_component_samples = floor(.data[[weights_col_name]] * n_output_samples))
   remainder_samples <- n_output_samples - sum(samples_per_model$target_n_component_samples)
   remainder_model_indices <- sample(x = 1:num_models, size = remainder_samples)
-  samples_per_model <- samples_per_model |>
-    tibble::rownames_to_column(var = "row_num") |>
-    dplyr::mutate(target_n_component_samples = ifelse(
-      .data[["row_num"]] %in% remainder_model_indices,
-      .data[["target_n_component_samples"]] + 1,
-      .data[["target_n_component_samples"]]
-    )) |>
-    dplyr::select(-"row_num")
+  samples_per_model$target_n_component_samples[remainder_model_indices] + 1
 
   if (!length(unique(samples_per_model$provided_n_component_samples)) != 1 && is.null(n_output_samples)) {
     cli::cli_abort("Component model provided differing numbers of samples within at least one forecast task id group,
