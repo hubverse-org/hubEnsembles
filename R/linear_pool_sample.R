@@ -94,10 +94,8 @@ make_sample_indices_unique <- function(model_out_tbl) {
 #'   model outputs (e.g., predictions).
 #' @param weights an optional `data.frame` with component model weights. If
 #'   provided, it should have a column named `model_id` and a column containing
-#'   model weights. Optionally, it may contain additional columns corresponding
-#'   to task id variables, `output_type`, or `output_type_id`, if weights are
-#'   specific to values of those variables. The default is `NULL`, in which case
-#'   an equally-weighted ensemble is calculated. Should be prevalidated.
+#'   model weights. The default is `NULL`, in which case an equally-weighted 
+#'   ensemble is calculated. Should be prevalidated.
 #' @param weights_col_name `character` string naming the column in `weights`
 #'   with model weights. Defaults to `"weight"`
 #' @param task_id_cols `character` vector with names of columns in

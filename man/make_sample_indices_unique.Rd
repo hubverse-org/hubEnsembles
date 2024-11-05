@@ -5,15 +5,11 @@
 \title{Make the output type ID values of sample forecasts unique for the same
 combination of task IDs but different models}
 \usage{
-make_sample_indices_unique(model_out_tbl, numeric_output_type_ids = FALSE)
+make_sample_indices_unique(model_out_tbl)
 }
 \arguments{
 \item{model_out_tbl}{an object of class \code{model_out_tbl} with component
 model outputs (e.g., predictions).}
-
-\item{numeric_output_type_ids}{\code{logical} specifying whether the output type ID
-columns should be numeric. See details for how this changes the generated
-output type ID values. Defaults to FALSE.}
 }
 \value{
 a model_out_tbl object with unique output type ID values for different
@@ -24,7 +20,8 @@ Make the output type ID values of sample forecasts unique for the same
 combination of task IDs but different models
 }
 \details{
-The new output type ID values will follow one of two patterns:
+The new \code{output_type_id} column values will follow one of two patterns,
+depending on whether the column is detected to be numeric:
 \enumerate{
 \item If the output type ID is not numeric (may be a character):
 A concatenation of the prediction's model ID and original output type ID
