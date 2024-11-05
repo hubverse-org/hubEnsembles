@@ -12,10 +12,6 @@
 #' @param output_samples `numeric` that specifies how many sample forecasts to
 #'   return per unique combination of task IDs. Defaults to NULL, in which case
 #'   all provided component model samples are collected and returned.
-#' @param numeric_output_type_ids `logical` specifying whether the output type ID
-#'   columns should be numeric. If FALSE, the output type ID column will be coerced
-#'   to character. Defaults to NULL, in which case whether the output type ID column
-#'   is numeric will be automatically detected. Used only for the sample output type.
 #'
 #' @details The underlying mechanism for the computations varies for different
 #'   `output_type`s. When the `output_type` is `cdf`, `pmf`, or `mean`, this
@@ -67,7 +63,6 @@ linear_pool <- function(model_out_tbl, weights = NULL,
                         task_id_cols = NULL,
                         n_samples = 1e4,
                         output_samples = NULL,
-                        numeric_output_type_ids = NULL,
                         ...) {
 
   # validate_ensemble_inputs
@@ -107,8 +102,7 @@ linear_pool <- function(model_out_tbl, weights = NULL,
                            weights_col_name = weights_col_name,
                            model_id = model_id,
                            task_id_cols = task_id_cols_validated,
-                           output_samples = output_samples,
-                           numeric_output_type_ids)
+                           output_samples = output_samples)
       }
     }) |>
     purrr::list_rbind() |>
