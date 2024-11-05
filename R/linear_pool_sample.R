@@ -34,7 +34,7 @@ linear_pool_sample <- function(model_out_tbl, weights = NULL,
   }
 
   if (!is.null(weights) && is.null(output_samples)) {
-    cli::cli_abort("Component model weights were provided,
+    cli::cli_abort("Component model weights output samples provided,
                    so a number of ensemble samples {.arg output_samples} must be provided")
   }
 
@@ -42,75 +42,12 @@ linear_pool_sample <- function(model_out_tbl, weights = NULL,
     cli::cli_abort("Currently weights for different task IDs are not supported for the sample output type.")
   }
 
-  if (is.null(numeric_output_type_ids)) {
-    numeric_output_type_ids <- ifelse(is.numeric(model_out_tbl), TRUE, FALSE)
-  } else if (!is.logical(numeric_output_type_ids) && length(numeric_output_type_ids) != 1) {
-    cli::cli_abort("{.arg numeric_output_type_ids} must be {.val NULL} or a logical")
-  }
-
   if (!is.null(output_samples)) {
-    num_models <- length(unique(model_out_tbl$model_id))
-    samples_per_model <- model_out_tbl |>
-      dplyr::group_by(dplyr::across(dplyr::all_of(c("model_id", task_id_cols)))) |>
-      dplyr::summarize(provided_n_component_samples = dplyr::n()) |>
-      dplyr::ungroup() |>
-      dplyr::select("model_id", "provided_n_component_samples") |>
-      dplyr::distinct(.keep_all = TRUE) # assumes same number per task ID combo
-    if (is.null(weights)) {
-      weights <- samples_per_model |>
-        dplyr::mutate(weight = 1 / num_models) |>
-        dplyr::select("model_id", "weight")
-      weights_col_name <- "weight"
-    }
-    samples_per_model <- samples_per_model |>
-      dplyr::left_join(weights, by = "model_id") |>
-      dplyr::mutate(target_n_component_samples = floor(.data[[weights_col_name]] * output_samples))
-    remainder_samples <- output_samples - sum(samples_per_model$target_n_component_samples)
-    remainder_model_indices <- sample(x = 1:num_models, size = remainder_samples)
-    samples_per_model <- samples_per_model |>
-      tibble::rownames_to_column(var = "row_num") |>
-      dplyr::mutate(target_n_component_samples = ifelse(
-        .data[["row_num"]] %in% remainder_model_indices,
-        .data[["target_n_component_samples"]] + 1,
-        .data[["target_n_component_samples"]]
-      )) |>
-      dplyr::select(-"row_num")
-
-    if (!length(unique(samples_per_model$provided_n_component_samples)) != 1 && is.null(output_samples)) {
-      cli::cli_abort("Component model provided differing numbers of samples within at least one forecast task id group,
-                     so a number of ensemble samples {.arg output_samples} must be provided")
-    }
-
-    split_models <- model_out_tbl |>
-      dplyr::mutate(output_type_id = as.character(.data[["output_type_id"]])) |>
-      split(f = model_out_tbl$model_id)
-    model_out_tbl <- split_models |>
-      purrr::map(.f = function(split_outputs) {
-        current_model <- split_outputs$model_id[1]
-        provided_samples <- samples_per_model$provided_n_component_samples[samples_per_model$model_id == current_model]
-        target_samples <- samples_per_model$target_n_component_samples[samples_per_model$model_id == current_model]
-        provided_indices <- unique(split_outputs$output_type_id)
-        if (target_samples > provided_samples) {
-          # replicate the rows with those generated indices
-          duplications <- floor(target_samples / provided_samples) # always >= 1
-          duplicated_outputs <- dplyr::filter(split_outputs, .data[["output_type"]] != "sample")
-          for (i in 1:duplications) { # indices maintained across task id combos
-            duplicated_outputs <- split_outputs |>
-              dplyr::mutate(output_type_id = paste0(.data[["output_type_id"]], i)) |>
-              dplyr::bind_rows(duplicated_outputs)
-          }
-          # sample for the remaining values' indices
-          sample_index <- sample(x = provided_indices, size = target_samples %% provided_samples, replace = FALSE)
-          remainder_outputs <- split_outputs |>
-            dplyr::filter(.data[["output_type_id"]] %in% sample_index)
-          split_outputs <- dplyr::bind_rows(duplicated_outputs, remainder_outputs)
-        } else {
-          sample_index <- sample(x = provided_indices, size = target_samples, replace = FALSE)
-          split_outputs <- split_outputs |>
-            dplyr::filter(.data[["output_type_id"]] %in% sample_index)
-        }
-      }) |>
-      purrr::list_rbind()
+    model_out_tbl <- model_out_tbl |>
+      subset_samples_stratified(weights = weights,
+                                weights_col_name = weights_col_name,
+                                task_id_cols = task_id_cols,
+                                output_samples = output_samples)
   }
 
   model_out_tbl |>
@@ -138,6 +75,12 @@ linear_pool_sample <- function(model_out_tbl, weights = NULL,
 #' @return a model_out_tbl object with unique output type ID values for different
 #'   models but otherwise identical to the input model_out_tbl.
 make_sample_indices_unique <- function(model_out_tbl, numeric_output_type_ids = FALSE) {
+  if (is.null(numeric_output_type_ids)) {
+    numeric_output_type_ids <- ifelse(is.numeric(model_out_tbl), TRUE, FALSE)
+  } else if (!is.logical(numeric_output_type_ids) && length(numeric_output_type_ids) != 1) {
+    cli::cli_abort("{.arg numeric_output_type_ids} must be {.val NULL} or a logical")
+  }
+
   if (!identical(unique(model_out_tbl$output_type), "sample")) {
     cli::cli_abort("{.arg model_out_tbl} should only contain the sample output type")
   }
@@ -151,4 +94,101 @@ make_sample_indices_unique <- function(model_out_tbl, numeric_output_type_ids = 
   } else {
     new_indices_outputs
   }
+}
+
+
+#' Helper function for subsetting model outputs of the sample type by taking a
+#' stratified sample across models
+#'
+#' @param model_out_tbl an object of class `model_out_tbl` with component
+#'   model outputs (e.g., predictions).
+#' @param weights an optional `data.frame` with component model weights. If
+#'   provided, it should have a column named `model_id` and a column containing
+#'   model weights. Optionally, it may contain additional columns corresponding
+#'   to task id variables, `output_type`, or `output_type_id`, if weights are
+#'   specific to values of those variables. The default is `NULL`, in which case
+#'   an equally-weighted ensemble is calculated. Should be prevalidated.
+#' @param weights_col_name `character` string naming the column in `weights`
+#'   with model weights. Defaults to `"weight"`
+#' @param task_id_cols `character` vector with names of columns in
+#'   `model_out_tbl` that specify modeling tasks.
+#' @param output_samples `numeric` that specifies how many sample forecasts to
+#'   return per unique combination of task IDs.
+#'
+#' @noRd
+#'
+#' @return a `model_out_tbl` object of ensemble predictions for the `sample`
+#' output type. Note that the output type ID values will not match those of the
+#' input model_out_tbl but do preserve relationships across unique task ID combos
+#'
+#' @importFrom rlang .data
+subset_samples_stratified <- function(model_out_tbl, weights = NULL,
+                                      weights_col_name = "weight",
+                                      task_id_cols,
+                                      output_samples) {
+  num_models <- length(unique(model_out_tbl$model_id))
+  samples_per_model <- model_out_tbl |>
+    dplyr::group_by(dplyr::across(dplyr::all_of(c("model_id", task_id_cols)))) |>
+    dplyr::summarize(provided_n_component_samples = dplyr::n()) |>
+    dplyr::ungroup() |>
+    dplyr::select("model_id", "provided_n_component_samples") |>
+    dplyr::distinct(.keep_all = TRUE) # assumes same number per task ID combo
+
+  if (is.null(weights)) {
+    weights <- samples_per_model |>
+      dplyr::mutate(weight = 1 / num_models) |>
+      dplyr::select("model_id", "weight")
+    weights_col_name <- "weight"
+  }
+
+  samples_per_model <- samples_per_model |>
+    dplyr::left_join(weights, by = "model_id") |>
+    dplyr::mutate(target_n_component_samples = floor(.data[[weights_col_name]] * output_samples))
+  remainder_samples <- output_samples - sum(samples_per_model$target_n_component_samples)
+  remainder_model_indices <- sample(x = 1:num_models, size = remainder_samples)
+  samples_per_model <- samples_per_model |>
+    tibble::rownames_to_column(var = "row_num") |>
+    dplyr::mutate(target_n_component_samples = ifelse(
+      .data[["row_num"]] %in% remainder_model_indices,
+      .data[["target_n_component_samples"]] + 1,
+      .data[["target_n_component_samples"]]
+    )) |>
+    dplyr::select(-"row_num")
+
+  if (!length(unique(samples_per_model$provided_n_component_samples)) != 1 && is.null(output_samples)) {
+    cli::cli_abort("Component model provided differing numbers of samples within at least one forecast task id group,
+                   so a number of ensemble samples {.arg output_samples} must be provided")
+  }
+
+  # iterate over component models and sample as requested
+  split_models <- model_out_tbl |>
+    dplyr::mutate(output_type_id = as.character(.data[["output_type_id"]])) |>
+    split(f = model_out_tbl$model_id)
+  model_out_tbl <- split_models |>
+    purrr::map(.f = function(split_outputs) {
+      current_model <- split_outputs$model_id[1]
+      provided_samples <- samples_per_model$provided_n_component_samples[samples_per_model$model_id == current_model]
+      target_samples <- samples_per_model$target_n_component_samples[samples_per_model$model_id == current_model]
+      provided_indices <- unique(split_outputs$output_type_id)
+      if (target_samples > provided_samples) {
+        # replicate the rows with those generated indices
+        duplications <- floor(target_samples / provided_samples) # always >= 1
+        duplicated_outputs <- dplyr::filter(split_outputs, .data[["output_type"]] != "sample")
+        for (i in 1:duplications) { # indices maintained across task id combos
+          duplicated_outputs <- split_outputs |>
+            dplyr::mutate(output_type_id = paste0(.data[["output_type_id"]], i)) |>
+            dplyr::bind_rows(duplicated_outputs)
+        }
+        # sample for the remaining values' indices
+        sample_index <- sample(x = provided_indices, size = target_samples %% provided_samples, replace = FALSE)
+        remainder_outputs <- split_outputs |>
+          dplyr::filter(.data[["output_type_id"]] %in% sample_index)
+        split_outputs <- dplyr::bind_rows(duplicated_outputs, remainder_outputs)
+      } else {
+        sample_index <- sample(x = provided_indices, size = target_samples, replace = FALSE)
+        split_outputs <- split_outputs |>
+          dplyr::filter(.data[["output_type_id"]] %in% sample_index)
+      }
+    }) |>
+    purrr::list_rbind()
 }
