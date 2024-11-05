@@ -123,9 +123,11 @@ subset_samples_stratified <- function(model_out_tbl, weights = NULL,
     dplyr::distinct(.keep_all = TRUE) # assumes same number per task ID combo
 
   if (is.null(weights)) {
-    weights <- samples_per_model |>
-      dplyr::mutate(weight = 1 / num_models) |>
-      dplyr::select("model_id", "weight")
+    weights <- data.frame(
+      model_id = unique(model_out_tbl$model_id),
+      weight = 1 / num_models,
+      stringsAsFactors = FALSE
+    )
     weights_col_name <- "weight"
   }
 
