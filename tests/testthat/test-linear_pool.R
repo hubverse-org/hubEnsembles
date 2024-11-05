@@ -453,7 +453,7 @@ test_that("samples only collected and re-indexed for simplest case", {
     linear_pool(
       weights = NULL,
       task_id_cols = c("target_date", "target", "horizon", "location"),
-      output_samples = NULL
+      n_output_samples = NULL
     )
 
   expect_equal(actual_outputs, expected_outputs)
@@ -512,7 +512,7 @@ test_that("ensemble of samples is correctly calculated for more complex cases", 
     linear_pool(
       weights = fweight,
       task_id_cols = c("target_date", "target", "horizon", "location"),
-      output_samples = 20
+      n_output_samples = 20
     ) |>
     dplyr::arrange(.data[["output_type_id"]])
 

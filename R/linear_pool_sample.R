@@ -3,7 +3,7 @@
 #' output type.
 #'
 #' @inheritParams linear_pool
-#' @param output_samples `numeric` that specifies how many sample forecasts to
+#' @param n_output_samples `numeric` that specifies how many sample forecasts to
 #'   return per unique combination of task IDs. Defaults to NULL, in which case
 #'   all provided component model samples are collected and returned.
 #'
@@ -24,26 +24,26 @@ linear_pool_sample <- function(model_out_tbl, weights = NULL,
                                weights_col_name = "weight",
                                model_id = "hub-ensemble",
                                task_id_cols = NULL,
-                               output_samples = NULL) {
-  if (!is.null(output_samples) && !is.numeric(output_samples) && trunc(output_samples) != output_samples) {
-    cli::cli_abort("{.arg output_samples} must be {.val NULL} or coerceable to an integer")
+                               n_output_samples = NULL) {
+  if (!is.null(n_output_samples) && !is.numeric(n_output_samples) && trunc(n_output_samples) != n_output_samples) {
+    cli::cli_abort("{.arg n_output_samples} must be {.val NULL} or coerceable to an integer")
   }
 
-  if (!is.null(weights) && is.null(output_samples)) {
+  if (!is.null(weights) && is.null(n_output_samples)) {
     cli::cli_abort("Component model weights output samples provided,
-                   so a number of ensemble samples {.arg output_samples} must be provided")
+                   so a number of ensemble samples {.arg n_output_samples} must be provided")
   }
 
   if (!is.null(weights) && !all(colnames(weights) %in% c("model_id", weights_col_name))) {
     cli::cli_abort("Currently weights for different task IDs are not supported for the sample output type.")
   }
 
-  if (!is.null(output_samples)) {
+  if (!is.null(n_output_samples)) {
     model_out_tbl <- model_out_tbl |>
       subset_samples_stratified(weights = weights,
                                 weights_col_name = weights_col_name,
                                 task_id_cols = task_id_cols,
-                                output_samples = output_samples)
+                                n_output_samples = n_output_samples)
   }
 
   model_out_tbl |>
@@ -102,7 +102,7 @@ make_sample_indices_unique <- function(model_out_tbl) {
 #'   with model weights. Defaults to `"weight"`
 #' @param task_id_cols `character` vector with names of columns in
 #'   `model_out_tbl` that specify modeling tasks.
-#' @param output_samples `numeric` that specifies how many sample forecasts to
+#' @param n_output_samples `numeric` that specifies how many sample forecasts to
 #'   return per unique combination of task IDs.
 #'
 #' @noRd
@@ -115,7 +115,7 @@ make_sample_indices_unique <- function(model_out_tbl) {
 subset_samples_stratified <- function(model_out_tbl, weights = NULL,
                                       weights_col_name = "weight",
                                       task_id_cols,
-                                      output_samples) {
+                                      n_output_samples) {
   num_models <- length(unique(model_out_tbl$model_id))
   samples_per_model <- model_out_tbl |>
     dplyr::group_by(dplyr::across(dplyr::all_of(c("model_id", task_id_cols)))) |>
@@ -133,8 +133,8 @@ subset_samples_stratified <- function(model_out_tbl, weights = NULL,
 
   samples_per_model <- samples_per_model |>
     dplyr::left_join(weights, by = "model_id") |>
-    dplyr::mutate(target_n_component_samples = floor(.data[[weights_col_name]] * output_samples))
-  remainder_samples <- output_samples - sum(samples_per_model$target_n_component_samples)
+    dplyr::mutate(target_n_component_samples = floor(.data[[weights_col_name]] * n_output_samples))
+  remainder_samples <- n_output_samples - sum(samples_per_model$target_n_component_samples)
   remainder_model_indices <- sample(x = 1:num_models, size = remainder_samples)
   samples_per_model <- samples_per_model |>
     tibble::rownames_to_column(var = "row_num") |>
@@ -145,9 +145,9 @@ subset_samples_stratified <- function(model_out_tbl, weights = NULL,
     )) |>
     dplyr::select(-"row_num")
 
-  if (!length(unique(samples_per_model$provided_n_component_samples)) != 1 && is.null(output_samples)) {
+  if (!length(unique(samples_per_model$provided_n_component_samples)) != 1 && is.null(n_output_samples)) {
     cli::cli_abort("Component model provided differing numbers of samples within at least one forecast task id group,
-                   so a number of ensemble samples {.arg output_samples} must be provided")
+                   so a number of ensemble samples {.arg n_output_samples} must be provided")
   }
 
   # iterate over component models and sample as requested
