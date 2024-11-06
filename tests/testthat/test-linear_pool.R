@@ -460,7 +460,7 @@ test_that("samples only collected and re-indexed for simplest case", {
 })
 
 
-test_that("ensemble of samples is correctly calculated for more complex cases", {
+test_that("ensemble of samples throws an error for the more complex cases", {
   sample_outputs <- expand.grid(stringsAsFactors = FALSE,
                                 model_id = letters[1:4],
                                 location = c("222", "888"),
@@ -492,29 +492,12 @@ test_that("ensemble of samples is correctly calculated for more complex cases", 
 
   fweight <- data.frame(model_id = letters[1:4], weight = 0.1 * (1:4))
 
-  reindexed_outputs <- sample_outputs |>
-    dplyr::mutate(output_type_id = paste0(.data[["model_id"]], .data[["output_type_id"]]))
-  expected_outputs <- reindexed_outputs |>
-    dplyr::filter(output_type_id %in% c("a2", "a3", "b1", "d1", "d3"))
-  for (i in 1:2) {
-    expected_outputs <- reindexed_outputs |>
-      dplyr::filter(.data[["model_id"]] %in% letters[(i + 1):4]) |>
-      dplyr::mutate(output_type_id = paste0(.data[["output_type_id"]], i)) |>
-      dplyr::bind_rows(expected_outputs)
-  }
-  expected_outputs <- expected_outputs |>
-    dplyr::mutate(model_id = "hub-ensemble") |>
-    dplyr::arrange(.data[["output_type_id"]]) |>
-    hubUtils::as_model_out_tbl()
-
-  set.seed(1234)
-  actual_outputs <- sample_outputs |>
+  sample_outputs |>
     linear_pool(
       weights = fweight,
       task_id_cols = c("target_date", "target", "horizon", "location"),
       n_output_samples = 20
     ) |>
-    dplyr::arrange(.data[["output_type_id"]])
-
-  expect_equal(actual_outputs, expected_outputs)
+    dplyr::arrange(.data[["output_type_id"]]) |>
+    expect_error("The requested ensemble calculation doesn't satisfy all conditions", fixed = TRUE)
 })
