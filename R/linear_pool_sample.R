@@ -79,7 +79,7 @@ linear_pool_sample <- function(model_out_tbl, weights = NULL,
 #' @return a model_out_tbl object with unique output type ID values for different
 #'   models but otherwise identical to the input model_out_tbl.
 make_sample_indices_unique <- function(model_out_tbl) {
-  numeric_output_type_ids <- ifelse(is.numeric(model_out_tbl), TRUE, FALSE)
+  numeric_output_type_ids <- ifelse(is.numeric(model_out_tbl$output_type_id), TRUE, FALSE)
 
   if (!identical(unique(model_out_tbl$output_type), "sample")) {
     cli::cli_abort("{.arg model_out_tbl} should only contain the sample output type")
