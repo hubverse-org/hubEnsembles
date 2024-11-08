@@ -23,7 +23,7 @@ linear_pool_sample <- function(model_out_tbl, weights = NULL,
                                task_id_cols = NULL,
                                n_output_samples = NULL) {
 
-  validate_sample_inputs(weights, weights_col_name, n_output_samples)
+  validate_sample_inputs(model_out_tbl, weights, weights_col_name, n_output_samples)
 
   num_models <- length(unique(model_out_tbl$model_id))
   samples_per_model <- model_out_tbl |>
@@ -78,10 +78,6 @@ linear_pool_sample <- function(model_out_tbl, weights = NULL,
 make_sample_indices_unique <- function(model_out_tbl) {
   numeric_output_type_ids <- is.numeric(model_out_tbl$output_type_id)
 
-  if (!identical(unique(model_out_tbl$output_type), "sample")) {
-    cli::cli_abort("{.arg model_out_tbl} should only contain the sample output type")
-  }
-
   new_indices_outputs <- model_out_tbl |>
     dplyr::mutate(output_type_id = paste0(.data[["model_id"]], .data[["output_type_id"]]))
 
@@ -97,19 +93,28 @@ make_sample_indices_unique <- function(model_out_tbl) {
 #' Perform simple validations on the inputs used to calculate a linear pool
 #' of samples
 #'
+#' @param model_out_tbl an object of class `model_out_tbl` with component
+#'   model outputs (e.g., predictions). May only contain the "sample" output type.
 #' @param weights an optional `data.frame` with component model weights. If
 #'   provided, it should have a column named `model_id` and a column containing
 #'   model weights. Default to `NULL`, which specifies an equally-weighted ensemble
 #' @param weights_col_name `character` string naming the column in `weights`
 #'   with model weights. Defaults to `"weight"`
 #' @param n_output_samples `numeric` that specifies how many sample forecasts to
-#'   return per unique combination of task IDs. Defaults to NULL, in which case
-#'   all provided component model samples are collected and returned.
+#'   return per unique combination of task IDs. Currently the only supported value
+#'   is NULL, in which case all provided component model samples are collected and
+#'   returned.
 #'
 #' @return no return value
 #'
 #' @noRd
-validate_sample_inputs <- function(weights = NULL, weights_col_name = "weight", n_output_samples = NULL) {
+validate_sample_inputs <- function(model_out_tbl, weights = NULL,
+                                   weights_col_name = "weight",
+                                   n_output_samples = NULL) {
+  if (!identical(unique(model_out_tbl$output_type), "sample")) {
+    cli::cli_abort("{.arg model_out_tbl} should only contain the sample output type")
+  }
+
   if (!is.null(n_output_samples) && !is.numeric(n_output_samples) && trunc(n_output_samples) != n_output_samples) {
     cli::cli_abort("{.arg n_output_samples} must be {.val NULL} or an integer value")
   }
