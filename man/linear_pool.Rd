@@ -44,8 +44,9 @@ case all columns in \code{model_out_tbl} other than \code{"model_id"}, \code{"ou
 calculating quantiles from an estimated quantile function. Defaults to \code{1e4}.}
 
 \item{n_output_samples}{\code{numeric} that specifies how many sample forecasts to
-return per unique combination of task IDs. Defaults to NULL, in which case
-all provided component model samples are collected and returned.}
+return per unique combination of task IDs. Currently the only supported value
+is NULL, in which case all provided component model samples are collected and
+returned.}
 
 \item{...}{parameters that are passed to \code{distfromq::make_q_fn}, specifying
 details of how to estimate a quantile function from provided quantile levels
@@ -83,10 +84,6 @@ quantiles.
 }
 
 Steps 1 and 2 in this process are performed by \code{distfromq::make_q_fn}.
-
-When the \code{output_type} is \code{sample}, we randomly select a subset of the sample
-forecasts from each of the component models so that the ensemble has the
-specified number of \code{n_output_samples}.
 }
 \examples{
 # We illustrate the calculation of a linear pool when we have quantiles from the
