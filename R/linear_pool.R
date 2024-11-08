@@ -10,8 +10,9 @@
 #'   details of how to estimate a quantile function from provided quantile levels
 #'   and quantile values for `output_type` `"quantile"`.
 #' @param n_output_samples `numeric` that specifies how many sample forecasts to
-#'   return per unique combination of task IDs. Defaults to NULL, in which case
-#'   all provided component model samples are collected and returned.
+#'   return per unique combination of task IDs. Currently the only supported value
+#'   is NULL, in which case all provided component model samples are collected and
+#'   returned.
 #'
 #' @details The underlying mechanism for the computations varies for different
 #'   `output_type`s. When the `output_type` is `cdf`, `pmf`, or `mean`, this
@@ -32,10 +33,6 @@
 #'      quantiles.
 #'
 #' Steps 1 and 2 in this process are performed by `distfromq::make_q_fn`.
-#'
-#' When the `output_type` is `sample`, we randomly select a subset of the sample
-#' forecasts from each of the component models so that the ensemble has the
-#' specified number of `n_output_samples`.
 #'
 #' @return a `model_out_tbl` object of ensemble predictions. Note that any
 #'   additional columns in the input `model_out_tbl` are dropped.
