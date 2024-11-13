@@ -1,5 +1,7 @@
 # hubEnsembles (development version)
 
+* `linear_pool()` now supports the simplest case of ensembling samples, where all component samples are collected and returned (#109)
+
 # hubEnsembles 0.1.9
 
 * `simple_ensemble()` now uses `identical()` to avoid triggering an `all.equal.environment()` error. This error would sometimes occur when providing the `agg_fun` argument with a custom function. (#134)
