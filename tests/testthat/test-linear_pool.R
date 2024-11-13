@@ -1,7 +1,7 @@
 test_that("(#128) linear pool will group by output_type", {
   skip_if_not_installed("hubExamples")
   forecast <- hubExamples::forecast_outputs
-  forecast <- forecast[!forecast$output_type %in% c("median", "sample"), ]
+  forecast <- forecast[!forecast$output_type %in% c("median"), ]
   expect_no_error({
     res <- linear_pool(forecast, model_id = "linear-pool-normal")
   })
@@ -408,4 +408,96 @@ test_that("(weighted) quantiles correctly calculated - lognormal family", {
                tolerance = 1e-3)
   expect_equal(weighted_quantile_expected, as.data.frame(weighted_quantile_actual_lnorm),
                tolerance = 1e-3)
+})
+
+
+
+test_that("samples only collected and re-indexed for simplest case", {
+  # equal weights, same number of components samples, no limit on output samples
+  sample_outputs <- expand.grid(stringsAsFactors = FALSE,
+                                model_id = letters[1:4],
+                                location = c("222", "888"),
+                                horizon = 1, #week
+                                target = "inc death",
+                                target_date = as.Date("2021-12-25"),
+                                output_type = "sample",
+                                output_type_id = 1:3,
+                                value = NA_real_)
+
+  sample_outputs$value[sample_outputs$location == "222" &
+                         sample_outputs$output_type_id == 1] <-
+    c(40, 30, 45, 80)
+  sample_outputs$value[sample_outputs$location == "222" &
+                         sample_outputs$output_type_id == 2] <-
+    c(60, 40, 75, 20)
+  sample_outputs$value[sample_outputs$location == "222" &
+                         sample_outputs$output_type_id == 3] <-
+    c(10, 70, 15, 50)
+  sample_outputs$value[sample_outputs$location == "888" &
+                         sample_outputs$output_type_id == 1] <-
+    c(100, 325, 400, 300)
+  sample_outputs$value[sample_outputs$location == "888" &
+                         sample_outputs$output_type_id == 2] <-
+    c(250, 350, 500, 250)
+  sample_outputs$value[sample_outputs$location == "888" &
+                         sample_outputs$output_type_id == 3] <-
+    c(150, 300, 500, 350)
+
+  expected_outputs <- sample_outputs |>
+    dplyr::mutate(
+      output_type_id = as.integer(factor(paste0(.data[["model_id"]], .data[["output_type_id"]]))),
+      model_id = "hub-ensemble"
+    ) |>
+    hubUtils::as_model_out_tbl()
+  actual_outputs <- sample_outputs |>
+    linear_pool(
+      weights = NULL,
+      task_id_cols = c("target_date", "target", "horizon", "location"),
+      n_output_samples = NULL
+    )
+
+  expect_equal(actual_outputs, expected_outputs)
+})
+
+
+test_that("ensemble of samples throws an error for the more complex cases", {
+  sample_outputs <- expand.grid(stringsAsFactors = FALSE,
+                                model_id = letters[1:4],
+                                location = c("222", "888"),
+                                horizon = 1, #week
+                                target = "inc death",
+                                target_date = as.Date("2021-12-25"),
+                                output_type = "sample",
+                                output_type_id = 1:3,
+                                value = NA_real_)
+
+  sample_outputs$value[sample_outputs$location == "222" &
+                         sample_outputs$output_type_id == 1] <-
+    c(40, 30, 45, 80)
+  sample_outputs$value[sample_outputs$location == "222" &
+                         sample_outputs$output_type_id == 2] <-
+    c(60, 40, 75, 20)
+  sample_outputs$value[sample_outputs$location == "222" &
+                         sample_outputs$output_type_id == 3] <-
+    c(10, 70, 15, 50)
+  sample_outputs$value[sample_outputs$location == "888" &
+                         sample_outputs$output_type_id == 1] <-
+    c(100, 325, 400, 300)
+  sample_outputs$value[sample_outputs$location == "888" &
+                         sample_outputs$output_type_id == 2] <-
+    c(250, 350, 500, 250)
+  sample_outputs$value[sample_outputs$location == "888" &
+                         sample_outputs$output_type_id == 3] <-
+    c(150, 300, 500, 350)
+
+  fweight <- data.frame(model_id = letters[1:4], weight = 0.1 * (1:4))
+
+  sample_outputs |>
+    linear_pool(
+      weights = fweight,
+      task_id_cols = c("target_date", "target", "horizon", "location"),
+      n_output_samples = 20
+    ) |>
+    dplyr::arrange(.data[["output_type_id"]]) |>
+    expect_error("The requested ensemble calculation doesn't satisfy all conditions", fixed = TRUE)
 })
