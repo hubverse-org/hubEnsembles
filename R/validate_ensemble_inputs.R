@@ -17,6 +17,11 @@
 #'   case all columns in `model_out_tbl` other than `"model_id"`, the specified
 #'   `output_type_col` and `output_type_id_col`, and `"value"` are used as task
 #'   ids.
+#' @param comp_unit_cols `character` vector giving the compound task ID variable set.
+#'   NULL means all columns' values display dependency while equality to
+#'   task_id_cols means that none of the columns' values are dependent.
+#'   Defaults to NA, in which case the function will pull this information from
+#'   the "compound_taskid_set" field in the config files.
 #' @param valid_output_types `character` vector with the names of valid output
 #'   types for the particular ensembling method used. See the details for more
 #'   information.
@@ -34,6 +39,7 @@
 validate_ensemble_inputs <- function(model_out_tbl, weights = NULL,
                                      weights_col_name = "weight",
                                      task_id_cols = NULL,
+                                     comp_unit_cols = NA,
                                      valid_output_types) {
 
   if (!inherits(model_out_tbl, "model_out_tbl")) {
@@ -48,7 +54,14 @@ validate_ensemble_inputs <- function(model_out_tbl, weights = NULL,
   } else if (!all(task_id_cols %in% model_out_cols)) {
     cli::cli_abort(c(
       "x" = "{.arg model_out_tbl} did not have all listed task id columns
-             {.val {task_id_col}}."
+             {.val {task_id_cols}}."
+    ))
+  }
+
+  if (!all(comp_unit_cols %in% task_id_cols)) {
+    cli::cli_abort(c(
+      "x" = "{.arg comp_units_cols} contains columns not in {.arg task_id_cols}: 
+            {.val {setdiff(comp_unit_cols, task_idcols)}}"
     ))
   }
 
@@ -119,6 +132,7 @@ validate_ensemble_inputs <- function(model_out_tbl, weights = NULL,
 
   validated_inputs <- list(model_out_tbl = model_out_tbl,
                            weights = weights,
-                           task_id_cols = task_id_cols)
+                           task_id_cols = task_id_cols,
+                           comp_unit_cols = comp_unit_cols)
   return(validated_inputs)
 }

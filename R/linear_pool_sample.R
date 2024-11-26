@@ -21,18 +21,17 @@ linear_pool_sample <- function(model_out_tbl, weights = NULL,
                                weights_col_name = "weight",
                                model_id = "hub-ensemble",
                                task_id_cols = NULL,
+                               comp_unit_cols = NA,
                                n_output_samples = NULL) {
 
   validate_sample_inputs(model_out_tbl, weights, weights_col_name, n_output_samples)
 
   num_models <- length(unique(model_out_tbl$model_id))
-  samples_per_model <- model_out_tbl |>
-    dplyr::group_by(dplyr::across("model_id")) |>
-    dplyr::summarize(provided_n_component_samples = dplyr::n()) |>
-    dplyr::ungroup() |>
-    dplyr::select("model_id", "provided_n_component_samples") |>
-    dplyr::distinct(.keep_all = TRUE)
-  unique_provided_samples <- unique(samples_per_model[["provided_n_component_samples"]])
+  samples_per_combo <- model_out_tbl |>
+    dplyr::group_by(dplyr::across(dplyr::all_of(c("model_id", task_id_cols)))) |>
+    dplyr::summarize(provided_samples = dplyr::n()) |>
+    dplyr::ungroup()
+  unique_provided_samples <- unique(samples_per_combo[["provided_samples"]])
 
   if (is.null(weights)) {
     weights <- data.frame(
@@ -44,13 +43,51 @@ linear_pool_sample <- function(model_out_tbl, weights = NULL,
   }
   unique_weights <- unique(weights[[weights_col_name]])
 
-  if (length(unique_weights) != 1 || length(unique_provided_samples) != 1 || !is.null(n_output_samples)) {
+  if (length(unique_weights) != 1 || length(unique_provided_samples) != 1) {
     cli::cli_abort(
       "The requested ensemble calculation doesn't satisfy all conditions:
       1) {.arg model_out_tbl} contains the same number of samples from each component model,
-      2) {.arg weights} are {.val NULL} or equal for every model,
-      3) {.arg n_output_samples} = {.val NULL}"
+      2) {.arg weights} are {.val NULL} or equal for every model"
     )
+  }
+
+  if (!is.null(n_output_samples)) {
+    samples_per_combo <- samples_per_combo |>
+      dplyr::left_join(weights) |>
+      dplyr::mutate(target_samples = floor(.data[[weights_col_name]] * n_output_samples))
+
+    if (any(samples_per_combo$provided_samples < samples_per_combo$target_samples)) {
+      cli::cli_abort("Requested output samples per compound unit cannot exceed the provided samples per compound unit.")
+    }
+
+    # deal with n_output_samples not divisible evenly among component models
+    actual_output_samples <- samples_per_combo |>
+      dplyr::group_by(dplyr::across(dplyr::all_of(task_id_cols))) |>
+      dplyr::summarize(target_samples = sum(.data[["target_samples"]])) |>
+      dplyr::pull(.data[["target_samples"]]) |>
+      unique()
+    remainder_samples <- n_output_samples - actual_output_samples
+    models_to_resample <- sample(x = unique(samples_per_combo$model_id), size = remainder_samples)
+    samples_per_combo <- samples_per_combo |>
+      dplyr::mutate(target_samples = ifelse(
+        model_id %in% models_to_resample, .data[["target_samples"]] + 1, .data[["target_samples"]]
+      ))
+
+    split_comp_units <- model_out_tbl |>
+      dplyr::mutate(output_type_id = as.character(.data[["output_type_id"]])) |>
+      split(f = model_out_tbl[, c("model_id", comp_unit_cols)])
+    model_out_tbl <- split_comp_units |>
+      purrr::map(.f = function(split_outputs, index) {
+        current_comp_unit <- split_outputs |>
+          dplyr::distinct(dplyr::across(comp_unit_cols), .keep_all = TRUE) |>
+          dplyr::left_join(samples_per_combo)
+        provided_indices <- unique(split_outputs$output_type_id)
+
+        # check for same number of output type ids per modeling unit
+        sample_index <- sample(x = provided_indices, size = current_comp_unit$target_samples, replace = FALSE)
+        dplyr::filter(split_outputs, .data[["output_type_id"]] %in% sample_index)
+      }) |>
+      purrr::list_rbind()
   }
 
   model_out_tbl |>
