@@ -461,6 +461,122 @@ test_that("samples only collected and re-indexed for simplest case", {
 })
 
 
+test_that("ensemble of samples correctly drawn for compound task ID sets", {
+  sample_outputs <- expand.grid(stringsAsFactors = FALSE,
+                                model_id = letters[1:4],
+                                location = c("222", "888"),
+                                horizon = 1, #week
+                                target = "inc death",
+                                target_date = as.Date("2021-12-25"),
+                                output_type = "sample",
+                                output_type_id = 1:3,
+                                value = NA_real_)
+
+  sample_outputs$value[sample_outputs$location == "222" &
+                         sample_outputs$output_type_id == 1] <-
+    c(40, 30, 45, 80)
+  sample_outputs$value[sample_outputs$location == "222" &
+                         sample_outputs$output_type_id == 2] <-
+    c(60, 40, 75, 20)
+  sample_outputs$value[sample_outputs$location == "222" &
+                         sample_outputs$output_type_id == 3] <-
+    c(10, 70, 15, 50)
+  sample_outputs$value[sample_outputs$location == "888" &
+                         sample_outputs$output_type_id == 1] <-
+    c(100, 325, 400, 300)
+  sample_outputs$value[sample_outputs$location == "888" &
+                         sample_outputs$output_type_id == 2] <-
+    c(250, 350, 500, 250)
+  sample_outputs$value[sample_outputs$location == "888" &
+                         sample_outputs$output_type_id == 3] <-
+    c(150, 300, 500, 350)
+  sample_outputs <- sample_outputs |>
+    dplyr::mutate(horizon = 0, target_date = target_date - 7) |>
+    dplyr::bind_rows(sample_outputs)
+
+  set.seed(1234)
+  models_to_resample <- sample(x = letters[1:4], size = 5 %% 4)
+
+  # All compound units have unique ids which are shared across dependent task columns
+  # expected model is re-sampled
+  subset_expected <- expand.grid(
+    stringsAsFactors = FALSE,
+    KEEP.OUT.ATTRS = FALSE,
+    target = "inc death",
+    location = c("222", "888"),
+    component_model = letters[1:5],
+    distinct_ids = 2
+  ) |>
+    dplyr::mutate(component_model = ifelse(component_model == letters[5], models_to_resample, component_model)) |>
+    dplyr::arrange(dplyr::across(c("target", "location"))) |>
+    dplyr::tibble()
+  subset_actual <- sample_outputs |>
+    dplyr::mutate(component_model = .data[["model_id"]], .before = 1) |>
+    linear_pool(
+      task_id_cols = c("target_date", "target", "horizon", "location"),
+      comp_unit_cols = c("target", "location"),
+      n_output_samples = 5
+    ) |>
+    dplyr::group_by(dplyr::across(dplyr::all_of(c("target", "location", "output_type_id", "component_model")))) |>
+    dplyr::summarize(distinct_ids = dplyr::n()) |>
+    dplyr::ungroup() |>
+    dplyr::select(-"output_type_id")
+  expect_equal(subset_actual, subset_expected)
+
+  # All compound units have unique ids, expected model is re-sampled
+  task_id_cols <- c("target", "horizon", "location")
+  all_tasks_expected <- expand.grid(
+    stringsAsFactors = FALSE,
+    KEEP.OUT.ATTRS = FALSE,
+    target = "inc death",
+    horizon = c(0, 1),
+    location = c("222", "888"),
+    component_model = letters[1:5],
+    distinct_ids = 1
+  ) |>
+    dplyr::mutate(component_model = ifelse(component_model == letters[5], models_to_resample, component_model)) |>
+    dplyr::arrange(dplyr::across(dplyr::all_of(task_id_cols))) |>
+    dplyr::tibble()
+  set.seed(1234)
+  all_tasks_actual <- sample_outputs |>
+    dplyr::select(-"target_date") |>
+    dplyr::mutate(component_model = .data[["model_id"]], .before = 1) |>
+    linear_pool(
+      task_id_cols = task_id_cols,
+      comp_unit_cols = task_id_cols,
+      n_output_samples = 5
+    ) |>
+    dplyr::group_by(dplyr::across(dplyr::all_of(c(task_id_cols, "output_type_id", "component_model")))) |>
+    dplyr::summarize(distinct_ids = dplyr::n()) |>
+    dplyr::ungroup() |>
+    dplyr::select(-"output_type_id")
+  expect_equal(all_tasks_actual, all_tasks_expected)
+
+  # No compound units; unique ids are shared across dependent task columns
+  # expected model is re-sampled
+  none_expected <- expand.grid(
+    stringsAsFactors = FALSE,
+    KEEP.OUT.ATTRS = FALSE,
+    component_model = letters[1:5],
+    distinct_ids = 4
+  ) |>
+    dplyr::mutate(component_model = ifelse(component_model == letters[5], models_to_resample, component_model)) |>
+    dplyr::tibble()
+  set.seed(1234)
+  none_actual <- sample_outputs |>
+    dplyr::mutate(component_model = .data[["model_id"]], .before = 1) |>
+    linear_pool_sample(
+      task_id_cols = c("target_date", "target", "horizon", "location"),
+      comp_unit_cols = NULL,
+      n_output_samples = 5
+    ) |>
+    dplyr::group_by(dplyr::across(dplyr::all_of(c("output_type_id", "component_model")))) |>
+    dplyr::summarize(distinct_ids = dplyr::n()) |>
+    dplyr::ungroup() |>
+    dplyr::select(-"output_type_id")
+  expect_equal(none_actual, none_expected)
+})
+
 test_that("ensemble of samples throws an error for the more complex cases", {
   sample_outputs <- expand.grid(stringsAsFactors = FALSE,
                                 model_id = letters[1:4],
