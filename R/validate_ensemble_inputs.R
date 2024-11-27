@@ -58,14 +58,16 @@ validate_ensemble_inputs <- function(model_out_tbl, weights = NULL,
     ))
   }
 
-  if (all(is.na(comp_unit_cols))) {
-    # later give option to detect from config file
-    comp_unit_cols <- task_id_cols
-  } else if (!all(comp_unit_cols %in% task_id_cols)) {
-    cli::cli_abort(c(
-      "x" = "{.arg comp_units_cols} contains columns not in {.arg task_id_cols}: 
-            {.val {setdiff(comp_unit_cols, task_id_cols)}}"
-    ))
+  if (!is.null(comp_unit_cols)) {
+    if (all(is.na(comp_unit_cols))) {
+      # later give option to detect from config file
+      comp_unit_cols <- task_id_cols
+    } else if (!all(comp_unit_cols %in% task_id_cols)) {
+      cli::cli_abort(c(
+        "x" = "{.arg comp_units_cols} contains columns not in {.arg task_id_cols}: 
+              {.val {setdiff(comp_unit_cols, task_id_cols)}}"
+      ))
+    }
   }
 
   # check `model_out_tbl` has all standard columns with correct data type

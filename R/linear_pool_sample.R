@@ -21,7 +21,7 @@ linear_pool_sample <- function(model_out_tbl, weights = NULL,
                                weights_col_name = "weight",
                                model_id = "hub-ensemble",
                                task_id_cols = NULL,
-                               comp_unit_cols = NA,
+                               comp_unit_cols = NULL,
                                n_output_samples = NULL) {
 
   validate_sample_inputs(model_out_tbl, weights, weights_col_name, n_output_samples)
@@ -77,7 +77,7 @@ linear_pool_sample <- function(model_out_tbl, weights = NULL,
       dplyr::mutate(output_type_id = as.character(.data[["output_type_id"]])) |>
       split(f = model_out_tbl[, c("model_id", comp_unit_cols)])
     model_out_tbl <- split_comp_units |>
-      purrr::map(.f = function(split_outputs, index) {
+      purrr::map(.f = function(split_outputs) {
         current_comp_unit <- split_outputs |>
           dplyr::distinct(dplyr::across(comp_unit_cols), .keep_all = TRUE) |>
           dplyr::left_join(samples_per_combo)
