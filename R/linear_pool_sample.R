@@ -41,6 +41,7 @@ linear_pool_sample <- function(model_out_tbl, weights = NULL,
     )
     weights_col_name <- "weight"
   }
+  weight_by_cols <- colnames(weights)[colnames(weights) != weights_col_name]
   unique_weights <- unique(weights[[weights_col_name]])
 
   if (length(unique_weights) != 1 || length(unique_provided_samples) != 1) {
@@ -53,7 +54,7 @@ linear_pool_sample <- function(model_out_tbl, weights = NULL,
 
   if (!is.null(n_output_samples)) {
     samples_per_combo <- samples_per_combo |>
-      dplyr::left_join(weights) |>
+      dplyr::left_join(weights, weight_by_cols) |>
       dplyr::mutate(target_samples = floor(.data[[weights_col_name]] * n_output_samples))
 
     if (any(samples_per_combo$provided_samples < samples_per_combo$target_samples)) {
@@ -78,8 +79,8 @@ linear_pool_sample <- function(model_out_tbl, weights = NULL,
     model_out_tbl <- split_comp_units |>
       purrr::map(.f = function(split_outputs) {
         current_comp_unit <- split_outputs |>
-          dplyr::distinct(dplyr::across(comp_unit_cols), .keep_all = TRUE) |>
-          dplyr::left_join(samples_per_combo)
+          dplyr::distinct(dplyr::across(dplyr::all_of(comp_unit_cols)), .keep_all = TRUE) |>
+          dplyr::left_join(samples_per_combo, by = c("model_id", task_id_cols))
         provided_indices <- unique(split_outputs$output_type_id)
 
         # check for same number of output type ids per modeling unit
