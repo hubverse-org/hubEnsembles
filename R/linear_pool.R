@@ -9,6 +9,10 @@
 #' @param ... parameters that are passed to `distfromq::make_q_fn`, specifying
 #'   details of how to estimate a quantile function from provided quantile levels
 #'   and quantile values for `output_type` `"quantile"`.
+#' @param comp_unit_cols `character` vector giving the compound task ID variable set.
+#'   NULL means all columns' values display dependency while equality to
+#'   task_id_cols means that none of the columns' values are dependent.
+#'   Defaults to NA, in which case the function will pull this information from
 #' @param n_output_samples `numeric` that specifies how many sample forecasts to
 #'   return per unique combination of task IDs. Currently the only supported value
 #'   is NULL, in which case all provided component model samples are collected and
@@ -58,6 +62,7 @@ linear_pool <- function(model_out_tbl, weights = NULL,
                         weights_col_name = "weight",
                         model_id = "hub-ensemble",
                         task_id_cols = NULL,
+                        comp_unit_cols = NA,
                         n_samples = 1e4,
                         n_output_samples = NULL,
                         ...) {
@@ -68,11 +73,13 @@ linear_pool <- function(model_out_tbl, weights = NULL,
     validate_ensemble_inputs(weights = weights,
                              weights_col_name = weights_col_name,
                              task_id_cols = task_id_cols,
+                             comp_unit_cols = comp_unit_cols,
                              valid_output_types = valid_types)
 
   model_out_tbl_validated <- validated_inputs$model_out_tbl
   weights_validated <- validated_inputs$weights
   task_id_cols_validated <- validated_inputs$task_id_cols
+  comp_unit_cols_validated <- validated_inputs$comp_unit_cols
 
   # calculate linear opinion pool for different types
   split_models <- split(model_out_tbl_validated,
@@ -99,6 +106,7 @@ linear_pool <- function(model_out_tbl, weights = NULL,
                            weights_col_name = weights_col_name,
                            model_id = model_id,
                            task_id_cols = task_id_cols_validated,
+                           comp_unit_cols = comp_unit_cols_validated,
                            n_output_samples = n_output_samples)
       }
     }) |>
