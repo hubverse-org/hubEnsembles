@@ -1,7 +1,12 @@
 test_that("(#128) linear pool will group by output_type", {
   skip_if_not_installed("hubExamples")
   forecast <- hubExamples::forecast_outputs
-  forecast <- forecast[!forecast$output_type %in% c("median"), ]
+  expect_warning({forecast <- forecast[!forecast$output_type %in% c("median"), ] |>
+    dplyr::mutate(output_type_id = ifelse(
+      as.numeric(output_type_id) %in% 4201:4300,
+      as.character(as.numeric(output_type_id) + 100),
+      output_type_id)
+    )})
   expect_no_error({
     res <- linear_pool(forecast, model_id = "linear-pool-normal")
   })
@@ -617,5 +622,5 @@ test_that("ensemble of samples throws an error for the more complex cases", {
       n_output_samples = 20
     ) |>
     dplyr::arrange(.data[["output_type_id"]]) |>
-    expect_error("The requested ensemble calculation doesn't satisfy all conditions", fixed = TRUE)
+    expect_error("`weights` must be \"NULL\" or equal for every model", fixed = TRUE)
 })

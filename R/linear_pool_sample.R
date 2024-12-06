@@ -31,7 +31,6 @@ linear_pool_sample <- function(model_out_tbl, weights = NULL,
     dplyr::group_by(dplyr::across(dplyr::all_of(c("model_id", task_id_cols)))) |>
     dplyr::summarize(provided_samples = dplyr::n()) |>
     dplyr::ungroup()
-  unique_provided_samples <- unique(samples_per_combo[["provided_samples"]])
 
   if (is.null(weights)) {
     weights <- data.frame(
@@ -44,12 +43,8 @@ linear_pool_sample <- function(model_out_tbl, weights = NULL,
   weight_by_cols <- colnames(weights)[colnames(weights) != weights_col_name]
   unique_weights <- unique(weights[[weights_col_name]])
 
-  if (length(unique_weights) != 1 || length(unique_provided_samples) != 1) {
-    cli::cli_abort(
-      "The requested ensemble calculation doesn't satisfy all conditions:
-      1) {.arg model_out_tbl} contains the same number of samples from each component model,
-      2) {.arg weights} are {.val NULL} or equal for every model"
-    )
+  if (length(unique_weights) != 1) {
+    cli::cli_abort("{.arg weights} must be {.val NULL} or equal for every model")
   }
 
   if (!is.null(n_output_samples)) {
