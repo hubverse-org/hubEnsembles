@@ -44,7 +44,7 @@ case all columns in \code{model_out_tbl} other than \code{"model_id"}, \code{"ou
 \item{compound_taskid_set}{\code{character} vector of the compound task ID variable
 set. NULL means all columns' values display dependency while equality to
 task_id_cols means that none of the columns' values are dependent.
-Defaults to NA, in which case the function will pull this information from}
+Defaults to NA, in which case the task id variables are used.}
 
 \item{n_samples}{\code{numeric} that specifies the number of samples to use when
 calculating quantiles from an estimated quantile function. Defaults to \code{1e4}.}

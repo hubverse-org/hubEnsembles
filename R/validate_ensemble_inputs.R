@@ -20,8 +20,7 @@
 #' @param compound_taskid_set `character` vector of the compound task ID variable
 #'   set. NULL means all columns' values display dependency while equality to
 #'   task_id_cols means that none of the columns' values are dependent.
-#'   Defaults to NA, in which case the function will pull this information from
-#'   the "compound_taskid_set" field in the config files.
+#'   Defaults to NA, in which case the task id variables are used.
 #' @param valid_output_types `character` vector with the names of valid output
 #'   types for the particular ensembling method used. See the details for more
 #'   information.
