@@ -78,7 +78,6 @@ linear_pool_sample <- function(model_out_tbl, weights = NULL,
           dplyr::left_join(samples_per_combo, by = c("model_id", comp_unit_cols))
         provided_indices <- unique(split_outputs$output_type_id)
 
-        # check for same number of output type ids per modeling unit
         sample_index <- sample(x = provided_indices, size = current_comp_unit$target_samples, replace = FALSE)
         dplyr::filter(split_outputs, .data[["output_type_id"]] %in% sample_index)
       }) |>
