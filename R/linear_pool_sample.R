@@ -21,14 +21,14 @@ linear_pool_sample <- function(model_out_tbl, weights = NULL,
                                weights_col_name = "weight",
                                model_id = "hub-ensemble",
                                task_id_cols = NULL,
-                               comp_unit_cols = NULL,
+                               compound_taskid_set = NULL,
                                n_output_samples = NULL) {
 
   validate_sample_inputs(model_out_tbl, weights, weights_col_name, n_output_samples)
 
   num_models <- length(unique(model_out_tbl$model_id))
   samples_per_combo <- model_out_tbl |>
-    dplyr::group_by(dplyr::across(dplyr::all_of(c("model_id", comp_unit_cols)))) |>
+    dplyr::group_by(dplyr::across(dplyr::all_of(c("model_id", compound_taskid_set)))) |>
     dplyr::summarize(provided_samples = length(unique(.data[["output_type_id"]]))) |>
     dplyr::ungroup()
 
@@ -58,7 +58,7 @@ linear_pool_sample <- function(model_out_tbl, weights = NULL,
 
     # deal with n_output_samples not divisible evenly among component models
     actual_output_samples <- samples_per_combo |>
-      dplyr::group_by(dplyr::across(dplyr::all_of(comp_unit_cols))) |>
+      dplyr::group_by(dplyr::across(dplyr::all_of(compound_taskid_set))) |>
       dplyr::summarize(target_samples = sum(.data[["target_samples"]])) |>
       dplyr::pull(.data[["target_samples"]]) |>
       unique()
@@ -70,12 +70,12 @@ linear_pool_sample <- function(model_out_tbl, weights = NULL,
       ))
 
     split_comp_units <- model_out_tbl |>
-      split(f = model_out_tbl[, c("model_id", comp_unit_cols)])
+      split(f = model_out_tbl[, c("model_id", compound_taskid_set)])
     model_out_tbl <- split_comp_units |>
       purrr::map(.f = function(split_outputs) {
         current_comp_unit <- split_outputs |>
-          dplyr::distinct(dplyr::across(dplyr::all_of(comp_unit_cols)), .keep_all = TRUE) |>
-          dplyr::left_join(samples_per_combo, by = c("model_id", comp_unit_cols))
+          dplyr::distinct(dplyr::across(dplyr::all_of(compound_taskid_set)), .keep_all = TRUE) |>
+          dplyr::left_join(samples_per_combo, by = c("model_id", compound_taskid_set))
         provided_indices <- unique(split_outputs$output_type_id)
 
         sample_index <- sample(x = provided_indices, size = current_comp_unit$target_samples, replace = FALSE)

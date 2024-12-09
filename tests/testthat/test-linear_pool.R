@@ -460,7 +460,7 @@ test_that("samples only collected and re-indexed for simplest case", {
     linear_pool(
       weights = NULL,
       task_id_cols = c("target_date", "target", "horizon", "location"),
-      comp_unit_cols = c("target", "location"),
+      compound_taskid_set = c("target", "location"),
       n_output_samples = NULL
     )
 
@@ -521,7 +521,7 @@ test_that("ensemble of samples correctly drawn for compound task ID sets", {
     dplyr::mutate(component_model = .data[["model_id"]], .before = 1) |>
     linear_pool(
       task_id_cols = c("target_date", "target", "horizon", "location"),
-      comp_unit_cols = c("target", "location"),
+      compound_taskid_set = c("target", "location"),
       n_output_samples = 5
     ) |>
     dplyr::group_by(dplyr::across(dplyr::all_of(c("target", "location", "output_type_id", "component_model")))) |>
@@ -550,7 +550,7 @@ test_that("ensemble of samples correctly drawn for compound task ID sets", {
     dplyr::mutate(component_model = .data[["model_id"]], .before = 1) |>
     linear_pool(
       task_id_cols = task_id_cols,
-      comp_unit_cols = task_id_cols,
+      compound_taskid_set = task_id_cols,
       n_output_samples = 5
     ) |>
     dplyr::group_by(dplyr::across(dplyr::all_of(c(task_id_cols, "output_type_id", "component_model")))) |>
@@ -574,7 +574,7 @@ test_that("ensemble of samples correctly drawn for compound task ID sets", {
     dplyr::mutate(component_model = .data[["model_id"]], .before = 1) |>
     linear_pool_sample(
       task_id_cols = c("target_date", "target", "horizon", "location"),
-      comp_unit_cols = NULL,
+      compound_taskid_set = NULL,
       n_output_samples = 5
     ) |>
     dplyr::group_by(dplyr::across(dplyr::all_of(c("output_type_id", "component_model")))) |>
@@ -620,7 +620,7 @@ test_that("ensemble of samples throws an error for the more complex cases", {
     linear_pool(
       weights = fweight,
       task_id_cols = c("target_date", "target", "horizon", "location"),
-      comp_unit_cols = c("target", "location"),
+      compound_taskid_set = c("target", "location"),
       n_output_samples = 20
     ) |>
     dplyr::arrange(.data[["output_type_id"]]) |>

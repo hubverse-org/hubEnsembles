@@ -17,8 +17,8 @@
 #'   case all columns in `model_out_tbl` other than `"model_id"`, the specified
 #'   `output_type_col` and `output_type_id_col`, and `"value"` are used as task
 #'   ids.
-#' @param comp_unit_cols `character` vector giving the compound task ID variable set.
-#'   NULL means all columns' values display dependency while equality to
+#' @param compound_taskid_set `character` vector of the compound task ID variable
+#'   set. NULL means all columns' values display dependency while equality to
 #'   task_id_cols means that none of the columns' values are dependent.
 #'   Defaults to NA, in which case the function will pull this information from
 #'   the "compound_taskid_set" field in the config files.
@@ -40,7 +40,7 @@
 validate_ensemble_inputs <- function(model_out_tbl, weights = NULL,
                                      weights_col_name = "weight",
                                      task_id_cols = NULL,
-                                     comp_unit_cols = NA,
+                                     compound_taskid_set = NA,
                                      valid_output_types) {
 
   if (!inherits(model_out_tbl, "model_out_tbl")) {
@@ -59,14 +59,14 @@ validate_ensemble_inputs <- function(model_out_tbl, weights = NULL,
     ))
   }
 
-  if (!is.null(comp_unit_cols)) {
-    if (all(is.na(comp_unit_cols))) {
+  if (!is.null(compound_taskid_set)) {
+    if (all(is.na(compound_taskid_set))) {
       # later give option to detect from config file
-      comp_unit_cols <- task_id_cols
-    } else if (!all(comp_unit_cols %in% task_id_cols)) {
+      compound_taskid_set <- task_id_cols
+    } else if (!all(compound_taskid_set %in% task_id_cols)) {
       cli::cli_abort(c(
         "x" = "{.arg comp_units_cols} contains columns not in {.arg task_id_cols}: 
-              {.val {setdiff(comp_unit_cols, task_id_cols)}}"
+              {.val {setdiff(compound_taskid_set, task_id_cols)}}"
       ))
     }
   }
@@ -108,7 +108,7 @@ validate_ensemble_inputs <- function(model_out_tbl, weights = NULL,
   validated_inputs <- list(model_out_tbl = model_out_tbl,
                            weights = weights,
                            task_id_cols = task_id_cols,
-                           comp_unit_cols = comp_unit_cols)
+                           compound_taskid_set = compound_taskid_set)
   return(validated_inputs)
 }
 

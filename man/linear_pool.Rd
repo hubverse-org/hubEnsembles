@@ -13,7 +13,7 @@ linear_pool(
   weights_col_name = "weight",
   model_id = "hub-ensemble",
   task_id_cols = NULL,
-  comp_unit_cols = NA,
+  compound_taskid_set = NA,
   n_samples = 10000,
   n_output_samples = NULL,
   ...
@@ -41,8 +41,8 @@ ensemble model.}
 case all columns in \code{model_out_tbl} other than \code{"model_id"}, \code{"output_type"},
 \code{"output_type_id"}, and \code{"value"} are used as task ids.}
 
-\item{comp_unit_cols}{\code{character} vector giving the compound task ID variable set.
-NULL means all columns' values display dependency while equality to
+\item{compound_taskid_set}{\code{character} vector of the compound task ID variable
+set. NULL means all columns' values display dependency while equality to
 task_id_cols means that none of the columns' values are dependent.
 Defaults to NA, in which case the function will pull this information from}
 
