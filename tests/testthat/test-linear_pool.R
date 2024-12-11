@@ -418,6 +418,53 @@ test_that("(weighted) quantiles correctly calculated - lognormal family", {
 })
 
 
+test_that("all component models submit the same values for non-compound task id set variables for sample forecasts", {
+  sample_outputs <- expand.grid(stringsAsFactors = FALSE,
+                                model_id = letters[1:4],
+                                location = c("222", "888"),
+                                horizon = 1, #week
+                                target = "inc death",
+                                target_date = as.Date("2021-12-25"),
+                                output_type = "sample",
+                                output_type_id = 1:3,
+                                value = NA_real_)
+
+  sample_outputs$value[sample_outputs$location == "222" &
+                         sample_outputs$output_type_id == 1] <-
+    c(40, 30, 45, 80)
+  sample_outputs$value[sample_outputs$location == "222" &
+                         sample_outputs$output_type_id == 2] <-
+    c(60, 40, 75, 20)
+  sample_outputs$value[sample_outputs$location == "222" &
+                         sample_outputs$output_type_id == 3] <-
+    c(10, 70, 15, 50)
+  sample_outputs$value[sample_outputs$location == "888" &
+                         sample_outputs$output_type_id == 1] <-
+    c(100, 325, 400, 300)
+  sample_outputs$value[sample_outputs$location == "888" &
+                         sample_outputs$output_type_id == 2] <-
+    c(250, 350, 500, 250)
+  sample_outputs$value[sample_outputs$location == "888" &
+                         sample_outputs$output_type_id == 3] <-
+    c(150, 300, 500, 350)
+
+  sample_outputs |>
+    dplyr::mutate(horizon = 0, value = 0.75 * value) |>
+    dplyr::filter(model_id %in% letters[1:3]) |>
+    dplyr::bind_rows(sample_outputs) |>
+    dplyr::mutate(origin_date = target_date - horizon, .before = "horizon") |>
+    linear_pool(
+      weights = NULL,
+      task_id_cols = c("target_date", "target", "horizon", "location"),
+      compound_taskid_set = c("target", "location", "target_date"),
+      n_output_samples = NULL
+    ) |>
+    expect_error(
+      regex = "Not all component models in `model_out_tbl` forecast for the same set of dependent tasks",
+      fixed = TRUE
+    )
+})
+
 
 test_that("samples only collected and re-indexed for simplest case", {
   # equal weights, same number of components samples, no limit on output samples
@@ -498,7 +545,7 @@ test_that("ensemble of samples correctly drawn for compound task ID sets", {
                          sample_outputs$output_type_id == 3] <-
     c(150, 300, 500, 350)
   sample_outputs <- sample_outputs |>
-    dplyr::mutate(horizon = 0, target_date = target_date - 7) |>
+    dplyr::mutate(horizon = 0) |>
     dplyr::bind_rows(sample_outputs)
 
   set.seed(1234)
@@ -509,51 +556,58 @@ test_that("ensemble of samples correctly drawn for compound task ID sets", {
   subset_expected <- expand.grid(
     stringsAsFactors = FALSE,
     KEEP.OUT.ATTRS = FALSE,
-    target = "inc death",
     location = c("222", "888"),
+    target = "inc death",
+    target_date = as.Date("2021-12-25"),
     component_model = letters[1:5],
     distinct_ids = 2
   ) |>
     dplyr::mutate(component_model = ifelse(component_model == letters[5], models_to_resample, component_model)) |>
-    dplyr::arrange(dplyr::across(c("target", "location"))) |>
+    dplyr::arrange(dplyr::across(c("location", "target", "target_date"))) |>
     dplyr::tibble()
+  set.seed(1234)
   subset_actual <- sample_outputs |>
     dplyr::mutate(component_model = .data[["model_id"]], .before = 1) |>
     linear_pool(
-      task_id_cols = c("target_date", "target", "horizon", "location"),
-      compound_taskid_set = c("target", "location"),
+      task_id_cols = c("location", "horizon", "target", "target_date"),
+      compound_taskid_set = c("location", "target", "target_date"),
       n_output_samples = 5
     ) |>
-    dplyr::group_by(dplyr::across(dplyr::all_of(c("target", "location", "output_type_id", "component_model")))) |>
+    dplyr::group_by(dplyr::across(dplyr::all_of(
+      c("location", "target", "target_date", "output_type_id", "component_model")
+    ))) |>
     dplyr::summarize(distinct_ids = dplyr::n()) |>
     dplyr::ungroup() |>
     dplyr::select(-"output_type_id")
   expect_equal(subset_actual, subset_expected)
 
   # All compound units have unique ids, expected model is re-sampled
-  task_id_cols <- c("target", "horizon", "location")
   all_tasks_expected <- expand.grid(
     stringsAsFactors = FALSE,
     KEEP.OUT.ATTRS = FALSE,
-    target = "inc death",
-    horizon = c(0, 1),
     location = c("222", "888"),
+    horizon = c(0, 1),
+    target = "inc death",
+    target_date = as.Date("2021-12-25"),
     component_model = letters[1:5],
     distinct_ids = 1
   ) |>
     dplyr::mutate(component_model = ifelse(component_model == letters[5], models_to_resample, component_model)) |>
-    dplyr::arrange(dplyr::across(dplyr::all_of(task_id_cols))) |>
+    dplyr::arrange(dplyr::across(dplyr::all_of(
+      c("location", "horizon", "target", "target_date")
+    ))) |>
     dplyr::tibble()
   set.seed(1234)
   all_tasks_actual <- sample_outputs |>
-    dplyr::select(-"target_date") |>
     dplyr::mutate(component_model = .data[["model_id"]], .before = 1) |>
     linear_pool(
-      task_id_cols = task_id_cols,
-      compound_taskid_set = task_id_cols,
+      task_id_cols = c("location", "horizon", "target", "target_date"),
+      compound_taskid_set = c("location", "horizon", "target", "target_date"),
       n_output_samples = 5
     ) |>
-    dplyr::group_by(dplyr::across(dplyr::all_of(c(task_id_cols, "output_type_id", "component_model")))) |>
+    dplyr::group_by(dplyr::across(dplyr::all_of(
+      c("location", "horizon", "target", "target_date", "output_type_id", "component_model")
+    ))) |>
     dplyr::summarize(distinct_ids = dplyr::n()) |>
     dplyr::ungroup() |>
     dplyr::select(-"output_type_id")
@@ -619,8 +673,8 @@ test_that("ensemble of samples throws an error for the more complex cases", {
   sample_outputs |>
     linear_pool(
       weights = fweight,
-      task_id_cols = c("target_date", "target", "horizon", "location"),
-      compound_taskid_set = c("target", "location"),
+      task_id_cols = c("location", "horizon", "target", "target_date"),
+      compound_taskid_set = c("location", "target", "target_date"),
       n_output_samples = 20
     ) |>
     dplyr::arrange(.data[["output_type_id"]]) |>
