@@ -20,7 +20,7 @@
 #' @param compound_taskid_set `character` vector of the compound task ID variable
 #'   set. NULL means all columns' values display dependency while equality to
 #'   task_id_cols means that none of the columns' values are dependent.
-#'   Defaults to NA, in which case the task id variables are used.
+#'   Defaults to NULL, in which case the task id variables are used.
 #' @param valid_output_types `character` vector with the names of valid output
 #'   types for the particular ensembling method used. See the details for more
 #'   information.
@@ -39,7 +39,7 @@
 validate_ensemble_inputs <- function(model_out_tbl, weights = NULL,
                                      weights_col_name = "weight",
                                      task_id_cols = NULL,
-                                     compound_taskid_set = NA,
+                                     compound_taskid_set = NULL,
                                      valid_output_types) {
 
   if (!inherits(model_out_tbl, "model_out_tbl")) {
@@ -58,18 +58,6 @@ validate_ensemble_inputs <- function(model_out_tbl, weights = NULL,
     ))
   }
 
-  if (!is.null(compound_taskid_set)) {
-    if (all(is.na(compound_taskid_set))) {
-      # later give option to detect from config file
-      compound_taskid_set <- task_id_cols
-    } else if (!all(compound_taskid_set %in% task_id_cols)) {
-      cli::cli_abort(c(
-        "x" = "{.arg comp_units_cols} contains columns not in {.arg task_id_cols}: 
-              {.val {setdiff(compound_taskid_set, task_id_cols)}}"
-      ))
-    }
-  }
-
   # check `model_out_tbl` has all standard columns with correct data type
   # and `model_out_tbl` has > 0 rows
   hubUtils::validate_model_out_tbl(model_out_tbl)
@@ -82,6 +70,10 @@ validate_ensemble_inputs <- function(model_out_tbl, weights = NULL,
       "!" = "Included invalid output type{?s}: {.val {invalid_output_types}}.",
       "i" = "Supported output types: {.val {valid_output_types}}."
     ))
+  }
+
+  if ("sample" %in% unique_output_types) {
+    validate_compound_taskid_set(model_out_tbl, task_id_cols, compound_taskid_set, return_missing_combos = FALSE)
   }
 
   # check if "cdf", "pmf", "quantile", "sample" distributions are valid
@@ -158,5 +150,75 @@ validate_weights <- function(model_out_cols, weights = NULL, weights_col_name = 
       "x" = "The specified {.arg weights_col_name}, {.val {weights_col_name}},
              is already a column in {.arg model_out_tbl}."
     ))
+  }
+}
+
+
+#' Perform validations on the compound task ID set used to calculate an ensemble of
+#' component model outputs for each combination of model task, output type,
+#' and output type id for the sample output type
+#'
+#' @param model_out_tbl an object of class `model_out_tbl` with component
+#'   model outputs (e.g., predictions).
+#' @param task_id_cols `character` vector with names of columns in
+#'   `model_out_tbl` that specify modeling tasks. Defaults to `NULL`, in which
+#'   case all columns in `model_out_tbl` other than `"model_id"`, the specified
+#'   `output_type_col` and `output_type_id_col`, and `"value"` are used as task
+#'   ids.
+#' @param compound_taskid_set `character` vector of the compound task ID variable
+#'   set. NULL means all columns' values display dependency while equality to
+#'   task_id_cols means that none of the columns' values are dependent.
+#'   Defaults to NULL, in which case the task id variables are used.
+#' @param return_missing_combos `boolean` specifying whether to return a `data.frame`
+#'   summarizing the missing combinations of dependent tasks for each model. If
+#'   TRUE, the columns of the `data.frame` will be "model_id" and one for each of the
+#'   dependent tasks (complement of the `compound_taskid_set`). Defaults to FALSE.
+#'
+#' @return If `model_out_tbl` passes the validations, there will be no return value.
+#'   Otherwise, the function will either throw an error if `return_missing_combos` is
+#'   FALSE, or a `data.frame` of the missing combinations of dependent tasks will be
+#'   returned. See above for more details.
+#' @noRd
+
+validate_compound_taskid_set <- function(model_out_tbl,
+                                         task_id_cols, compound_taskid_set,
+                                         return_missing_combos = FALSE) {
+  if (is.null(compound_taskid_set)) {
+    # later default to detect from config file
+    compound_taskid_set <- task_id_cols
+  } else if (!all(compound_taskid_set %in% task_id_cols)) {
+    cli::cli_abort(
+      "{.arg compound_taskid_set} contains columns not in {.arg task_id_cols}: 
+      {.val {setdiff(compound_taskid_set, task_id_cols)}}"
+    )
+  }
+
+  dependent_tasks <- setdiff(task_id_cols, compound_taskid_set)
+  sample_actual <- model_out_tbl |>
+    dplyr::filter(.data[["output_type"]] == "sample") |>
+    dplyr::group_by(dplyr::across(dplyr::all_of(c("model_id", dependent_tasks)))) |>
+    dplyr::summarize(unique_forecasts = dplyr::n()) |>
+    dplyr::ungroup() |>
+    dplyr::arrange(!!!rlang::syms(c("model_id", dependent_tasks)))
+  sample_expected <- sample_actual |>
+    tidyr::complete(
+      !!!rlang::syms(c("model_id", dependent_tasks)),
+      fill = list(unique_forecasts = 0),
+      explicit = TRUE
+    ) |>
+    dplyr::arrange(!!!rlang::syms(c("model_id", dependent_tasks)))
+
+  if (!identical(sample_actual, sample_expected)) {
+    if (return_missing_combos) {
+      sample_expected |>
+        dplyr::filter(.data[["unique_forecasts"]] == 0) |>
+        dplyr::select(-"unique_forecasts")
+    } else {
+      cli::cli_abort(c(
+        x = "Not all component models in {.arg model_out_tbl} forecast for the same set of dependent tasks",
+        i = "Run {.arg validate_compound_taskid_set(model_out_tbl, task_id_cols, 
+          compound_taskid_set, return_missing_combos = TRUE)} to see the missing dependent tasks"
+      ))
+    }
   }
 }

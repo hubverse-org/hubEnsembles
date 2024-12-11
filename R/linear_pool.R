@@ -12,7 +12,7 @@
 #' @param compound_taskid_set `character` vector of the compound task ID variable
 #'   set. NULL means all columns' values display dependency while equality to
 #'   task_id_cols means that none of the columns' values are dependent.
-#'   Defaults to NA, in which case the task id variables are used.
+#'   Defaults to NULL, in which case the task id variables are used.
 #' @param n_output_samples `numeric` that specifies how many sample forecasts to
 #'   return per unique combination of task IDs. Currently the only supported value
 #'   is NULL, in which case all provided component model samples are collected and
@@ -62,7 +62,7 @@ linear_pool <- function(model_out_tbl, weights = NULL,
                         weights_col_name = "weight",
                         model_id = "hub-ensemble",
                         task_id_cols = NULL,
-                        compound_taskid_set = NA,
+                        compound_taskid_set = NULL,
                         n_samples = 1e4,
                         n_output_samples = NULL,
                         ...) {
