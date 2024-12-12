@@ -27,11 +27,6 @@ linear_pool_sample <- function(model_out_tbl, weights = NULL,
   validate_sample_inputs(model_out_tbl, weights, weights_col_name, n_output_samples)
 
   num_models <- length(unique(model_out_tbl$model_id))
-  samples_per_combo <- model_out_tbl |>
-    dplyr::group_by(dplyr::across(dplyr::all_of(c("model_id", compound_taskid_set)))) |>
-    dplyr::summarize(provided_samples = length(unique(.data[["output_type_id"]]))) |>
-    dplyr::ungroup()
-
   if (is.null(weights)) {
     weights <- data.frame(
       model_id = unique(model_out_tbl$model_id),
@@ -48,38 +43,68 @@ linear_pool_sample <- function(model_out_tbl, weights = NULL,
   }
 
   if (!is.null(n_output_samples)) {
-    samples_per_combo <- samples_per_combo |>
+    samples_per_combo <- model_out_tbl |>
+      dplyr::group_by(dplyr::across(dplyr::all_of(c("model_id", compound_taskid_set)))) |>
+      dplyr::summarize(provided_samples = length(unique(.data[["output_type_id"]]))) |>
+      dplyr::ungroup() |>
+      tidyr::complete(
+        !!!rlang::syms(c("model_id", compound_taskid_set)),
+        fill = list(provided_samples = 0)
+      ) |>
       dplyr::left_join(weights, weight_by_cols) |>
-      dplyr::mutate(target_samples = floor(.data[[weights_col_name]] * n_output_samples))
+      dplyr::mutate(target_samples = ifelse(
+        .data[["provided_samples"]] <= 0,
+        0,
+        floor(.data[[weights_col_name]] * n_output_samples)
+      ))
+
+    if (!is.null(compound_taskid_set)) {
+      samples_per_combo <- samples_per_combo |>
+        split(f = samples_per_combo[, compound_taskid_set])
+    } else {
+      samples_per_combo <- list(samples_per_combo)
+    }
+    # deal with n_output_samples not divisible evenly among component models
+    samples_per_combo <- samples_per_combo |>
+      purrr::map(.f = function(split_per_combo) {
+        valid_models <- split_per_combo$model_id[split_per_combo$provided_samples > 0]
+        split_per_combo[[weights_col_name]] <-
+          ifelse(split_per_combo$provided_samples == 0, 0, 1 / length(valid_models))
+        split_per_combo$target_samples <-
+          ifelse(split_per_combo$target_samples == 0, 0, floor(split_per_combo[[weights_col_name]] * n_output_samples))
+
+        actual_output_samples <- split_per_combo |>
+          dplyr::group_by(dplyr::across(dplyr::all_of(compound_taskid_set))) |>
+          dplyr::summarize(output_samples = sum(.data[["target_samples"]])) |>
+          dplyr::pull(.data[["output_samples"]]) |>
+          unique()
+        remainder_samples <- n_output_samples - actual_output_samples
+
+        models_to_resample <- sample(x = valid_models, size = remainder_samples)
+        split_per_combo |>
+          dplyr::mutate(target_samples = ifelse(
+            model_id %in% models_to_resample, .data[["target_samples"]] + 1, .data[["target_samples"]]
+          ))
+      }) |>
+      purrr::list_rbind()
 
     if (any(samples_per_combo$provided_samples < samples_per_combo$target_samples)) {
       cli::cli_abort("Requested output samples per compound unit cannot exceed the provided samples per compound unit.")
     }
 
-    # deal with n_output_samples not divisible evenly among component models
-    actual_output_samples <- samples_per_combo |>
-      dplyr::group_by(dplyr::across(dplyr::all_of(compound_taskid_set))) |>
-      dplyr::summarize(target_samples = sum(.data[["target_samples"]])) |>
-      dplyr::pull(.data[["target_samples"]]) |>
-      unique()
-    remainder_samples <- n_output_samples - actual_output_samples
-    models_to_resample <- sample(x = unique(samples_per_combo$model_id), size = remainder_samples)
-    samples_per_combo <- samples_per_combo |>
-      dplyr::mutate(target_samples = ifelse(
-        model_id %in% models_to_resample, .data[["target_samples"]] + 1, .data[["target_samples"]]
-      ))
-
-    split_comp_units <- model_out_tbl |>
+    split_compound_taskid_set <- model_out_tbl |>
       split(f = model_out_tbl[, c("model_id", compound_taskid_set)])
-    model_out_tbl <- split_comp_units |>
+    model_out_tbl <- split_compound_taskid_set |>
       purrr::map(.f = function(split_outputs) {
-        current_comp_unit <- split_outputs |>
-          dplyr::distinct(dplyr::across(dplyr::all_of(compound_taskid_set)), .keep_all = TRUE) |>
-          dplyr::left_join(samples_per_combo, by = c("model_id", compound_taskid_set))
-        provided_indices <- unique(split_outputs$output_type_id)
+        if (nrow(split_outputs) != 0) {
+          current_compound_taskid_set <- split_outputs |>
+            dplyr::distinct(dplyr::across(dplyr::all_of(compound_taskid_set)), .keep_all = TRUE) |>
+            dplyr::left_join(samples_per_combo, by = c("model_id", compound_taskid_set))
+          provided_indices <- unique(split_outputs$output_type_id)
 
-        sample_index <- sample(x = provided_indices, size = current_comp_unit$target_samples, replace = FALSE)
-        dplyr::filter(split_outputs, .data[["output_type_id"]] %in% sample_index)
+          sample_idx <- sample(x = provided_indices, size = current_compound_taskid_set$target_samples, replace = FALSE)
+          dplyr::filter(split_outputs, .data[["output_type_id"]] %in% sample_idx)
+        }
       }) |>
       purrr::list_rbind()
   }
