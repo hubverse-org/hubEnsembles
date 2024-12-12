@@ -515,6 +515,75 @@ test_that("samples only collected and re-indexed for simplest case", {
 })
 
 
+test_that("remainder samples are properly distributed when component models don't all forecast for every location", {
+  sample_outputs <- expand.grid(stringsAsFactors = FALSE,
+                                model_id = letters[1:4],
+                                location = c("222", "888"),
+                                horizon = 1, #week
+                                target = "inc death",
+                                target_date = as.Date("2021-12-25"),
+                                output_type = "sample",
+                                output_type_id = 1:3,
+                                value = NA_real_) |>
+    dplyr::filter(model_id %in% letters[1:3] | location == "222")
+
+  sample_outputs$value[sample_outputs$location == "222" &
+                         sample_outputs$output_type_id == 1] <-
+    c(40, 30, 45, 80)
+  sample_outputs$value[sample_outputs$location == "222" &
+                         sample_outputs$output_type_id == 2] <-
+    c(60, 40, 75, 20)
+  sample_outputs$value[sample_outputs$location == "222" &
+                         sample_outputs$output_type_id == 3] <-
+    c(10, 70, 15, 50)
+  sample_outputs$value[sample_outputs$location == "888" &
+                         sample_outputs$output_type_id == 1] <-
+    c(100, 325, 400)
+  sample_outputs$value[sample_outputs$location == "888" &
+                         sample_outputs$output_type_id == 2] <-
+    c(250, 350, 500)
+  sample_outputs$value[sample_outputs$location == "888" &
+                         sample_outputs$output_type_id == 3] <-
+    c(150, 300, 500)
+
+  set.seed(1234)
+  models_to_resample <- sample(x = letters[1:4], size = 6 %% 4)
+  expected_outputs <- expand.grid(
+    stringsAsFactors = FALSE,
+    KEEP.OUT.ATTRS = FALSE,
+    location = c("222", "888"),
+    target = "inc death",
+    target_date = as.Date("2021-12-25"),
+    component_model = letters[1:6],
+    distinct_ids = 1
+  )
+  expected_outputs$component_model[expected_outputs$location == "222" &
+                                     expected_outputs$component_model %in% letters[5:6]] <- models_to_resample
+  expected_outputs$component_model[expected_outputs$location == "888" &
+                                     expected_outputs$component_model %in% letters[4:6]] <- letters[1:3]
+  expected_outputs <- expected_outputs |>
+    dplyr::arrange(dplyr::across(c("location", "target", "target_date", "component_model"))) |>
+    dplyr::tibble()
+
+  set.seed(1234)
+  actual_outputs <- sample_outputs |>
+    dplyr::mutate(component_model = .data[["model_id"]], .before = 1) |>
+    linear_pool(
+      weights = NULL,
+      task_id_cols = c("target_date", "target", "horizon", "location"),
+      compound_taskid_set = c("target", "location", "target_date"),
+      n_output_samples = 6
+    ) |>
+    dplyr::group_by(dplyr::across(dplyr::all_of(
+      c("location", "target", "target_date", "output_type_id", "component_model")
+    ))) |>
+    dplyr::summarize(distinct_ids = dplyr::n()) |>
+    dplyr::ungroup() |>
+    dplyr::select(-"output_type_id")
+  expect_equal(actual_outputs, expected_outputs)
+})
+
+
 test_that("ensemble of samples correctly drawn for compound task ID sets", {
   sample_outputs <- expand.grid(stringsAsFactors = FALSE,
                                 model_id = letters[1:4],
