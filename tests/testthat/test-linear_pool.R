@@ -455,7 +455,7 @@ test_that("all component models submit the same values for non-compound task id 
     dplyr::mutate(origin_date = target_date - horizon, .before = "horizon") |>
     linear_pool(
       weights = NULL,
-      task_id_cols = c("target_date", "target", "horizon", "location"),
+      task_id_cols = c("target_date", "target", "horizon", "location", "origin_date"),
       compound_taskid_set = c("target", "location", "target_date"),
       n_output_samples = NULL
     ) |>
@@ -548,11 +548,10 @@ test_that("ensemble of samples correctly drawn for compound task ID sets", {
     dplyr::mutate(horizon = 0) |>
     dplyr::bind_rows(sample_outputs)
 
-  set.seed(1234)
-  models_to_resample <- sample(x = letters[1:4], size = 5 %% 4)
-
   # All compound units have unique ids which are shared across dependent task columns
   # expected model is re-sampled
+  set.seed(1234)
+  models_to_resample <- sample(x = letters[1:4], size = 5 %% 4)
   subset_expected <- expand.grid(
     stringsAsFactors = FALSE,
     KEEP.OUT.ATTRS = FALSE,
@@ -582,6 +581,8 @@ test_that("ensemble of samples correctly drawn for compound task ID sets", {
   expect_equal(subset_actual, subset_expected)
 
   # All compound units have unique ids, expected model is re-sampled
+  set.seed(1234)
+  models_to_resample <- sample(x = letters[1:4], size = 6 %% 4)
   all_tasks_expected <- expand.grid(
     stringsAsFactors = FALSE,
     KEEP.OUT.ATTRS = FALSE,
@@ -591,10 +592,14 @@ test_that("ensemble of samples correctly drawn for compound task ID sets", {
     target_date = as.Date("2021-12-25"),
     component_model = letters[1:5],
     distinct_ids = 1
-  ) |>
-    dplyr::mutate(component_model = ifelse(component_model == letters[5], models_to_resample, component_model)) |>
+  )
+  all_tasks_expected$component_model[all_tasks_expected$component_model == letters[5]
+                                     & all_tasks_expected$location == "222"] <- models_to_resample
+  all_tasks_expected$component_model[all_tasks_expected$component_model == letters[5]
+                                     & all_tasks_expected$location == "888"] <- models_to_resample
+  all_tasks_expected <- all_tasks_expected |>
     dplyr::arrange(dplyr::across(dplyr::all_of(
-      c("location", "horizon", "target", "target_date")
+      c("location", "horizon", "target", "target_date", "component_model")
     ))) |>
     dplyr::tibble()
   set.seed(1234)
