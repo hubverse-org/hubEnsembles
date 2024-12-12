@@ -418,7 +418,7 @@ test_that("(weighted) quantiles correctly calculated - lognormal family", {
 })
 
 
-test_that("all component models submit the same values for non-compound task id set variables for sample forecasts", {
+test_that("Not all component models forecasting for the same set of dependent task values throws an error", {
   sample_outputs <- expand.grid(stringsAsFactors = FALSE,
                                 model_id = letters[1:4],
                                 location = c("222", "888"),
@@ -567,7 +567,7 @@ test_that("remainder samples are properly distributed when component models don'
 
   set.seed(1234)
   actual_outputs <- sample_outputs |>
-    dplyr::mutate(component_model = .data[["model_id"]], .before = 1) |>
+    dplyr::mutate(component_model = model_id, .before = 1) |>
     linear_pool(
       weights = NULL,
       task_id_cols = c("target_date", "target", "horizon", "location"),
@@ -614,7 +614,7 @@ test_that("ensemble of samples correctly drawn for compound task ID sets", {
                          sample_outputs$output_type_id == 3] <-
     c(150, 300, 500, 350)
   sample_outputs <- sample_outputs |>
-    dplyr::mutate(horizon = 0) |>
+    dplyr::mutate(horizon = 0, value = 0.75 * value) |>
     dplyr::bind_rows(sample_outputs)
 
   # All compound units have unique ids which are shared across dependent task columns
@@ -635,7 +635,7 @@ test_that("ensemble of samples correctly drawn for compound task ID sets", {
     dplyr::tibble()
   set.seed(1234)
   subset_actual <- sample_outputs |>
-    dplyr::mutate(component_model = .data[["model_id"]], .before = 1) |>
+    dplyr::mutate(component_model = model_id, .before = 1) |>
     linear_pool(
       task_id_cols = c("location", "horizon", "target", "target_date"),
       compound_taskid_set = c("location", "target", "target_date"),
@@ -673,7 +673,7 @@ test_that("ensemble of samples correctly drawn for compound task ID sets", {
     dplyr::tibble()
   set.seed(1234)
   all_tasks_actual <- sample_outputs |>
-    dplyr::mutate(component_model = .data[["model_id"]], .before = 1) |>
+    dplyr::mutate(component_model = model_id, .before = 1) |>
     linear_pool(
       task_id_cols = c("location", "horizon", "target", "target_date"),
       compound_taskid_set = c("location", "horizon", "target", "target_date"),
@@ -699,7 +699,7 @@ test_that("ensemble of samples correctly drawn for compound task ID sets", {
     dplyr::tibble()
   set.seed(1234)
   none_actual <- sample_outputs |>
-    dplyr::mutate(component_model = .data[["model_id"]], .before = 1) |>
+    dplyr::mutate(component_model = model_id, .before = 1) |>
     linear_pool_sample(
       task_id_cols = c("target_date", "target", "horizon", "location"),
       compound_taskid_set = NULL,
@@ -751,6 +751,6 @@ test_that("ensemble of samples throws an error for the more complex cases", {
       compound_taskid_set = c("location", "target", "target_date"),
       n_output_samples = 20
     ) |>
-    dplyr::arrange(.data[["output_type_id"]]) |>
+    dplyr::arrange(output_type_id) |>
     expect_error("`weights` must be \"NULL\" or equal for every model", fixed = TRUE)
 })

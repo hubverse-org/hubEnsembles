@@ -59,8 +59,7 @@ linear_pool_sample <- function(model_out_tbl, weights = NULL,
       ))
 
     if (!is.null(compound_taskid_set)) {
-      samples_per_combo <- samples_per_combo |>
-        split(f = samples_per_combo[, compound_taskid_set])
+      samples_per_combo <- split(samples_per_combo, f = samples_per_combo[, compound_taskid_set])
     } else {
       samples_per_combo <- list(samples_per_combo)
     }
