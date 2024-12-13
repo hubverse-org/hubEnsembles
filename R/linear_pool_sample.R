@@ -202,7 +202,7 @@ validate_sample_inputs <- function(model_out_tbl, weights = NULL,
   false_counter <- sum(!same_num_output_ids)
   if (false_counter != 0) {
     cli::cli_abort(c(
-      "x" = "{.arg model_out_tbl} contains {.val {false_counter}} distribution{?s} that cannot be ensembled for samples.",
+      "x" = "{.arg model_out_tbl} contains {.val {false_counter}} sample distribution{?s} that cannot be ensembled.",
       "i" = "Within each group defined by a combination of the compound task ID set 
         variables, all models must provide the same number of sample forecasts"
     ))

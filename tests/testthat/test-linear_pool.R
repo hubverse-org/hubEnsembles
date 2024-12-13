@@ -466,8 +466,7 @@ test_that("Not all component models forecasting for the same set of dependent ta
 })
 
 
-test_that("Component models providing different numbers of samples for any
-           unique combination of compound task ID set variables throws an error", {
+test_that("Unequal samples across component models for unique of compound task ID set vars throws an error", {
   sample_outputs <- expand.grid(stringsAsFactors = FALSE,
                                 model_id = letters[1:4],
                                 location = c("222", "888"),
@@ -508,7 +507,7 @@ test_that("Component models providing different numbers of samples for any
       n_output_samples = NULL
     ) |>
     expect_error(
-      regex = "Within each group defined by a combination of the compound task ID set variables", 
+      regex = "Within each group defined by a combination of the compound task ID set variables",
       fixed = TRUE
     )
 })
