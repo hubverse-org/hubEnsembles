@@ -1,7 +1,7 @@
 #' Perform validations to check that within each group defined by a combination
 #' of values for task id variables and output type, all models provided the same
-#' set of output type ids. This check only applies to the `cdf`, `pmf`, `quantile`,
-#' and `sample` output types to ensure the resulting distribution is valid.
+#' set of output type ids. This check only applies to the `cdf`, `pmf`, and
+#' `quantile` output types to ensure the resulting distribution is valid.
 #'
 #' @param model_out_tbl an object of class `model_out_tbl` with component
 #'   model outputs (e.g., predictions).
@@ -15,7 +15,7 @@
 
 validate_output_type_ids <- function(model_out_tbl, task_id_cols) {
   same_output_id <- model_out_tbl |>
-    dplyr::filter(.data[["output_type"]] %in% c("cdf", "pmf", "quantile", "sample")) |>
+    dplyr::filter(.data[["output_type"]] %in% c("cdf", "pmf", "quantile")) |>
     dplyr::group_by(dplyr::across(c(dplyr::all_of(task_id_cols), "model_id", "output_type"))) |>
     dplyr::summarize(output_type_id_list = list(sort(.data[["output_type_id"]]))) |>
     dplyr::ungroup() |>

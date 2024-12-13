@@ -76,8 +76,8 @@ validate_ensemble_inputs <- function(model_out_tbl, weights = NULL,
     validate_compound_taskid_set(model_out_tbl, task_id_cols, compound_taskid_set, return_missing_combos = FALSE)
   }
 
-  # check if "cdf", "pmf", "quantile", "sample" distributions are valid
-  if (any(unique_output_types %in% c("cdf", "pmf", "quantile", "sample"))) {
+  # check if "cdf", "pmf", "quantile" distributions are valid
+  if (any(unique_output_types %in% c("cdf", "pmf", "quantile"))) {
     validate_output_type_ids(model_out_tbl, task_id_cols)
   }
 

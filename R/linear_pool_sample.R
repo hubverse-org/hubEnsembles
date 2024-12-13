@@ -189,4 +189,22 @@ validate_sample_inputs <- function(model_out_tbl, weights = NULL,
       cli::cli_abort("{.arg weights} may only vary for variables in the {.arg compound_taskid_set}.")
     }
   }
+
+  same_num_output_ids <- model_out_tbl |>
+    dplyr::group_by(dplyr::across(c(dplyr::all_of(compound_taskid_set), "model_id"))) |>
+    dplyr::summarize(num_output_type_id = length(.data[["output_type_id"]])) |>
+    dplyr::ungroup() |>
+    dplyr::group_split(dplyr::across(dplyr::all_of(c(compound_taskid_set)))) |>
+    purrr::map_lgl(.f = function(split_outputs) {
+      length(unique(split_outputs$num_output_type_id)) == 1
+    })
+
+  false_counter <- sum(!same_num_output_ids)
+  if (false_counter != 0) {
+    cli::cli_abort(c(
+      "x" = "{.arg model_out_tbl} contains {.val {false_counter}} distribution{?s} that cannot be ensembled for samples.",
+      "i" = "Within each group defined by a combination of the compound task ID set 
+        variables, all models must provide the same number of sample forecasts"
+    ))
+  }
 }
