@@ -24,7 +24,7 @@ linear_pool_sample <- function(model_out_tbl, weights = NULL,
                                compound_taskid_set = NULL,
                                n_output_samples = NULL) {
 
-  validate_sample_inputs(model_out_tbl, weights, weights_col_name, n_output_samples)
+  validate_sample_inputs(model_out_tbl, weights, weights_col_name, compound_taskid_set, n_output_samples)
 
   num_models <- length(unique(model_out_tbl$model_id))
   if (is.null(weights)) {
@@ -155,6 +155,10 @@ make_sample_indices_unique <- function(model_out_tbl) {
 #'   model weights. Default to `NULL`, which specifies an equally-weighted ensemble
 #' @param weights_col_name `character` string naming the column in `weights`
 #'   with model weights. Defaults to `"weight"`
+#' @param compound_taskid_set `character` vector of the compound task ID variable
+#'   set. NULL means all columns' values display dependency while equality to
+#'   task_id_cols means that none of the columns' values are dependent.
+#'   Defaults to NULL, in which case the task id variables are used.
 #' @param n_output_samples `numeric` that specifies how many sample forecasts to
 #'   return per unique combination of task IDs. Currently the only supported value
 #'   is NULL, in which case all provided component model samples are collected and
@@ -165,6 +169,7 @@ make_sample_indices_unique <- function(model_out_tbl) {
 #' @noRd
 validate_sample_inputs <- function(model_out_tbl, weights = NULL,
                                    weights_col_name = "weight",
+                                   compound_taskid_set = NULL,
                                    n_output_samples = NULL) {
   if (!identical(unique(model_out_tbl$output_type), "sample")) {
     cli::cli_abort("{.arg model_out_tbl} should only contain the sample output type")
@@ -174,12 +179,14 @@ validate_sample_inputs <- function(model_out_tbl, weights = NULL,
     cli::cli_abort("{.arg n_output_samples} must be {.val NULL} or an integer value")
   }
 
-  if (!is.null(weights) && is.null(n_output_samples)) {
-    cli::cli_abort("Component model weights output samples provided,
-                   so a number of ensemble samples {.arg n_output_samples} must be provided")
-  }
+  if (!is.null(weights)) {
+    if (is.null(n_output_samples)) {
+      cli::cli_abort("Component model weights output samples provided,
+                     so a number of ensemble samples {.arg n_output_samples} must be provided")
+    }
 
-  if (!is.null(weights) && !all(colnames(weights) %in% c("model_id", weights_col_name))) {
-    cli::cli_abort("Currently weights for different task IDs are not supported for the sample output type.")
+    if (!all(colnames(weights) %in% c("model_id", compound_taskid_set, weights_col_name))) {
+      cli::cli_abort("{.arg weights} may only vary for variables in the {.arg compound_taskid_set}.")
+    }
   }
 }
