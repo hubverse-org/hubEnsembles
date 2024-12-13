@@ -466,6 +466,83 @@ test_that("Not all component models forecasting for the same set of dependent ta
 })
 
 
+test_that("Component models providing different numbers of samples for any
+           unique combination of compound task ID set variables throws an error", {
+  sample_outputs <- expand.grid(stringsAsFactors = FALSE,
+                                model_id = letters[1:4],
+                                location = c("222", "888"),
+                                horizon = 1, #week
+                                target = "inc death",
+                                target_date = as.Date("2021-12-25"),
+                                output_type = "sample",
+                                output_type_id = 1:3,
+                                value = NA_real_)
+
+  sample_outputs$value[sample_outputs$location == "222" &
+                         sample_outputs$output_type_id == 1] <-
+    c(40, 30, 45, 80)
+  sample_outputs$value[sample_outputs$location == "222" &
+                         sample_outputs$output_type_id == 2] <-
+    c(60, 40, 75, 20)
+  sample_outputs$value[sample_outputs$location == "222" &
+                         sample_outputs$output_type_id == 3] <-
+    c(10, 70, 15, 50)
+  sample_outputs$value[sample_outputs$location == "888" &
+                         sample_outputs$output_type_id == 1] <-
+    c(100, 325, 400, 300)
+  sample_outputs$value[sample_outputs$location == "888" &
+                         sample_outputs$output_type_id == 2] <-
+    c(250, 350, 500, 250)
+  sample_outputs$value[sample_outputs$location == "888" &
+                         sample_outputs$output_type_id == 3] <-
+    c(150, 300, 500, 350)
+
+  sample_outputs |>
+    dplyr::mutate(horizon = 0, value = 0.75 * value) |>
+    dplyr::bind_rows(sample_outputs) |>
+    dplyr::filter(model_id %in% letters[1:3] | output_type_id == 1) |>
+    linear_pool(
+      weights = NULL,
+      task_id_cols = c("target_date", "target", "horizon", "location"),
+      compound_taskid_set = c("target", "location", "target_date"),
+      n_output_samples = NULL
+    ) |>
+    expect_error(
+      regex = "Within each group defined by a combination of the compound task ID set variables", 
+      fixed = TRUE
+    )
+})
+
+
+test_that("Component models can have different sample indexing schemes and be pooled correctly", {
+  sample_outputs <- expand.grid(stringsAsFactors = FALSE,
+                                model_id = letters[1:4],
+                                location = c("222", "888"),
+                                horizon = 1, #week
+                                target = "inc death",
+                                target_date = as.Date("2021-12-25"),
+                                output_type = "sample",
+                                output_type_id = 1:3,
+                                value = NA_real_) |>
+    dplyr::mutate(output_type_id = paste0(.data[["model_id"]], .data[["output_type_id"]]))
+
+  expected_outputs <- sample_outputs |>
+    dplyr::mutate(
+      output_type_id = paste0(.data[["model_id"]], .data[["output_type_id"]]),
+      model_id = "hub-ensemble"
+    ) |>
+    hubUtils::as_model_out_tbl()
+  actual_outputs <- sample_outputs |>
+    linear_pool(
+      weights = NULL,
+      task_id_cols = c("target_date", "target", "horizon", "location"),
+      compound_taskid_set = c("target", "location", "target_date"),
+      n_output_samples = NULL
+    )
+  expect_equal(actual_outputs, expected_outputs)
+})
+
+
 test_that("samples only collected and re-indexed for simplest case", {
   # equal weights, same number of components samples, no limit on output samples
   sample_outputs <- expand.grid(stringsAsFactors = FALSE,
