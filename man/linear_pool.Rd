@@ -13,7 +13,7 @@ linear_pool(
   weights_col_name = "weight",
   model_id = "hub-ensemble",
   task_id_cols = NULL,
-  compound_taskid_set,
+  compound_taskid_set = NA,
   n_samples = 10000,
   n_output_samples = NULL,
   ...
@@ -45,7 +45,10 @@ case all columns in \code{model_out_tbl} other than \code{"model_id"}, \code{"ou
 set. This argument is only relevant for \code{output_type} \code{"sample"}. NULL means
 that samples are from a multivariate joint distribution across all levels of
 all task id variables, while equality to \code{task_id_cols} means that the samples
-are from separate univariate distributions for each individual prediction task.}
+are from separate univariate distributions for each individual prediction task.
+NA means the compound_taskid_set is not relevant for the current modeling task.
+Defaults to NA. Derived task ids must be included if ANY of the task ids their
+values depend on are part of the compound_taskid_set.}
 
 \item{n_samples}{\code{numeric} that specifies the number of samples to use when
 calculating quantiles from an estimated quantile function. Defaults to \code{1e4}.}

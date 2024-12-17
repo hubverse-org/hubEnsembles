@@ -21,7 +21,7 @@
 validate_ensemble_inputs <- function(model_out_tbl, weights = NULL,
                                      weights_col_name = "weight",
                                      task_id_cols = NULL,
-                                     compound_taskid_set,
+                                     compound_taskid_set = NA,
                                      valid_output_types) {
 
   if (!inherits(model_out_tbl, "model_out_tbl")) {
@@ -140,17 +140,7 @@ validate_weights <- function(model_out_cols, weights = NULL, weights_col_name = 
 #' component model outputs for each combination of model task, output type,
 #' and output type id for the sample output type
 #'
-#' @param model_out_tbl an object of class `model_out_tbl` with component
-#'   model outputs (e.g., predictions).
-#' @param task_id_cols `character` vector with names of columns in
-#'   `model_out_tbl` that specify modeling tasks. Defaults to `NULL`, in which
-#'   case all columns in `model_out_tbl` other than `"model_id"`, the specified
-#'   `output_type_col` and `output_type_id_col`, and `"value"` are used as task
-#'   ids.
-#' @param compound_taskid_set `character` vector of the compound task ID variable
-#'   set. NULL means all columns' values display dependency while equality to
-#'   task_id_cols means that none of the columns' values are dependent.
-#'   Defaults to NULL, in which case the task id variables are used.
+#' @inheritParams linear_pool
 #' @param return_missing_combos `boolean` specifying whether to return a `data.frame`
 #'   summarizing the missing combinations of dependent tasks for each model. If
 #'   TRUE, the columns of the `data.frame` will be "model_id" and one for each of the
@@ -165,10 +155,12 @@ validate_weights <- function(model_out_cols, weights = NULL, weights_col_name = 
 validate_compound_taskid_set <- function(model_out_tbl,
                                          task_id_cols, compound_taskid_set,
                                          return_missing_combos = FALSE) {
-  if (is.null(compound_taskid_set)) {
-    # later default to detect from config file
-    compound_taskid_set <- task_id_cols
-  } else if (!all(compound_taskid_set %in% task_id_cols)) {
+  if (identical(compound_taskid_set, NA)) {
+    cli::cli_abort("{.arg compound_taskid_set} must be provided if 
+      {.arg model_out_tbl} contains the sample output type")
+  }
+
+  if (!all(compound_taskid_set %in% task_id_cols)) {
     cli::cli_abort(
       "{.arg compound_taskid_set} contains columns not in {.arg task_id_cols}: 
       {.val {setdiff(compound_taskid_set, task_id_cols)}}"

@@ -14,6 +14,9 @@
 #'   that samples are from a multivariate joint distribution across all levels of
 #'   all task id variables, while equality to `task_id_cols` means that the samples
 #'   are from separate univariate distributions for each individual prediction task.
+#'   NA means the compound_taskid_set is not relevant for the current modeling task.
+#'   Defaults to NA. Derived task ids must be included if ANY of the task ids their
+#'   values depend on are part of the compound_taskid_set.
 #'
 #' @param n_output_samples `numeric` that specifies how many sample forecasts to
 #'   return per unique combination of task IDs. Currently the only supported value
@@ -64,7 +67,7 @@ linear_pool <- function(model_out_tbl, weights = NULL,
                         weights_col_name = "weight",
                         model_id = "hub-ensemble",
                         task_id_cols = NULL,
-                        compound_taskid_set,
+                        compound_taskid_set = NA,
                         n_samples = 1e4,
                         n_output_samples = NULL,
                         ...) {
