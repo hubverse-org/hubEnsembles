@@ -21,7 +21,7 @@ linear_pool_sample <- function(model_out_tbl, weights = NULL,
                                weights_col_name = "weight",
                                model_id = "hub-ensemble",
                                task_id_cols = NULL,
-                               compound_taskid_set = NULL,
+                               compound_taskid_set,
                                n_output_samples = NULL) {
 
   validate_sample_inputs(model_out_tbl, weights, weights_col_name, compound_taskid_set, n_output_samples)
@@ -148,28 +148,21 @@ make_sample_indices_unique <- function(model_out_tbl) {
 #' Perform simple validations on the inputs used to calculate a linear pool
 #' of samples
 #'
+#' @inheritParams linear_pool
 #' @param model_out_tbl an object of class `model_out_tbl` with component
 #'   model outputs (e.g., predictions). May only contain the "sample" output type.
 #' @param weights an optional `data.frame` with component model weights. If
 #'   provided, it should have a column named `model_id` and a column containing
-#'   model weights. Default to `NULL`, which specifies an equally-weighted ensemble
-#' @param weights_col_name `character` string naming the column in `weights`
-#'   with model weights. Defaults to `"weight"`
-#' @param compound_taskid_set `character` vector of the compound task ID variable
-#'   set. NULL means all columns' values display dependency while equality to
-#'   task_id_cols means that none of the columns' values are dependent.
-#'   Defaults to NULL, in which case the task id variables are used.
-#' @param n_output_samples `numeric` that specifies how many sample forecasts to
-#'   return per unique combination of task IDs. Currently the only supported value
-#'   is NULL, in which case all provided component model samples are collected and
-#'   returned.
+#'   model weights. Optionally, it may contain additional columns corresponding to
+#'   variables in the compound task ID set for weights specific to the sample output
+#'   type. Defaults to `NULL`, which specifies an equally-weighted ensemble.
 #'
 #' @return no return value
 #'
 #' @noRd
 validate_sample_inputs <- function(model_out_tbl, weights = NULL,
                                    weights_col_name = "weight",
-                                   compound_taskid_set = NULL,
+                                   compound_taskid_set,
                                    n_output_samples = NULL) {
   if (!identical(unique(model_out_tbl$output_type), "sample")) {
     cli::cli_abort("{.arg model_out_tbl} should only contain the sample output type")

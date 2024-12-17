@@ -2,25 +2,7 @@
 #' component model outputs for each combination of model task, output type,
 #' and output type id. Valid output types should be specified by the user
 #'
-#' @param model_out_tbl an object of class `model_out_tbl` with component
-#'   model outputs (e.g., predictions).
-#' @param weights an optional `data.frame` with component model weights. If
-#'   provided, it should have a column named `model_id` and a column containing
-#'   model weights. Optionally, it may contain additional columns corresponding
-#'   to task id variables, `output_type`, or `output_type_id`, if weights are
-#'   specific to values of those variables. The default is `NULL`, in which case
-#'   an equally-weighted ensemble is calculated.
-#' @param weights_col_name `character` string naming the column in `weights`
-#'   with model weights. Defaults to `"weight"`
-#' @param task_id_cols `character` vector with names of columns in
-#'   `model_out_tbl` that specify modeling tasks. Defaults to `NULL`, in which
-#'   case all columns in `model_out_tbl` other than `"model_id"`, the specified
-#'   `output_type_col` and `output_type_id_col`, and `"value"` are used as task
-#'   ids.
-#' @param compound_taskid_set `character` vector of the compound task ID variable
-#'   set. NULL means all columns' values display dependency while equality to
-#'   task_id_cols means that none of the columns' values are dependent.
-#'   Defaults to NULL, in which case the task id variables are used.
+#' @inheritParams linear_pool
 #' @param valid_output_types `character` vector with the names of valid output
 #'   types for the particular ensembling method used. See the details for more
 #'   information.
@@ -39,7 +21,7 @@
 validate_ensemble_inputs <- function(model_out_tbl, weights = NULL,
                                      weights_col_name = "weight",
                                      task_id_cols = NULL,
-                                     compound_taskid_set = NULL,
+                                     compound_taskid_set,
                                      valid_output_types) {
 
   if (!inherits(model_out_tbl, "model_out_tbl")) {

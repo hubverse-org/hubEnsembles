@@ -13,7 +13,7 @@ linear_pool(
   weights_col_name = "weight",
   model_id = "hub-ensemble",
   task_id_cols = NULL,
-  compound_taskid_set = NULL,
+  compound_taskid_set,
   n_samples = 10000,
   n_output_samples = NULL,
   ...
@@ -42,9 +42,10 @@ case all columns in \code{model_out_tbl} other than \code{"model_id"}, \code{"ou
 \code{"output_type_id"}, and \code{"value"} are used as task ids.}
 
 \item{compound_taskid_set}{\code{character} vector of the compound task ID variable
-set. NULL means all columns' values display dependency while equality to
-task_id_cols means that none of the columns' values are dependent.
-Defaults to NULL, in which case the task id variables are used.}
+set. This argument is only relevant for \code{output_type} \code{"sample"}. NULL means
+that samples are from a multivariate joint distribution across all levels of
+all task id variables, while equality to \code{task_id_cols} means that the samples
+are from separate univariate distributions for each individual prediction task.}
 
 \item{n_samples}{\code{numeric} that specifies the number of samples to use when
 calculating quantiles from an estimated quantile function. Defaults to \code{1e4}.}
