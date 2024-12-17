@@ -52,11 +52,14 @@ linear_pool_sample <- function(model_out_tbl, weights = NULL,
         fill = list(provided_samples = 0)
       ) |>
       dplyr::left_join(weights, weight_by_cols) |>
-      dplyr::mutate(target_samples = ifelse(
-        .data[["provided_samples"]] <= 0,
-        0,
-        floor(.data[[weights_col_name]] * n_output_samples)
-      ))
+      dplyr::group_by(dplyr::across(dplyr::all_of(compound_taskid_set))) |>
+      dplyr::mutate(
+        effective_weight = as.integer(.data[["provided_samples"]] > 0) * .data[[weights_col_name]],
+        effective_weight = .data[["effective_weight"]] / sum(.data[["effective_weight"]]),
+        target_samples = floor(.data[["effective_weight"]] * n_output_samples)
+      ) |>
+      dplyr::ungroup()
+
 
     if (!is.null(compound_taskid_set)) {
       samples_per_combo <- split(samples_per_combo, f = samples_per_combo[, compound_taskid_set])
@@ -66,16 +69,11 @@ linear_pool_sample <- function(model_out_tbl, weights = NULL,
     # deal with n_output_samples not divisible evenly among component models
     samples_per_combo <- samples_per_combo |>
       purrr::map(.f = function(split_per_combo) {
-        valid_models <- split_per_combo$model_id[split_per_combo$provided_samples > 0]
-        split_per_combo[[weights_col_name]] <-
-          ifelse(split_per_combo$provided_samples == 0, 0, 1 / length(valid_models))
-        split_per_combo$target_samples <-
-          ifelse(split_per_combo$target_samples == 0, 0, floor(split_per_combo[[weights_col_name]] * n_output_samples))
-
         actual_output_samples <- sum(split_per_combo$target_samples)
         remainder_samples <- n_output_samples - actual_output_samples
-
+        valid_models <- split_per_combo$model_id[split_per_combo$provided_samples > 0]
         models_to_resample <- sample(x = valid_models, size = remainder_samples)
+
         split_per_combo |>
           dplyr::mutate(target_samples = ifelse(
             model_id %in% models_to_resample, .data[["target_samples"]] + 1, .data[["target_samples"]]
