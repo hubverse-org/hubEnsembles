@@ -2,24 +2,11 @@
 #' component model outputs for each combination of model task, output type,
 #' and output type id. Valid output types should be specified by the user
 #'
-#' @param model_out_tbl an object of class `model_out_tbl` with component
-#'   model outputs (e.g., predictions).
-#' @param weights an optional `data.frame` with component model weights. If
-#'   provided, it should have a column named `model_id` and a column containing
-#'   model weights. Optionally, it may contain additional columns corresponding
-#'   to task id variables, `output_type`, or `output_type_id`, if weights are
-#'   specific to values of those variables. The default is `NULL`, in which case
-#'   an equally-weighted ensemble is calculated.
-#' @param weights_col_name `character` string naming the column in `weights`
-#'   with model weights. Defaults to `"weight"`
-#' @param task_id_cols `character` vector with names of columns in
-#'   `model_out_tbl` that specify modeling tasks. Defaults to `NULL`, in which
-#'   case all columns in `model_out_tbl` other than `"model_id"`, the specified
-#'   `output_type_col` and `output_type_id_col`, and `"value"` are used as task
-#'   ids.
+#' @inheritParams linear_pool
 #' @param valid_output_types `character` vector with the names of valid output
 #'   types for the particular ensembling method used. See the details for more
 #'   information.
+#'
 #' @details If the ensembling function intended to be used is `"simple_ensemble"`,
 #'   the valid output types are `mean`, `median`, `quantile`, `cdf`, and `pmf`.
 #'   If the ensembling function will be `"linear_pool"`, the valid output types
@@ -34,6 +21,7 @@
 validate_ensemble_inputs <- function(model_out_tbl, weights = NULL,
                                      weights_col_name = "weight",
                                      task_id_cols = NULL,
+                                     compound_taskid_set = NA,
                                      valid_output_types) {
 
   if (!inherits(model_out_tbl, "model_out_tbl")) {
@@ -48,7 +36,7 @@ validate_ensemble_inputs <- function(model_out_tbl, weights = NULL,
   } else if (!all(task_id_cols %in% model_out_cols)) {
     cli::cli_abort(c(
       "x" = "{.arg model_out_tbl} did not have all listed task id columns
-             {.val {task_id_col}}."
+             {.val {task_id_cols}}."
     ))
   }
 
@@ -66,44 +54,17 @@ validate_ensemble_inputs <- function(model_out_tbl, weights = NULL,
     ))
   }
 
+  if ("sample" %in% unique_output_types) {
+    validate_compound_taskid_set(model_out_tbl, task_id_cols, compound_taskid_set, return_missing_combos = FALSE)
+  }
+
   # check if "cdf", "pmf", "quantile" distributions are valid
   if (any(unique_output_types %in% c("cdf", "pmf", "quantile"))) {
     validate_output_type_ids(model_out_tbl, task_id_cols)
   }
 
   if (!is.null(weights)) {
-    req_weight_cols <- c("model_id", weights_col_name)
-    if (!all(req_weight_cols %in% colnames(weights))) {
-      cli::cli_abort(c(
-        "x" = "{.arg weights} did not include required columns
-               {.val {req_weight_cols}}."
-      ))
-    }
-
-    weight_by_cols <- colnames(weights)[colnames(weights) != weights_col_name]
-
-    if ("value" %in% weight_by_cols) {
-      cli::cli_abort(c(
-        "x" = "{.arg weights} included a column named {.val {\"value\"}},
-               which is not allowed."
-      ))
-    }
-
-    invalid_cols <- weight_by_cols[!weight_by_cols %in% colnames(model_out_tbl)]
-    if (length(invalid_cols) > 0) {
-      cli::cli_abort(c(
-        "x" = "{.arg weights} included {length(invalid_cols)} column{?s} that
-               {?was/were} not present in {.arg model_out_tbl}:
-               {.val {invalid_cols}}"
-      ))
-    }
-
-    if (weights_col_name %in% colnames(model_out_tbl)) {
-      cli::cli_abort(c(
-        "x" = "The specified {.arg weights_col_name}, {.val {weights_col_name}},
-               is already a column in {.arg model_out_tbl}."
-      ))
-    }
+    validate_weights(model_out_cols, weights, weights_col_name)
 
     if (any(c("cdf", "pmf") %in% unique_output_types) && "output_type_id" %in% colnames(weights)) {
       # nolint start
@@ -119,6 +80,119 @@ validate_ensemble_inputs <- function(model_out_tbl, weights = NULL,
 
   validated_inputs <- list(model_out_tbl = model_out_tbl,
                            weights = weights,
-                           task_id_cols = task_id_cols)
+                           task_id_cols = task_id_cols,
+                           compound_taskid_set = compound_taskid_set)
   return(validated_inputs)
+}
+
+
+#' Perform basic validations on the model weights used to calculate an ensemble of
+#' component model outputs for each combination of model task, output type,
+#' and output type id.
+#'
+#' @param model_out_cols `character` string naming columns in a `model_out_tbl`
+#'   object of component predictions that will be ensembled using the model weights
+#'   in `weights`
+#' @param weights a `data.frame` of component model weights to be validated. It must
+#'   contain a `model_id` column and a column giving weights, but may also contain
+#'   additional columns corresponding to task id variables, `output_type`, or
+#'   `output_type_id`, if weights are specific to values of those variables.
+#' @param weights_col_name `character` string naming the column in `weights`
+#'   with model weights. Defaults to `"weight"`
+#'
+#' @return no return value
+#' @noRd
+
+validate_weights <- function(model_out_cols, weights = NULL, weights_col_name = "weight") {
+  req_weight_cols <- c("model_id", weights_col_name)
+  if (!all(req_weight_cols %in% colnames(weights))) {
+    cli::cli_abort(c(
+      "x" = "{.arg weights} did not include required columns {.val {req_weight_cols}}."
+    ))
+  }
+
+  weight_by_cols <- colnames(weights)[colnames(weights) != weights_col_name]
+
+  if ("value" %in% weight_by_cols) {
+    cli::cli_abort(c(
+      "x" = "{.arg weights} included a column named {.val {\"value\"}}, which is not allowed."
+    ))
+  }
+
+  invalid_cols <- weight_by_cols[!weight_by_cols %in% model_out_cols]
+  if (length(invalid_cols) > 0) {
+    cli::cli_abort(c(
+      "x" = "{.arg weights} included {length(invalid_cols)} column{?s} that
+             {?was/were} not present in {.arg model_out_tbl}: {.val {invalid_cols}}"
+    ))
+  }
+
+  if (weights_col_name %in% model_out_cols) {
+    cli::cli_abort(c(
+      "x" = "The specified {.arg weights_col_name}, {.val {weights_col_name}},
+             is already a column in {.arg model_out_tbl}."
+    ))
+  }
+}
+
+
+#' Perform validations on the compound task ID set used to calculate an ensemble of
+#' component model outputs for each combination of model task, output type,
+#' and output type id for the sample output type
+#'
+#' @inheritParams linear_pool
+#' @param return_missing_combos `boolean` specifying whether to return a `data.frame`
+#'   summarizing the missing combinations of dependent tasks for each model. If
+#'   TRUE, the columns of the `data.frame` will be "model_id" and one for each of the
+#'   dependent tasks (complement of the `compound_taskid_set`). Defaults to FALSE.
+#'
+#' @return If `model_out_tbl` passes the validations, there will be no return value.
+#'   Otherwise, the function will either throw an error if `return_missing_combos` is
+#'   FALSE, or a `data.frame` of the missing combinations of dependent tasks will be
+#'   returned. See above for more details.
+#' @noRd
+
+validate_compound_taskid_set <- function(model_out_tbl,
+                                         task_id_cols, compound_taskid_set,
+                                         return_missing_combos = FALSE) {
+  if (identical(compound_taskid_set, NA)) {
+    cli::cli_abort("{.arg compound_taskid_set} must be provided if 
+      {.arg model_out_tbl} contains the sample output type")
+  }
+
+  if (!all(compound_taskid_set %in% task_id_cols)) {
+    cli::cli_abort(
+      "{.arg compound_taskid_set} contains columns not in {.arg task_id_cols}: 
+      {.val {setdiff(compound_taskid_set, task_id_cols)}}"
+    )
+  }
+
+  dependent_tasks <- setdiff(task_id_cols, compound_taskid_set)
+  sample_actual <- model_out_tbl |>
+    dplyr::filter(.data[["output_type"]] == "sample") |>
+    dplyr::group_by(dplyr::across(dplyr::all_of(c("model_id", dependent_tasks)))) |>
+    dplyr::summarize(unique_forecasts = dplyr::n()) |>
+    dplyr::ungroup() |>
+    dplyr::arrange(!!!rlang::syms(c("model_id", dependent_tasks)))
+  sample_expected <- sample_actual |>
+    tidyr::complete(
+      !!!rlang::syms(c("model_id", dependent_tasks)),
+      fill = list(unique_forecasts = 0),
+      explicit = TRUE
+    ) |>
+    dplyr::arrange(!!!rlang::syms(c("model_id", dependent_tasks)))
+
+  if (!identical(sample_actual, sample_expected)) {
+    if (return_missing_combos) {
+      sample_expected |>
+        dplyr::filter(.data[["unique_forecasts"]] == 0) |>
+        dplyr::select(-"unique_forecasts")
+    } else {
+      cli::cli_abort(c(
+        x = "Not all component models in {.arg model_out_tbl} forecast for the same set of dependent tasks",
+        i = "Run {.arg validate_compound_taskid_set(model_out_tbl, task_id_cols, 
+          compound_taskid_set, return_missing_combos = TRUE)} to see the missing dependent tasks"
+      ))
+    }
+  }
 }
