@@ -72,11 +72,7 @@ linear_pool_sample <- function(model_out_tbl, weights = NULL,
         split_per_combo$target_samples <-
           ifelse(split_per_combo$target_samples == 0, 0, floor(split_per_combo[[weights_col_name]] * n_output_samples))
 
-        actual_output_samples <- split_per_combo |>
-          dplyr::group_by(dplyr::across(dplyr::all_of(compound_taskid_set))) |>
-          dplyr::summarize(output_samples = sum(.data[["target_samples"]])) |>
-          dplyr::pull(.data[["output_samples"]]) |>
-          unique()
+        actual_output_samples <- sum(split_per_combo$target_samples)
         remainder_samples <- n_output_samples - actual_output_samples
 
         models_to_resample <- sample(x = valid_models, size = remainder_samples)
