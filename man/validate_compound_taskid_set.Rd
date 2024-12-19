@@ -3,8 +3,11 @@
 \name{validate_compound_taskid_set}
 \alias{validate_compound_taskid_set}
 \title{Perform validations on the compound task ID set used to calculate an ensemble of
-component model outputs for each combination of model task, output type,
-and output type id for the sample output type}
+component model outputs for the sample output type, including checks that
+(1) \code{compound_taskid_set} is a subset of \code{task_id_cols}, (2) the provided
+\code{model_out_tbl} is compatible with the specified \code{compound_taskid_set}, and
+(3) all models submit predictions for the same set of non \code{compound_taskid_set}
+variables.}
 \usage{
 validate_compound_taskid_set(
   model_out_tbl,
@@ -44,6 +47,9 @@ returned. See above for more details.
 }
 \description{
 Perform validations on the compound task ID set used to calculate an ensemble of
-component model outputs for each combination of model task, output type,
-and output type id for the sample output type
+component model outputs for the sample output type, including checks that
+(1) \code{compound_taskid_set} is a subset of \code{task_id_cols}, (2) the provided
+\code{model_out_tbl} is compatible with the specified \code{compound_taskid_set}, and
+(3) all models submit predictions for the same set of non \code{compound_taskid_set}
+variables.
 }

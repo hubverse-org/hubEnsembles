@@ -137,8 +137,11 @@ validate_weights <- function(model_out_cols, weights = NULL, weights_col_name = 
 
 
 #' Perform validations on the compound task ID set used to calculate an ensemble of
-#' component model outputs for each combination of model task, output type,
-#' and output type id for the sample output type
+#' component model outputs for the sample output type, including checks that
+#' (1) `compound_taskid_set` is a subset of `task_id_cols`, (2) the provided
+#' `model_out_tbl` is compatible with the specified `compound_taskid_set`, and
+#' (3) all models submit predictions for the same set of non `compound_taskid_set`
+#' variables.
 #'
 #' @inheritParams linear_pool
 #' @param return_missing_combos `boolean` specifying whether to return a `data.frame`
@@ -150,7 +153,6 @@ validate_weights <- function(model_out_cols, weights = NULL, weights_col_name = 
 #'   Otherwise, the function will either throw an error if `return_missing_combos` is
 #'   FALSE, or a `data.frame` of the missing combinations of dependent tasks will be
 #'   returned. See above for more details.
-
 validate_compound_taskid_set <- function(model_out_tbl,
                                          task_id_cols, compound_taskid_set,
                                          return_missing_combos = FALSE) {
