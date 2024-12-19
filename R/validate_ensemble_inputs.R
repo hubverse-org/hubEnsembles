@@ -150,7 +150,6 @@ validate_weights <- function(model_out_cols, weights = NULL, weights_col_name = 
 #'   Otherwise, the function will either throw an error if `return_missing_combos` is
 #'   FALSE, or a `data.frame` of the missing combinations of dependent tasks will be
 #'   returned. See above for more details.
-#' @noRd
 
 validate_compound_taskid_set <- function(model_out_tbl,
                                          task_id_cols, compound_taskid_set,
