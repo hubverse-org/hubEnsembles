@@ -456,14 +456,15 @@ test_that("Not all component models forecasting for the same set of dependent ta
                          sample_outputs$output_type_id == 3] <-
     c(150, 300, 500, 350)
 
-  sample_outputs |>
+  sample_outputs <- sample_outputs |>
     dplyr::mutate(horizon = 0, value = 0.75 * value) |>
     dplyr::filter(model_id %in% letters[1:3]) |>
-    dplyr::bind_rows(sample_outputs) |>
-    dplyr::mutate(origin_date = target_date - horizon, .before = "horizon") |>
+    dplyr::bind_rows(sample_outputs)
+
+  sample_outputs |>
     linear_pool(
       weights = NULL,
-      task_id_cols = c("target_date", "target", "horizon", "location", "origin_date"),
+      task_id_cols = c("target_date", "target", "horizon", "location"),
       compound_taskid_set = c("target", "location", "target_date"),
       n_output_samples = NULL
     ) |>
@@ -471,6 +472,16 @@ test_that("Not all component models forecasting for the same set of dependent ta
       regex = "Not all component models in `model_out_tbl` forecast for the same set of dependent tasks",
       fixed = TRUE
     )
+
+  # test that df of missing combos returns the expected value
+  missing_expected <- data.frame(model_id = letters[4], horizon = 0)
+  missing_actual <- sample_outputs |>
+    validate_compound_taskid_set(
+      task_id_cols = c("target_date", "target", "horizon", "location"),
+      compound_taskid_set = c("target", "location", "target_date"),
+      return_missing_combos = TRUE
+    )
+  expect_equal(missing_actual, dplyr::tibble(missing_expected))
 })
 
 
