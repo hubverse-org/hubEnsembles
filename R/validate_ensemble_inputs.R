@@ -167,6 +167,29 @@ validate_compound_taskid_set <- function(model_out_tbl,
   }
 
   dependent_tasks <- setdiff(task_id_cols, compound_taskid_set)
+
+  # check component model outputs are compatible with the specified compound task id set vars
+  same_output_type_ids_by_model <- model_out_tbl |>
+    dplyr::filter(.data[["output_type"]] == "sample") |>
+    dplyr::group_by(dplyr::across(dplyr::all_of(c("model_id", dependent_tasks)))) |>
+    dplyr::summarize(output_type_id_list = list(sort(.data[["output_type_id"]]))) |>
+    dplyr::ungroup() |>
+    dplyr::group_split(dplyr::across(dplyr::all_of(c("model_id")))) |>
+    purrr::map_lgl(.f = function(split_outputs) {
+      length(unique(split_outputs$output_type_id_list)) == 1
+    })
+
+  false_counter <- sum(!same_output_type_ids_by_model)
+  if (false_counter != 0) {
+    cli::cli_abort(c(
+      "x" = "The specified {.arg compound_taskid_set} is incompatible with {.val {false_counter}} 
+        component models in the provided {.arg model_out_tbl}",
+      "i" = "Each model's output type ID levels must be shared across all 
+        combinations of non-compound task id set variables"
+    ))
+  }
+
+  # check all component models forecast the same set of non-compound task id set vars
   sample_actual <- model_out_tbl |>
     dplyr::filter(.data[["output_type"]] == "sample") |>
     dplyr::group_by(dplyr::across(dplyr::all_of(c("model_id", dependent_tasks)))) |>
