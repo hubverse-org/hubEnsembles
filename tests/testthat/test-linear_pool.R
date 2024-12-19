@@ -427,6 +427,11 @@ test_that("(weighted) quantiles correctly calculated - lognormal family", {
 
 
 test_that("Not all component models forecasting for the same set of dependent task values throws an error", {
+  # There are four models, "a", "b", "c", and "d".
+  # The first three have samples for horizons 0 and 1, while model "d" has samples for only horizon 1.
+  # The compound task id set doesn't include horizon, so the samples are trajectories over time.
+  # We expect to see an error in this case, as we can't combine predictions from models with different
+  # subsets of values for variables outside of the compount_taskid_set.
   sample_outputs <- expand.grid(stringsAsFactors = FALSE,
                                 model_id = letters[1:4],
                                 location = c("222", "888"),
@@ -533,6 +538,9 @@ test_that("If the specified `compound_taskid_set` is incompatible with component
 
 
 test_that("Unequal samples across component models for unique of compound task ID set vars throws an error", {
+  # there are four models, "a", "b", "c", and "d".
+  # The first three models each submit 3 samples, while model "d" submits only 1 sample.
+  # We expect an error in this situation, because our methods currently do not support it.
   sample_outputs <- expand.grid(stringsAsFactors = FALSE,
                                 model_id = letters[1:4],
                                 location = c("222", "888"),
