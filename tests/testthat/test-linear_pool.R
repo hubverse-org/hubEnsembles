@@ -573,7 +573,7 @@ test_that("Unequal samples across component models for unique of compound task I
   sample_outputs |>
     dplyr::mutate(horizon = 0, value = 0.75 * value) |>
     dplyr::bind_rows(sample_outputs) |>
-    dplyr::filter(model_id %in% letters[1:3] | output_type_id == 1) |>
+    dplyr::filter(model_id %in% letters[1:3] | (output_type_id == 1 & location == "222")) |>
     linear_pool(
       weights = NULL,
       task_id_cols = c("target_date", "target", "horizon", "location"),
