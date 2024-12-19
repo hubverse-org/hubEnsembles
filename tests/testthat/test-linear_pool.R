@@ -666,6 +666,12 @@ test_that("samples only collected and re-indexed for simplest case", {
 
 
 test_that("remainder samples are properly distributed when component models don't all forecast for every location", {
+  # There are four models, "a", "b", "c", and "d".
+  # The first three have samples for locations "222" and "888", while model "d" has samples for only horizon "222".
+  # Since not all models forecast for every unique combination of compound task id set variables,
+  # the requested output samples will be split differently across those unique combinations
+  # We want to ensure that the correct number of output samples are returned
+  # and the component models they originate from are as expected
   sample_outputs <- expand.grid(stringsAsFactors = FALSE,
                                 model_id = letters[1:4],
                                 location = c("222", "888"),
@@ -735,6 +741,11 @@ test_that("remainder samples are properly distributed when component models don'
 
 
 test_that("ensemble of samples correctly drawn for compound task ID sets", {
+  # There are four models, "a", "b", "c", and "d".
+  # We want to ensure the samples are pooled correctly for different cases of compound task ids set make up,, e.g.:
+  #   (1) The compound task id set consists of a subset of the task id variables
+  #   (2) The compound task id set matches all the task id variables exactly
+  #   (3) The compound task id set is NULL
   sample_outputs <- expand.grid(stringsAsFactors = FALSE,
                                 model_id = letters[1:4],
                                 location = c("222", "888"),
