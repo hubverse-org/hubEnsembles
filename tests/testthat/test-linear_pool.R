@@ -778,8 +778,8 @@ test_that("ensemble of samples correctly drawn for compound task ID sets", {
     dplyr::mutate(horizon = 0, value = 0.75 * value) |>
     dplyr::bind_rows(sample_outputs)
 
-  # All compound units have unique ids which are shared across dependent task columns
-  # expected model is re-sampled
+  # All compound units have unique output type ids which are shared across
+  # non-compound task ids set columns and the expected model is re-sampled
   set.seed(1234)
   models_to_resample <- sample(x = letters[1:4], size = 5 %% 4)
   subset_expected <- expand.grid(
@@ -810,7 +810,7 @@ test_that("ensemble of samples correctly drawn for compound task ID sets", {
     dplyr::select(-"output_type_id")
   expect_equal(subset_actual, subset_expected)
 
-  # All compound units have unique ids, expected model is re-sampled
+  # All compound units have unique output type ids and the expected model is re-sampled
   set.seed(1234)
   models_to_resample <- sample(x = letters[1:4], size = 6 %% 4)
   all_tasks_expected <- expand.grid(
@@ -848,8 +848,8 @@ test_that("ensemble of samples correctly drawn for compound task ID sets", {
     dplyr::select(-"output_type_id")
   expect_equal(all_tasks_actual, all_tasks_expected)
 
-  # No compound units; unique ids are shared across dependent task columns
-  # expected model is re-sampled
+  # NULL compound task id set variables; unique output type ids are shared across
+  # non-compound task ids set columns and the expected model is re-sampled
   none_expected <- expand.grid(
     stringsAsFactors = FALSE,
     KEEP.OUT.ATTRS = FALSE,
