@@ -33,36 +33,7 @@ test_that("(#128) linear pool will group by output_type", {
 
 
 test_that("non-default columns are dropped from output", {
-  # set up simple data for test cases
-  quantile_outputs <- expand.grid(stringsAsFactors = FALSE,
-                                  model_id = letters[1:4],
-                                  location = c("222", "888"),
-                                  horizon = 1, #week
-                                  target = "inc death",
-                                  target_date = as.Date("2021-12-25"),
-                                  output_type = "quantile",
-                                  output_type_id = c(.1, .5, .9),
-                                  value = NA_real_)
-
-  quantile_outputs$value[quantile_outputs$location == "222" &
-                           quantile_outputs$output_type_id == .1] <-
-    c(10, 30, 15, 20)
-  quantile_outputs$value[quantile_outputs$location == "222" &
-                           quantile_outputs$output_type_id == .5] <-
-    c(40, 40, 45, 50)
-  quantile_outputs$value[quantile_outputs$location == "222" &
-                           quantile_outputs$output_type_id == .9] <-
-    c(60, 70, 75, 80)
-  quantile_outputs$value[quantile_outputs$location == "888" &
-                           quantile_outputs$output_type_id == .1] <-
-    c(100, 300, 400, 250)
-  quantile_outputs$value[quantile_outputs$location == "888" &
-                           quantile_outputs$output_type_id == .5] <-
-    c(150, 325, 500, 300)
-  quantile_outputs$value[quantile_outputs$location == "888" &
-                           quantile_outputs$output_type_id == .9] <-
-    c(250, 350, 500, 350)
-
+  quantile_outputs <- create_test_quantile_outputs()
   output_names <- quantile_outputs |>
     dplyr::mutate(extra_col_1 = "a", extra_col_2 = "a") |>
     linear_pool(
@@ -75,35 +46,7 @@ test_that("non-default columns are dropped from output", {
 
 
 test_that("component model outputs and resulting ensemble model outputs have identical sorted unique output type ids", {
-  quantile_outputs <- expand.grid(stringsAsFactors = FALSE,
-                                  model_id = letters[1:4],
-                                  location = c("222", "888"),
-                                  horizon = 1, #week
-                                  target = "inc death",
-                                  target_date = as.Date("2021-12-25"),
-                                  output_type = "quantile",
-                                  output_type_id = c(.1, .5, .9),
-                                  value = NA_real_)
-
-  quantile_outputs$value[quantile_outputs$location == "222" &
-                           quantile_outputs$output_type_id == .1] <-
-    c(10, 30, 15, 20)
-  quantile_outputs$value[quantile_outputs$location == "222" &
-                           quantile_outputs$output_type_id == .5] <-
-    c(40, 40, 45, 50)
-  quantile_outputs$value[quantile_outputs$location == "222" &
-                           quantile_outputs$output_type_id == .9] <-
-    c(60, 70, 75, 80)
-  quantile_outputs$value[quantile_outputs$location == "888" &
-                           quantile_outputs$output_type_id == .1] <-
-    c(100, 300, 400, 250)
-  quantile_outputs$value[quantile_outputs$location == "888" &
-                           quantile_outputs$output_type_id == .5] <-
-    c(150, 325, 500, 300)
-  quantile_outputs$value[quantile_outputs$location == "888" &
-                           quantile_outputs$output_type_id == .9] <-
-    c(250, 350, 500, 350)
-
+  quantile_outputs <- create_test_quantile_outputs()
   expected_output_type_ids <- data.frame(quantile_outputs) |>
     dplyr::pull("output_type_id") |>
     unique() |>
