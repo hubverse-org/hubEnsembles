@@ -170,7 +170,10 @@ validate_compound_taskid_set <- function(model_out_tbl,
 
   dependent_tasks <- setdiff(task_id_cols, compound_taskid_set)
 
-  # check component model outputs are compatible with the specified compound task id set vars
+  # check component model outputs are compatible with the specified compound task id set vars.
+  # output_type_id levels (i.e., sample indices) must be shared across all combinations of
+  # non-compound task id set vars, indicating a sample from a joint distribution across
+  # those variables.
   same_output_type_ids_by_model <- model_out_tbl |>
     dplyr::filter(.data[["output_type"]] == "sample") |>
     dplyr::group_by(dplyr::across(dplyr::all_of(c("model_id", dependent_tasks)))) |>
