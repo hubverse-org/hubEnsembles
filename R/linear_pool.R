@@ -17,7 +17,6 @@
 #'   NA means the compound_taskid_set is not relevant for the current modeling task.
 #'   Defaults to NA. Derived task ids must be included if ANY of the task ids their
 #'   values depend on are part of the compound_taskid_set.
-#'
 #' @param n_output_samples `numeric` that specifies how many sample forecasts to
 #'   return per unique combination of task IDs. Currently the only supported value
 #'   is NULL, in which case all provided component model samples are collected and
