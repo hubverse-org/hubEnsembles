@@ -420,7 +420,7 @@ test_that("If the specified `compound_taskid_set` is incompatible with component
 })
 
 
-test_that("Unequal samples across component models for unique of compound task ID set vars throws an error", {
+test_that("Unequal numbers of samples across component models for unique combination of compound task ID set vars throws an error", {
   # there are four models, "a", "b", "c", and "d".
   # The first three models each submit 3 samples, while model "d" submits only 1 sample.
   # We expect an error in this situation, because our methods currently do not support it.
