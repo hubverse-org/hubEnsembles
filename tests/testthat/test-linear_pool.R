@@ -374,7 +374,7 @@ test_that("Not all component models forecasting for the same set of dependent ta
   # The first three have samples for horizons 0 and 1, while model "d" has samples for only horizon 1.
   # The compound task id set doesn't include horizon, so the samples are trajectories over time.
   # We expect to see an error in this case, as we can't combine predictions from models with different
-  # subsets of values for variables outside of the compount_taskid_set.
+  # subsets of values for variables outside of the compound_taskid_set.
   sample_outputs <- create_test_sample_outputs() |>
     dplyr::filter(model_id %in% letters[1:3] | horizon == 1)
 
@@ -420,25 +420,29 @@ test_that("If the specified `compound_taskid_set` is incompatible with component
 })
 
 
-test_that("Unequal numbers of samples across component models for unique combination of compound task ID set vars throws an error", {
-  # there are four models, "a", "b", "c", and "d".
-  # The first three models each submit 3 samples, while model "d" submits only 1 sample.
-  # We expect an error in this situation, because our methods currently do not support it.
-  sample_outputs <- create_test_sample_outputs() |>
-    dplyr::filter(model_id %in% letters[1:3] | (output_type_id == 1 & location == "222"))
+test_that(
+  "Unequal numbers of samples across component models for unique combination of 
+  compound task ID set vars throws an error",
+  {
+    # there are four models, "a", "b", "c", and "d".
+    # The first three models each submit 3 samples, while model "d" submits only 1 sample.
+    # We expect an error in this situation, because our methods currently do not support it.
+    sample_outputs <- create_test_sample_outputs() |>
+      dplyr::filter(model_id %in% letters[1:3] | (output_type_id == 1 & location == "222"))
 
-  linear_pool(
-    sample_outputs,
-    weights = NULL,
-    task_id_cols = c("target_date", "target", "horizon", "location"),
-    compound_taskid_set = c("target", "location", "target_date"),
-    n_output_samples = NULL
-  ) |>
-    expect_error(
-      regex = "Within each group defined by a combination of the compound task ID set variables",
-      fixed = TRUE
-    )
-})
+    linear_pool(
+      sample_outputs,
+      weights = NULL,
+      task_id_cols = c("target_date", "target", "horizon", "location"),
+      compound_taskid_set = c("target", "location", "target_date"),
+      n_output_samples = NULL
+    ) |>
+      expect_error(
+        regex = "Within each group defined by a combination of the compound task ID set variables",
+        fixed = TRUE
+      )
+  }
+)
 
 
 test_that("Component models can have different sample indexing schemes and be pooled correctly", {
@@ -543,12 +547,12 @@ test_that("ensemble of samples correctly drawn for compound task ID sets", {
 
   # per location: check every joint sample forecast is represented 2 or 4 times
   # (once or twice per horizon), total 12 output samples (6 per horizon)
-  subset_summarized_222 <- subset_summarized[subset_summarized$location == "222",]
+  subset_summarized_222 <- subset_summarized[subset_summarized$location == "222", ]
   expect_in(subset_summarized_222$num_forecasts, 2)
   expect_equal(length(unique(subset_summarized_222$output_type_id)), 6)
   expect_equal(sum(subset_summarized_222$num_forecasts), 12)
 
-  subset_summarized_888 <- subset_summarized[subset_summarized$location == "888",]
+  subset_summarized_888 <- subset_summarized[subset_summarized$location == "888", ]
   expect_in(subset_summarized_888$num_forecasts, 2)
   expect_equal(length(unique(subset_summarized_888$output_type_id)), 6)
   expect_equal(sum(subset_summarized_888$num_forecasts), 12)
@@ -570,17 +574,17 @@ test_that("ensemble of samples correctly drawn for compound task ID sets", {
 
   # per location: check every joint sample forecast is represented once or twice,
   # with between 6 and 12 unique joint sample forecasts, total 12 output samples
-  all_tasks_summarized_222 <- all_tasks_summarized[all_tasks_summarized$location == "222",]
+  all_tasks_summarized_222 <- all_tasks_summarized[all_tasks_summarized$location == "222", ]
   expect_in(all_tasks_summarized_222$num_forecasts, c(1, 2))
   expect_in(length(unique(all_tasks_summarized_222$output_type_id)), 6:12)
   expect_equal(sum(all_tasks_summarized_222$num_forecasts), 12)
-  
-  all_tasks_summarized_888 <- all_tasks_summarized[all_tasks_summarized$location == "888",]
+
+  all_tasks_summarized_888 <- all_tasks_summarized[all_tasks_summarized$location == "888", ]
   expect_in(all_tasks_summarized_888$num_forecasts, c(1, 2))
   expect_in(length(unique(all_tasks_summarized_888$output_type_id)), 6:12)
   expect_equal(sum(all_tasks_summarized_888$num_forecasts), 12)
 
-  
+
   # NULL compound task id set variables; unique output type ids are shared across
   # non-compound task ids set columns and the expected model is re-sampled
   none_summarized <- sample_outputs |>
