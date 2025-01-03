@@ -403,6 +403,12 @@ test_that("Not all component models forecasting for the same set of dependent ta
 
 
 test_that("If the specified `compound_taskid_set` is incompatible with component model outputs, throw an error", {
+  # There are four models, "a", "b", "c", and "d", each with samples for horizons 0 and 1
+  # The output type ids are a combination of the location and digits 1 to 3
+  # We don't include horizon in the compound task id set, as the samples are trajectories over time.
+  # In this case, the compound task id set is purposefully misspecified to not include location
+  # to produce an error, as `linear_pool()` can't ensemble across non-compound task id variables
+  # with different output type id values (which is how we check compatibility)
   sample_outputs <- create_test_sample_outputs() |>
     dplyr::mutate(output_type_id = paste0(.data[["location"]], .data[["output_type_id"]]))
 
