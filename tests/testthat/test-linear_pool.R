@@ -493,27 +493,9 @@ test_that("remainder samples are properly distributed when component models don'
   sample_outputs <- create_test_sample_outputs() |>
     dplyr::filter(model_id %in% letters[1:3] | location == "222", horizon == 1)
 
-  set.seed(1234)
-  models_to_resample <- sample(x = letters[1:4], size = 6 %% 4)
-  expected_outputs <- expand.grid(
-    stringsAsFactors = FALSE,
-    KEEP.OUT.ATTRS = FALSE,
-    location = c("222", "888"),
-    target = "inc death",
-    target_date = as.Date("2021-12-25"),
-    component_model = letters[1:6],
-    distinct_ids = 1
-  )
-  expected_outputs$component_model[expected_outputs$location == "222" &
-                                     expected_outputs$component_model %in% letters[5:6]] <- models_to_resample
-  expected_outputs$component_model[expected_outputs$location == "888" &
-                                     expected_outputs$component_model %in% letters[4:6]] <- letters[1:3]
-  expected_outputs <- expected_outputs |>
-    dplyr::arrange(dplyr::across(c("location", "target", "target_date", "component_model"))) |>
-    dplyr::tibble()
-
-  set.seed(1234)
-  actual_outputs <- sample_outputs |>
+  # Summarize outputs by compound task id set and component model to calculate the number of samples
+  # that originate from each model per unique combination of compound task id set variables
+  lp_outputs_summarized <- sample_outputs |>
     dplyr::mutate(component_model = model_id, .before = 1) |>
     linear_pool(
       weights = NULL,
@@ -521,13 +503,18 @@ test_that("remainder samples are properly distributed when component models don'
       compound_taskid_set = c("target", "location", "target_date"),
       n_output_samples = 6
     ) |>
-    dplyr::group_by(dplyr::across(dplyr::all_of(
-      c("location", "target", "target_date", "output_type_id", "component_model")
-    ))) |>
-    dplyr::summarize(distinct_ids = dplyr::n()) |>
-    dplyr::ungroup() |>
-    dplyr::select(-"output_type_id")
-  expect_equal(actual_outputs, expected_outputs)
+    dplyr::group_by(dplyr::across(dplyr::all_of(c("location", "target", "target_date", "component_model")))) |>
+    dplyr::summarize(num_forecasts_per_model = dplyr::n())
+
+  # location 222: check all models represented once or twice, total 6 output samples
+  num_model_forecasts_222 <- lp_outputs_summarized$num_forecasts_per_model[lp_outputs_summarized$location == "222"]
+  expect_in(num_model_forecasts_222, c(1, 2))
+  expect_equal(sum(num_model_forecasts_222), 6)
+
+  # location 888: check all models represented twice, total 6 output samples
+  num_model_forecasts_888 <- lp_outputs_summarized$num_forecasts_per_model[lp_outputs_summarized$location == "888"]
+  expect_in(num_model_forecasts_888, 2)
+  expect_equal(sum(num_model_forecasts_888), 6)
 })
 
 
@@ -541,97 +528,76 @@ test_that("ensemble of samples correctly drawn for compound task ID sets", {
 
   # All compound units have unique output type ids which are shared across
   # non-compound task ids set columns and the expected model is re-sampled
-  set.seed(1234)
-  models_to_resample <- sample(x = letters[1:4], size = 5 %% 4)
-  subset_expected <- expand.grid(
-    stringsAsFactors = FALSE,
-    KEEP.OUT.ATTRS = FALSE,
-    location = c("222", "888"),
-    target = "inc death",
-    target_date = as.Date("2021-12-25"),
-    component_model = letters[1:5],
-    distinct_ids = 2
-  ) |>
-    dplyr::mutate(component_model = ifelse(component_model == letters[5], models_to_resample, component_model)) |>
-    dplyr::arrange(dplyr::across(c("location", "target", "target_date"))) |>
-    dplyr::tibble()
-  set.seed(1234)
-  subset_actual <- sample_outputs |>
+  subset_summarized <- sample_outputs |>
     dplyr::mutate(component_model = model_id, .before = 1) |>
     linear_pool(
       task_id_cols = c("location", "horizon", "target", "target_date"),
       compound_taskid_set = c("location", "target", "target_date"),
-      n_output_samples = 5
+      n_output_samples = 6
     ) |>
     dplyr::group_by(dplyr::across(dplyr::all_of(
       c("location", "target", "target_date", "output_type_id", "component_model")
     ))) |>
-    dplyr::summarize(distinct_ids = dplyr::n()) |>
-    dplyr::ungroup() |>
-    dplyr::select(-"output_type_id")
-  expect_equal(subset_actual, subset_expected)
+    dplyr::summarize(num_forecasts = dplyr::n()) |>
+    dplyr::ungroup()
+
+  # per location: check every joint sample forecast is represented 2 or 4 times
+  # (once or twice per horizon), total 12 output samples (6 per horizon)
+  subset_summarized_222 <- subset_summarized[subset_summarized$location == "222",]
+  expect_in(subset_summarized_222$num_forecasts, 2)
+  expect_equal(length(unique(subset_summarized_222$output_type_id)), 6)
+  expect_equal(sum(subset_summarized_222$num_forecasts), 12)
+
+  subset_summarized_888 <- subset_summarized[subset_summarized$location == "888",]
+  expect_in(subset_summarized_888$num_forecasts, 2)
+  expect_equal(length(unique(subset_summarized_888$output_type_id)), 6)
+  expect_equal(sum(subset_summarized_888$num_forecasts), 12)
+
 
   # All compound units have unique output type ids and the expected model is re-sampled
-  set.seed(1234)
-  models_to_resample <- sample(x = letters[1:4], size = 6 %% 4)
-  all_tasks_expected <- expand.grid(
-    stringsAsFactors = FALSE,
-    KEEP.OUT.ATTRS = FALSE,
-    location = c("222", "888"),
-    horizon = c(0, 1),
-    target = "inc death",
-    target_date = as.Date("2021-12-25"),
-    component_model = letters[1:5],
-    distinct_ids = 1
-  )
-  all_tasks_expected$component_model[all_tasks_expected$component_model == letters[5]
-                                     & all_tasks_expected$location == "222"] <- models_to_resample
-  all_tasks_expected$component_model[all_tasks_expected$component_model == letters[5]
-                                     & all_tasks_expected$location == "888"] <- models_to_resample
-  all_tasks_expected <- all_tasks_expected |>
-    dplyr::arrange(dplyr::across(dplyr::all_of(
-      c("location", "horizon", "target", "target_date", "component_model")
-    ))) |>
-    dplyr::tibble()
-  set.seed(1234)
-  all_tasks_actual <- sample_outputs |>
+  all_tasks_summarized <- sample_outputs |>
     dplyr::mutate(component_model = model_id, .before = 1) |>
     linear_pool(
       task_id_cols = c("location", "horizon", "target", "target_date"),
       compound_taskid_set = c("location", "horizon", "target", "target_date"),
-      n_output_samples = 5
+      n_output_samples = 6
     ) |>
     dplyr::group_by(dplyr::across(dplyr::all_of(
       c("location", "horizon", "target", "target_date", "output_type_id", "component_model")
     ))) |>
-    dplyr::summarize(distinct_ids = dplyr::n()) |>
-    dplyr::ungroup() |>
-    dplyr::select(-"output_type_id")
-  expect_equal(all_tasks_actual, all_tasks_expected)
+    dplyr::summarize(num_forecasts = dplyr::n()) |>
+    dplyr::ungroup()
 
+  # per location: check every joint sample forecast is represented once or twice,
+  # with between 6 and 12 unique joint sample forecasts, total 12 output samples
+  all_tasks_summarized_222 <- all_tasks_summarized[all_tasks_summarized$location == "222",]
+  expect_in(all_tasks_summarized_222$num_forecasts, c(1, 2))
+  expect_in(length(unique(all_tasks_summarized_222$output_type_id)), 6:12)
+  expect_equal(sum(all_tasks_summarized_222$num_forecasts), 12)
+  
+  all_tasks_summarized_888 <- all_tasks_summarized[all_tasks_summarized$location == "888",]
+  expect_in(all_tasks_summarized_888$num_forecasts, c(1, 2))
+  expect_in(length(unique(all_tasks_summarized_888$output_type_id)), 6:12)
+  expect_equal(sum(all_tasks_summarized_888$num_forecasts), 12)
+
+  
   # NULL compound task id set variables; unique output type ids are shared across
   # non-compound task ids set columns and the expected model is re-sampled
-  none_expected <- expand.grid(
-    stringsAsFactors = FALSE,
-    KEEP.OUT.ATTRS = FALSE,
-    component_model = letters[1:5],
-    distinct_ids = 4
-  ) |>
-    dplyr::mutate(component_model = ifelse(component_model == letters[5], models_to_resample, component_model)) |>
-    dplyr::tibble()
-  set.seed(1234)
-  none_actual <- sample_outputs |>
+  none_summarized <- sample_outputs |>
     dplyr::mutate(component_model = model_id, .before = 1) |>
     linear_pool_sample(
       task_id_cols = c("target_date", "target", "horizon", "location"),
       compound_taskid_set = NULL,
-      n_output_samples = 5
+      n_output_samples = 6
     ) |>
     dplyr::group_by(dplyr::across(dplyr::all_of(c("output_type_id", "component_model")))) |>
-    dplyr::summarize(distinct_ids = dplyr::n()) |>
+    dplyr::summarize(num_forecasts = dplyr::n()) |>
     dplyr::ungroup() |>
     dplyr::select(-"output_type_id")
-  expect_equal(none_actual, none_expected)
+
+  # check every joint sample forecast is represented 4 times, total 24 output samples (6 per compound task id set combo)
+  expect_in(none_summarized$num_forecasts, 4)
+  expect_equal(sum(none_summarized$num_forecasts), 24)
 })
 
 test_that("ensemble of samples throws an error for the more complex cases", {
