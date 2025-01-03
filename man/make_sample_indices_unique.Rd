@@ -2,8 +2,8 @@
 % Please edit documentation in R/linear_pool_sample.R
 \name{make_sample_indices_unique}
 \alias{make_sample_indices_unique}
-\title{Make the output type ID values of sample forecasts unique for the same
-combination of task IDs but different models}
+\title{Make the output type ID values of sample forecasts distinct for different
+models}
 \usage{
 make_sample_indices_unique(model_out_tbl)
 }
@@ -16,8 +16,8 @@ a model_out_tbl object with unique output type ID values for different
 models but otherwise identical to the input model_out_tbl.
 }
 \description{
-Make the output type ID values of sample forecasts unique for the same
-combination of task IDs but different models
+Make the output type ID values of sample forecasts distinct for different
+models
 }
 \details{
 The new \code{output_type_id} column values will follow one of two patterns,
