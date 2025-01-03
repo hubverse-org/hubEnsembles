@@ -378,26 +378,26 @@ test_that("Not all component models forecasting for the same set of dependent ta
   sample_outputs <- create_test_sample_outputs() |>
     dplyr::filter(model_id %in% letters[1:3] | horizon == 1)
 
-  sample_outputs |>
+  expect_error(
     linear_pool(
+      sample_outputs,
       weights = NULL,
       task_id_cols = c("target_date", "target", "horizon", "location"),
       compound_taskid_set = c("target", "location", "target_date"),
       n_output_samples = NULL
-    ) |>
-    expect_error(
-      regex = "Not all component models in `model_out_tbl` forecast for the same set of dependent tasks",
-      fixed = TRUE
-    )
+    ),
+    regex = "Not all component models in `model_out_tbl` forecast for the same set of dependent tasks",
+    fixed = TRUE
+  )
 
   # test that df of missing combos returns the expected value
   missing_expected <- data.frame(model_id = letters[4], horizon = 0)
-  missing_actual <- sample_outputs |>
-    validate_compound_taskid_set(
-      task_id_cols = c("target_date", "target", "horizon", "location"),
-      compound_taskid_set = c("target", "location", "target_date"),
-      return_missing_combos = TRUE
-    )
+  missing_actual <- validate_compound_taskid_set(
+    sample_outputs,
+    task_id_cols = c("target_date", "target", "horizon", "location"),
+    compound_taskid_set = c("target", "location", "target_date"),
+    return_missing_combos = TRUE
+  )
   expect_equal(missing_actual, dplyr::tibble(missing_expected))
 })
 
@@ -412,17 +412,17 @@ test_that("If the specified `compound_taskid_set` is incompatible with component
   sample_outputs <- create_test_sample_outputs() |>
     dplyr::mutate(output_type_id = paste0(.data[["location"]], .data[["output_type_id"]]))
 
-  linear_pool(
-    sample_outputs,
-    weights = NULL,
-    task_id_cols = c("target_date", "target", "horizon", "location"),
-    compound_taskid_set = c("target", "target_date"),
-    n_output_samples = NULL
-  ) |>
-    expect_error(
-      regex = "The specified `compound_taskid_set` is incompatible with ",
-      fixed = TRUE
-    )
+  expect_error(
+    linear_pool(
+      sample_outputs,
+      weights = NULL,
+      task_id_cols = c("target_date", "target", "horizon", "location"),
+      compound_taskid_set = c("target", "target_date"),
+      n_output_samples = NULL
+    ),
+    regex = "The specified `compound_taskid_set` is incompatible with ",
+    fixed = TRUE
+  )
 })
 
 
@@ -436,17 +436,17 @@ test_that(
     sample_outputs <- create_test_sample_outputs() |>
       dplyr::filter(model_id %in% letters[1:3] | (output_type_id == 1 & location == "222"))
 
-    linear_pool(
-      sample_outputs,
-      weights = NULL,
-      task_id_cols = c("target_date", "target", "horizon", "location"),
-      compound_taskid_set = c("target", "location", "target_date"),
-      n_output_samples = NULL
-    ) |>
-      expect_error(
-        regex = "Within each group defined by a combination of the compound task ID set variables",
-        fixed = TRUE
-      )
+    expect_error(
+      linear_pool(
+        sample_outputs,
+        weights = NULL,
+        task_id_cols = c("target_date", "target", "horizon", "location"),
+        compound_taskid_set = c("target", "location", "target_date"),
+        n_output_samples = NULL
+      ),
+      regex = "Within each group defined by a combination of the compound task ID set variables",
+      fixed = TRUE
+    )
   }
 )
 
@@ -488,7 +488,6 @@ test_that("samples only collected and re-indexed for simplest case", {
       compound_taskid_set = c("target", "location"),
       n_output_samples = NULL
     )
-
   expect_equal(actual_outputs, expected_outputs)
 })
 
@@ -614,13 +613,15 @@ test_that("ensemble of samples throws an error for the more complex cases", {
   sample_outputs <- create_test_sample_outputs()
   fweight <- data.frame(model_id = letters[1:4], weight = 0.1 * (1:4))
 
-  sample_outputs |>
+  expect_error(
     linear_pool(
+      sample_outputs,
       weights = fweight,
       task_id_cols = c("location", "horizon", "target", "target_date"),
       compound_taskid_set = c("location", "target", "target_date"),
       n_output_samples = 20
     ) |>
-    dplyr::arrange(output_type_id) |>
-    expect_error("`weights` must be \"NULL\" or equal for every model", fixed = TRUE)
+      dplyr::arrange(output_type_id),
+    "`weights` must be \"NULL\" or equal for every model", fixed = TRUE
+  )
 })
