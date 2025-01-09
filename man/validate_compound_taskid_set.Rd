@@ -13,6 +13,7 @@ validate_compound_taskid_set(
   model_out_tbl,
   task_id_cols,
   compound_taskid_set,
+  derived_tasks = NULL,
   return_missing_combos = FALSE
 )
 }
@@ -31,8 +32,12 @@ that samples are from a multivariate joint distribution across all levels of
 all task id variables, while equality to \code{task_id_cols} means that the samples
 are from separate univariate distributions for each individual prediction task.
 NA means the compound_taskid_set is not relevant for the current modeling task.
-Defaults to NA. Derived task ids must be included if ANY of the task ids their
+Defaults to NA. Derived task ids must be included if all of the task ids their
 values depend on are part of the compound_taskid_set.}
+
+\item{derived_tasks}{\code{character} vector of derived task IDs (variables whose
+values depend on that of other task ID variables). Defaults to NULL, meaning
+there are no derived task IDs.}
 
 \item{return_missing_combos}{\code{boolean} specifying whether to return a \code{data.frame}
 summarizing the missing combinations of dependent tasks for each model. If

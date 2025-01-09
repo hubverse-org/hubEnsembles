@@ -13,7 +13,9 @@ test_that("(#128) linear pool will group by output_type", {
     res <- linear_pool(
       forecast,
       model_id = "linear-pool-normal",
-      compound_taskid_set = c("reference_date", "location", "target_end_date", "target")
+      task_id_cols = NULL,
+      compound_taskid_set = c("reference_date", "location", "target"),
+      derived_tasks = "target_end_date"
     )
   })
   expect_lt(nrow(res), nrow(forecast))
@@ -25,7 +27,9 @@ test_that("(#128) linear pool will group by output_type", {
     ser <- linear_pool(
       forecast[tsacerof, ],
       model_id = "linear-pool-normal",
-      compound_taskid_set = c("reference_date", "location", "target_end_date", "target")
+      task_id_cols = NULL,
+      compound_taskid_set = c("reference_date", "location", "target"),
+      derived_tasks = "target_end_date"
     )
   })
   expect_equal(res[res$output_type == "cdf", -1], ser[ser$output_type == "cdf", -1], tolerance = 1e-10)
@@ -375,14 +379,19 @@ test_that("Not all component models forecasting for the same set of dependent ta
   # The compound task id set doesn't include horizon, so the samples are trajectories over time.
   # We expect to see an error in this case, as we can't combine predictions from models with different
   # subsets of values for variables outside of the compound_taskid_set.
+  # We test the cases with and without derived tasks
   sample_outputs <- create_test_sample_outputs() |>
     dplyr::filter(model_id %in% letters[1:3] | horizon == 1)
+  sample_tasks <- c("location", "horizon", "target", "target_date")
+
+  sample_outputs_derived <- dplyr::mutate(sample_outputs, reference_date = target_date - 7 * horizon)
+  sample_tasks_derived <- c("reference_date", "location", "horizon", "target", "target_date")
 
   expect_error(
     linear_pool(
       sample_outputs,
       weights = NULL,
-      task_id_cols = c("target_date", "target", "horizon", "location"),
+      task_id_cols = sample_tasks,
       compound_taskid_set = c("target", "location", "target_date"),
       n_output_samples = NULL
     ),
@@ -390,15 +399,46 @@ test_that("Not all component models forecasting for the same set of dependent ta
     fixed = TRUE
   )
 
+  expect_error(
+    linear_pool(
+      sample_outputs_derived,
+      weights = NULL,
+      task_id_cols = sample_tasks_derived,
+      compound_taskid_set = c("target", "location", "target_date"),
+      derived_tasks = "reference_date",
+      n_output_samples = NULL
+    ),
+    regex = "Not all component models in `model_out_tbl` forecast for the same set of dependent tasks",
+    fixed = TRUE
+  )
+
   # test that df of missing combos returns the expected value
-  missing_expected <- data.frame(model_id = letters[4], horizon = 0)
+  missing_expected <- create_test_sample_outputs() |>
+    dplyr::filter(!(model_id %in% letters[1:3] | horizon == 1)) |>
+    dplyr::distinct(dplyr::across(dplyr::all_of(c("model_id", setdiff(sample_tasks, NULL)))))
+  attr(missing_expected, "out.attrs") <- NULL
   missing_actual <- validate_compound_taskid_set(
     sample_outputs,
-    task_id_cols = c("target_date", "target", "horizon", "location"),
+    task_id_cols = sample_tasks,
     compound_taskid_set = c("target", "location", "target_date"),
     return_missing_combos = TRUE
   )
   expect_equal(missing_actual, dplyr::tibble(missing_expected))
+
+  # test that df of missing combos returns the expected value
+  missing_expected_derived <- create_test_sample_outputs() |>
+    dplyr::filter(!(model_id %in% letters[1:3] | horizon == 1)) |>
+    dplyr::mutate(reference_date = target_date - 7 * horizon) |>
+    dplyr::distinct(dplyr::across(dplyr::all_of(c("model_id", setdiff(sample_tasks_derived, "reference_date")))))
+  attr(missing_expected_derived, "out.attrs") <- NULL
+  missing_actual_derived <- validate_compound_taskid_set(
+    sample_outputs_derived,
+    task_id_cols = sample_tasks_derived,
+    compound_taskid_set = c("target", "location", "target_date"),
+    derived_tasks = "reference_date",
+    return_missing_combos = TRUE
+  )
+  expect_equal(missing_actual_derived, dplyr::tibble(missing_expected_derived))
 })
 
 
@@ -434,7 +474,7 @@ test_that(
     # The first three models each submit 3 samples, while model "d" submits only 1 sample.
     # We expect an error in this situation, because our methods currently do not support it.
     sample_outputs <- create_test_sample_outputs() |>
-      dplyr::filter(model_id %in% letters[1:3] | (output_type_id == 1 & location == "222"))
+      dplyr::filter(model_id %in% letters[1:3] | (output_type_id == 1))
 
     expect_error(
       linear_pool(
@@ -494,13 +534,13 @@ test_that("samples only collected and re-indexed for simplest case", {
 
 test_that("remainder samples are properly distributed when component models don't all forecast for every location", {
   # There are four models, "a", "b", "c", and "d".
-  # The first three have samples for locations "222" and "888", while model "d" has samples for only horizon "222".
+  # The first three have samples for locations "222" and "888", while model "d" has samples for only location "222".
   # Since not all models forecast for every unique combination of compound task id set variables,
   # the requested output samples will be split differently across those unique combinations
   # We want to ensure that the correct number of output samples are returned
   # and the component models they originate from are as expected
   sample_outputs <- create_test_sample_outputs() |>
-    dplyr::filter(model_id %in% letters[1:3] | location == "222", horizon == 1)
+    dplyr::filter((model_id %in% letters[1:3] | location == "222"), horizon == 1)
 
   # Summarize outputs by compound task id set and component model to calculate the number of samples
   # that originate from each model per unique combination of compound task id set variables

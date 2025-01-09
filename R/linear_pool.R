@@ -15,8 +15,11 @@
 #'   all task id variables, while equality to `task_id_cols` means that the samples
 #'   are from separate univariate distributions for each individual prediction task.
 #'   NA means the compound_taskid_set is not relevant for the current modeling task.
-#'   Defaults to NA. Derived task ids must be included if ANY of the task ids their
+#'   Defaults to NA. Derived task ids must be included if all of the task ids their
 #'   values depend on are part of the compound_taskid_set.
+#' @param derived_tasks `character` vector of derived task IDs (variables whose
+#'   values depend on that of other task ID variables). Defaults to NULL, meaning
+#'   there are no derived task IDs.
 #' @param n_output_samples `numeric` that specifies how many sample forecasts to
 #'   return per unique combination of task IDs. Currently the only supported value
 #'   is NULL, in which case all provided component model samples are collected and
@@ -67,6 +70,7 @@ linear_pool <- function(model_out_tbl, weights = NULL,
                         model_id = "hub-ensemble",
                         task_id_cols = NULL,
                         compound_taskid_set = NA,
+                        derived_tasks = NULL,
                         n_samples = 1e4,
                         n_output_samples = NULL,
                         ...) {
@@ -78,6 +82,7 @@ linear_pool <- function(model_out_tbl, weights = NULL,
                              weights_col_name = weights_col_name,
                              task_id_cols = task_id_cols,
                              compound_taskid_set = compound_taskid_set,
+                             derived_tasks = derived_tasks,
                              valid_output_types = valid_types)
 
   model_out_tbl_validated <- validated_inputs$model_out_tbl

@@ -22,6 +22,7 @@ validate_ensemble_inputs <- function(model_out_tbl, weights = NULL,
                                      weights_col_name = "weight",
                                      task_id_cols = NULL,
                                      compound_taskid_set = NA,
+                                     derived_tasks = NULL,
                                      valid_output_types) {
 
   if (!inherits(model_out_tbl, "model_out_tbl")) {
@@ -55,7 +56,9 @@ validate_ensemble_inputs <- function(model_out_tbl, weights = NULL,
   }
 
   if ("sample" %in% unique_output_types) {
-    validate_compound_taskid_set(model_out_tbl, task_id_cols, compound_taskid_set, return_missing_combos = FALSE)
+    validate_compound_taskid_set(model_out_tbl,
+                                 task_id_cols, compound_taskid_set, derived_tasks,
+                                 return_missing_combos = FALSE)
   }
 
   # check if "cdf", "pmf", "quantile" distributions are valid
@@ -154,7 +157,7 @@ validate_weights <- function(model_out_cols, weights = NULL, weights_col_name = 
 #'   FALSE, or a `data.frame` of the missing combinations of dependent tasks will be
 #'   returned. See above for more details.
 validate_compound_taskid_set <- function(model_out_tbl,
-                                         task_id_cols, compound_taskid_set,
+                                         task_id_cols, compound_taskid_set, derived_tasks = NULL,
                                          return_missing_combos = FALSE) {
   if (identical(compound_taskid_set, NA)) {
     cli::cli_abort("{.arg compound_taskid_set} must be provided if 
@@ -168,7 +171,7 @@ validate_compound_taskid_set <- function(model_out_tbl,
     )
   }
 
-  dependent_tasks <- setdiff(task_id_cols, compound_taskid_set)
+  dependent_tasks <- setdiff(task_id_cols, c(compound_taskid_set, derived_tasks))
 
   # check component model outputs are compatible with the specified compound task id set vars.
   # output_type_id levels (i.e., sample indices) must be shared across all combinations of
@@ -200,7 +203,8 @@ validate_compound_taskid_set <- function(model_out_tbl,
     dplyr::group_by(dplyr::across(dplyr::all_of(c("model_id", dependent_tasks)))) |>
     dplyr::summarize(unique_forecasts = dplyr::n()) |>
     dplyr::ungroup() |>
-    dplyr::arrange(!!!rlang::syms(c("model_id", dependent_tasks)))
+    dplyr::arrange(!!!rlang::syms(c("model_id", dependent_tasks))) |>
+    dplyr::tibble()
   sample_expected <- sample_actual |>
     tidyr::complete(
       !!!rlang::syms(c("model_id", dependent_tasks)),
@@ -211,9 +215,14 @@ validate_compound_taskid_set <- function(model_out_tbl,
 
   if (!identical(sample_actual, sample_expected)) {
     if (return_missing_combos) {
-      sample_expected |>
-        dplyr::filter(.data[["unique_forecasts"]] == 0) |>
-        dplyr::select(-"unique_forecasts")
+      model_out_tbl |>
+        tidyr::complete(
+          !!!rlang::syms(c("model_id")),
+          tidyr::nesting(!!!rlang::syms(setdiff(task_id_cols, derived_tasks))),
+        ) |>
+        dplyr::filter(is.na(.data[["output_type"]])) |>
+        dplyr::arrange(!!!rlang::syms(c("model_id", dependent_tasks))) |>
+        dplyr::select(dplyr::all_of(c("model_id", setdiff(task_id_cols, derived_tasks))))
     } else {
       cli::cli_abort(c(
         x = "Not all component models in {.arg model_out_tbl} forecast for the same set of dependent tasks",
