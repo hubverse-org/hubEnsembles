@@ -27,11 +27,16 @@ case all columns in \code{model_out_tbl} other than \code{"model_id"}, \code{"ou
 \code{"output_type_id"}, and \code{"value"} are used as task ids.}
 
 \item{compound_taskid_set}{\code{character} vector of the compound task ID variable
-set. This argument is only relevant for \code{output_type} \code{"sample"}. NULL means
-that samples are from a multivariate joint distribution across all levels of
-all task id variables, while equality to \code{task_id_cols} means that the samples
-are from separate univariate distributions for each individual prediction task.
-NA means the compound_taskid_set is not relevant for the current modeling task.
+set. This argument is only relevant for \code{output_type} \code{"sample"}. Can be one
+of three possible values, with the following meanings:
+\itemize{
+\item \code{NA}: the compound_taskid_set is not relevant for the current modeling task
+\item \code{NULL}: samples are from a multivariate joint distribution across all levels
+of all task id variables
+\item Equality to \code{task_id_cols}: samples are from separate univariate distributions
+for each individual prediction task
+}
+
 Defaults to NA. Derived task ids must be included if all of the task ids their
 values depend on are part of the compound_taskid_set.}
 

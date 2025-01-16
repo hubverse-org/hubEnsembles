@@ -10,13 +10,16 @@
 #'   details of how to estimate a quantile function from provided quantile levels
 #'   and quantile values for `output_type` `"quantile"`.
 #' @param compound_taskid_set `character` vector of the compound task ID variable
-#'   set. This argument is only relevant for `output_type` `"sample"`. NULL means
-#'   that samples are from a multivariate joint distribution across all levels of
-#'   all task id variables, while equality to `task_id_cols` means that the samples
-#'   are from separate univariate distributions for each individual prediction task.
-#'   NA means the compound_taskid_set is not relevant for the current modeling task.
+#'   set. This argument is only relevant for `output_type` `"sample"`. Can be one
+#'   of three possible values, with the following meanings:
+#'   - `NA`: the compound_taskid_set is not relevant for the current modeling task
+#'   - `NULL`: samples are from a multivariate joint distribution across all levels
+#'     of all task id variables
+#'   - Equality to `task_id_cols`: samples are from separate univariate distributions
+#'     for each individual prediction task
+#'
 #'   Defaults to NA. Derived task ids must be included if all of the task ids their
-#'   values depend on are part of the compound_taskid_set.
+#'   values depend on are part of the `compound_taskid_set`.
 #' @param derived_tasks `character` vector of derived task IDs (variables whose
 #'   values depend on that of other task ID variables). Defaults to NULL, meaning
 #'   there are no derived task IDs.
