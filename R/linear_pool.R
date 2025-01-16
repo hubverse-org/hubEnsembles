@@ -48,6 +48,13 @@
 #'
 #' Steps 1 and 2 in this process are performed by `distfromq::make_q_fn`.
 #'
+#' When the `output_type` is `sample`, we obtain the resulting linear pool by
+#' collecting samples from each model, updating the `output_type_id` values to be
+#' unique for predictions that are not joint across, and pooling them together.
+#' If there is a restriction on the number of samples to output per compound unit,
+#' this number is divided evenly among the models for that compound unit (with any
+#' remainder distributed randomly).
+#' 
 #' @return a `model_out_tbl` object of ensemble predictions. Note that any
 #'   additional columns in the input `model_out_tbl` are dropped.
 #'

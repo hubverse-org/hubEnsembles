@@ -54,7 +54,7 @@ for each individual prediction task
 }
 
 Defaults to NA. Derived task ids must be included if all of the task ids their
-values depend on are part of the compound_taskid_set.}
+values depend on are part of the \code{compound_taskid_set}.}
 
 \item{derived_tasks}{\code{character} vector of derived task IDs (variables whose
 values depend on that of other task ID variables). Defaults to NULL, meaning
@@ -104,6 +104,13 @@ quantiles.
 }
 
 Steps 1 and 2 in this process are performed by \code{distfromq::make_q_fn}.
+
+When the \code{output_type} is \code{sample}, we obtain the resulting linear pool by
+collecting samples from each model, updating the \code{output_type_id} values to be
+unique for predictions that are not joint across, and pooling them together.
+If there is a restriction on the number of samples to output per compound unit,
+this number is divided evenly among the models for that compound unit (with any
+remainder distributed randomly).
 }
 \examples{
 # We illustrate the calculation of a linear pool when we have quantiles from the
