@@ -68,9 +68,11 @@ linear_pool_sample <- function(model_out_tbl, weights = NULL,
           # current_compound_taskid_set has 1 row, where the column
           # `target_samples` is the number of samples to draw for this
           # combination of model_id and compound task ID set variables
-          current_compound_taskid_set <- split_outputs |>
-            dplyr::distinct(dplyr::across(dplyr::all_of(compound_taskid_set)), .keep_all = TRUE) |>
-            dplyr::left_join(samples_per_combo, by = c("model_id", compound_taskid_set))
+          current_compound_taskid_set <- dplyr::left_join(
+            split_outputs[1, ],
+            samples_per_combo, 
+            by = c("model_id", compound_taskid_set)
+          )
           provided_indices <- unique(split_outputs$output_type_id)
 
           sample_idx <- sample(x = provided_indices, size = current_compound_taskid_set$target_samples, replace = FALSE)
