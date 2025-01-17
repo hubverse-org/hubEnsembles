@@ -405,7 +405,7 @@ test_that("Not all component models forecasting for the same set of dependent ta
     fixed = TRUE
   )
 
-  # test that df of missing combos returns the expected value
+  # test that df of missing combos (NULL derived tasks) returns the expected value
   missing_expected <- create_test_sample_outputs() |>
     dplyr::filter(!(model_id %in% letters[1:3] | horizon == 1)) |>
     dplyr::distinct(dplyr::across(dplyr::all_of(c("model_id", setdiff(sample_tasks, NULL)))))
@@ -414,11 +414,12 @@ test_that("Not all component models forecasting for the same set of dependent ta
     sample_outputs,
     task_id_cols = sample_tasks,
     compound_taskid_set = c("target", "location", "target_date"),
+    derived_tasks = NULL,
     return_missing_combos = TRUE
   )
   expect_equal(missing_actual, dplyr::tibble(missing_expected))
 
-  # test that df of missing combos returns the expected value
+  # test that df of missing combos (derived task "reference_date") returns the expected value
   missing_expected_derived <- create_test_sample_outputs() |>
     dplyr::filter(!(model_id %in% letters[1:3] | horizon == 1)) |>
     dplyr::mutate(reference_date = target_date - 7 * horizon) |>
