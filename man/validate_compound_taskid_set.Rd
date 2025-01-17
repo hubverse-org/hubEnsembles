@@ -38,7 +38,7 @@ for each individual prediction task
 }
 
 Defaults to NA. Derived task ids must be included if all of the task ids their
-values depend on are part of the compound_taskid_set.}
+values depend on are part of the \code{compound_taskid_set}.}
 
 \item{derived_tasks}{\code{character} vector of derived task IDs (variables whose
 values depend on that of other task ID variables). Defaults to NULL, meaning
