@@ -171,6 +171,10 @@ validate_compound_taskid_set <- function(model_out_tbl,
     )
   }
 
+  # the set of "non-derived" task id variables for which the samples should capture
+  # dependence. It is sufficient to check for dependence for just these variables
+  # below, since if indexing is correct for these variables, it will also be correct
+  # for any task ids that are derived from them.
   dependent_tasks <- setdiff(task_id_cols, c(compound_taskid_set, derived_tasks))
 
   # check component model outputs are compatible with the specified compound task id set vars.
