@@ -60,23 +60,23 @@ linear_pool_sample <- function(model_out_tbl, weights = NULL,
 
     # draw the target number of samples from each model for each unique
     # combination of compound task ID set variables
-    split_compound_taskid_set <- model_out_tbl |>
+    split_compound_taskid_set_tbl <- model_out_tbl |>
       split(f = model_out_tbl[, c("model_id", compound_taskid_set)])
-    model_out_tbl <- split_compound_taskid_set |>
-      purrr::map(.f = function(split_outputs) {
-        if (nrow(split_outputs) != 0) {
+    model_out_tbl <- split_compound_taskid_set_tbl |>
+      purrr::map(.f = function(compound_taskid_set_tbl) {
+        if (nrow(compound_taskid_set_tbl) != 0) {
           # current_compound_taskid_set has 1 row, where the column
           # `target_samples` is the number of samples to draw for this
           # combination of model_id and compound task ID set variables
           current_compound_taskid_set <- dplyr::left_join(
-            split_outputs[1, ],
+            compound_taskid_set_tbl[1, ],
             samples_per_combo, 
             by = c("model_id", compound_taskid_set)
           )
-          provided_indices <- unique(split_outputs$output_type_id)
+          provided_indices <- unique(compound_taskid_set_tbl$output_type_id)
 
           sample_idx <- sample(x = provided_indices, size = current_compound_taskid_set$target_samples, replace = FALSE)
-          dplyr::filter(split_outputs, .data[["output_type_id"]] %in% sample_idx)
+          dplyr::filter(compound_taskid_set_tbl, .data[["output_type_id"]] %in% sample_idx)
         }
       }) |>
       purrr::list_rbind()
