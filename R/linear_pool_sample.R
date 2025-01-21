@@ -60,8 +60,10 @@ linear_pool_sample <- function(model_out_tbl, weights = NULL,
 
     # draw the target number of samples from each model for each unique
     # combination of compound task ID set variables
-    split_compound_taskid_set_tbl <- model_out_tbl |>
-      split(f = model_out_tbl[, c("model_id", compound_taskid_set)])
+    split_compound_taskid_set_tbl <- split(
+      model_out_tbl,
+      f = model_out_tbl[, c("model_id", compound_taskid_set)]
+    )
     model_out_tbl <- split_compound_taskid_set_tbl |>
       purrr::map(.f = function(compound_taskid_set_tbl) {
         if (nrow(compound_taskid_set_tbl) != 0) {
@@ -70,7 +72,7 @@ linear_pool_sample <- function(model_out_tbl, weights = NULL,
           # combination of model_id and compound task ID set variables
           current_compound_taskid_set <- dplyr::left_join(
             compound_taskid_set_tbl[1, ],
-            samples_per_combo, 
+            samples_per_combo,
             by = c("model_id", compound_taskid_set)
           )
           provided_indices <- unique(compound_taskid_set_tbl$output_type_id)
@@ -111,8 +113,10 @@ make_sample_indices_unique <- function(model_out_tbl) {
     dplyr::mutate(output_type_id = paste0(.data[["model_id"]], .data[["output_type_id"]]))
 
   if (numeric_output_type_ids) {
-    new_indices_outputs |>
-      dplyr::mutate(output_type_id = as.integer(factor(.data[["output_type_id"]])))
+    dplyr::mutate(
+      new_indices_outputs,
+      output_type_id = as.integer(factor(.data[["output_type_id"]]))
+    )
   } else {
     new_indices_outputs
   }
@@ -180,10 +184,14 @@ calc_samples_per_combo <- function(model_out_tbl, weights,
       valid_models <- split_per_combo$model_id[split_per_combo$provided_samples > 0]
       models_to_resample <- sample(x = valid_models, size = remainder_samples)
 
-      split_per_combo |>
-        dplyr::mutate(target_samples = ifelse(
-          .data[["model_id"]] %in% models_to_resample, .data[["target_samples"]] + 1, .data[["target_samples"]]
-        ))
+      dplyr::mutate(
+        split_per_combo,
+        target_samples = ifelse(
+          .data[["model_id"]] %in% models_to_resample,
+          .data[["target_samples"]] + 1,
+          .data[["target_samples"]]
+        )
+      )
     }) |>
     purrr::list_rbind()
 }

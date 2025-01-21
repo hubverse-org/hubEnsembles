@@ -87,13 +87,15 @@ linear_pool <- function(model_out_tbl, weights = NULL,
 
   # validate_ensemble_inputs
   valid_types <- c("mean", "quantile", "cdf", "pmf", "sample")
-  validated_inputs <- model_out_tbl |>
-    validate_ensemble_inputs(weights = weights,
-                             weights_col_name = weights_col_name,
-                             task_id_cols = task_id_cols,
-                             compound_taskid_set = compound_taskid_set,
-                             derived_tasks = derived_tasks,
-                             valid_output_types = valid_types)
+  validated_inputs <- validate_ensemble_inputs(
+    model_out_tbl,
+    weights = weights,
+    weights_col_name = weights_col_name,
+    task_id_cols = task_id_cols,
+    compound_taskid_set = compound_taskid_set,
+    derived_tasks = derived_tasks,
+    valid_output_types = valid_types
+  )
 
   model_out_tbl_validated <- validated_inputs$model_out_tbl
   weights_validated <- validated_inputs$weights
@@ -101,7 +103,8 @@ linear_pool <- function(model_out_tbl, weights = NULL,
   compound_taskid_set_validated <- validated_inputs$compound_taskid_set
 
   # calculate linear opinion pool for different types
-  split_models <- split(model_out_tbl_validated,
+  split_models <- split(
+    model_out_tbl_validated,
     f = model_out_tbl_validated$output_type
   )
   ensemble_model_outputs <- split_models |>
