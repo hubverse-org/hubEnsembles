@@ -60,11 +60,11 @@ linear_pool_sample <- function(model_out_tbl, weights = NULL,
 
     # draw the target number of samples from each model for each unique
     # combination of compound task ID set variables
-    split_compound_taskid_set_tbl <- split(
+    split_model_compound_set_tbl <- split(
       model_out_tbl,
       f = model_out_tbl[, c("model_id", compound_taskid_set)]
     )
-    model_out_tbl <- split_compound_taskid_set_tbl |>
+    model_out_tbl <- split_model_compound_set_tbl |>
       purrr::map(.f = draw_target_samples, samples_per_combo, compound_taskid_set) |>
       purrr::list_rbind()
   }
@@ -113,7 +113,7 @@ make_sample_indices_unique <- function(model_out_tbl) {
 #' linear pool of the `sample` output type.
 #'
 #' @inheritParams linear_pool
-#' @param compound_taskid_set_tbl a `model_out_tbl` of all the sample predictions for
+#' @param model_compound_set_tbl a `model_out_tbl` of all the sample predictions for
 #'   a single, unique combination of compound task ID set variables for a particular
 #'   model
 #' @param samples_per_combo a `data.frame` giving the number of provided and
@@ -125,26 +125,26 @@ make_sample_indices_unique <- function(model_out_tbl) {
 #'
 #' @return a `model_out_tbl` containing the requested number sample predictions for a
 #' single, unique combination of compound task ID set variables for a particular
-#' model, drawn from the provided `compound_taskid_set_tbl`
+#' model, drawn from the provided `model_compound_set_tbl`
 #'
 #' @importFrom rlang .data
-draw_target_samples <- function(compound_taskid_set_tbl, samples_per_combo, compound_taskid_set) {
-  if (nrow(compound_taskid_set_tbl) == 0) {
-    return(compound_taskid_set_tbl)
+draw_target_samples <- function(model_compound_set_tbl, samples_per_combo, compound_taskid_set) {
+  if (nrow(model_compound_set_tbl) == 0) {
+    return(model_compound_set_tbl)
   }
 
   # current_compound_taskid_set has 1 row, where the column
   # `target_samples` is the number of samples to draw for this
   # combination of model_id and compound task ID set variables
   current_compound_taskid_set <- dplyr::left_join(
-    compound_taskid_set_tbl[1, ],
+    model_compound_set_tbl[1, ],
     samples_per_combo,
     by = c("model_id", compound_taskid_set)
   )
-  provided_indices <- unique(compound_taskid_set_tbl$output_type_id)
+  provided_indices <- unique(model_compound_set_tbl$output_type_id)
 
   sample_idx <- sample(x = provided_indices, size = current_compound_taskid_set$target_samples, replace = FALSE)
-  dplyr::filter(compound_taskid_set_tbl, .data[["output_type_id"]] %in% sample_idx)
+  dplyr::filter(model_compound_set_tbl, .data[["output_type_id"]] %in% sample_idx)
 }
 
 
