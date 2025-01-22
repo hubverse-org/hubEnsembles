@@ -192,10 +192,10 @@ calc_samples_per_combo <- function(model_out_tbl, weights,
     ) |>
     dplyr::ungroup()
 
-  if (!is.null(compound_taskid_set)) {
-    samples_per_combo <- split(samples_per_combo, f = samples_per_combo[, compound_taskid_set])
-  } else {
+  if (is.null(compound_taskid_set)) {
     samples_per_combo <- list(samples_per_combo)
+  } else {
+    samples_per_combo <- split(samples_per_combo, f = samples_per_combo[, compound_taskid_set])
   }
   # deal with n_output_samples not divisible evenly among component models
   samples_per_combo <- samples_per_combo |>
