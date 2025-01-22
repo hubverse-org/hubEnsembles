@@ -366,6 +366,22 @@ test_that("(weighted) quantiles correctly calculated - lognormal family", {
 })
 
 
+test_that("Requesting more output samples per compound unit than those provided throws an error", {
+  sample_outputs <- create_test_sample_outputs()
+  expect_error(
+    linear_pool(
+      sample_outputs,
+      weights = NULL,
+      task_id_cols = c("target_date", "target", "horizon", "location"),
+      compound_taskid_set = c("target", "location", "target_date"),
+      n_output_samples = 50
+    ),
+    regex = "Requested `n_output_samples` cannot exceed the provided samples per compound unit.",
+    fixed = TRUE
+  )
+})
+
+
 test_that("Not all component models forecasting for the same set of dependent task values throws an error", {
   # There are four models, "a", "b", "c", and "d".
   # The first three have samples for horizons 0 and 1, while model "d" has samples for only horizon 1.

@@ -54,8 +54,10 @@ linear_pool_sample <- function(model_out_tbl, weights = NULL,
       n_output_samples
     )
 
+    # ensure that requested output samples per compound un doesn't exceed amount provided;
+    # we only support this setting for now
     if (any(samples_per_combo$provided_samples < samples_per_combo$target_samples)) {
-      cli::cli_abort("Requested output samples per compound unit cannot exceed the provided samples per compound unit.")
+      cli::cli_abort("Requested {.arg n_output_samples} cannot exceed the provided samples per compound unit.")
     }
 
     # draw the target number of samples from each model for each unique
