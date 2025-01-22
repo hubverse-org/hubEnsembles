@@ -102,7 +102,7 @@ make_sample_indices_unique <- function(model_out_tbl) {
   if (numeric_output_type_ids) {
     dplyr::mutate(
       new_indices_outputs,
-      output_type_id = as.integer(factor(.data[["output_type_id"]]))
+      output_type_id = as.integer(factor(.data[["output_type_id"]], levels = unique(.data[["output_type_id"]])))
     )
   } else {
     new_indices_outputs
