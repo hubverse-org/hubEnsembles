@@ -527,7 +527,10 @@ test_that("samples only collected and re-indexed for simplest case", {
   sample_outputs <- create_test_sample_outputs()
   expected_outputs <- sample_outputs |>
     dplyr::mutate(
-      output_type_id = as.integer(factor(paste0(.data[["model_id"]], .data[["output_type_id"]]))),
+      output_type_id = as.integer(factor(
+        paste0(model_id, output_type_id),
+        levels = unique(paste0(model_id, output_type_id))
+      )),
       model_id = "hub-ensemble"
     ) |>
     hubUtils::as_model_out_tbl()
