@@ -218,21 +218,20 @@ validate_compound_taskid_set <- function(model_out_tbl,
     dplyr::arrange(!!!rlang::syms(c("model_id", dependent_tasks)))
 
   if (!identical(sample_actual, sample_expected)) {
-    if (return_missing_combos) {
-      model_out_tbl |>
-        tidyr::complete(
-          !!!rlang::syms(c("model_id")),
-          tidyr::nesting(!!!rlang::syms(setdiff(task_id_cols, derived_tasks))),
-        ) |>
-        dplyr::filter(is.na(.data[["output_type"]])) |>
-        dplyr::arrange(!!!rlang::syms(c("model_id", dependent_tasks))) |>
-        dplyr::select(dplyr::all_of(c("model_id", setdiff(task_id_cols, derived_tasks))))
-    } else {
+    if (!return_missing_combos) {
       cli::cli_abort(c(
         x = "Not all component models in {.arg model_out_tbl} forecast for the same set of dependent tasks",
         i = "Run {.arg validate_compound_taskid_set(model_out_tbl, task_id_cols, 
           compound_taskid_set, return_missing_combos = TRUE)} to see the missing dependent tasks"
       ))
     }
+    model_out_tbl |>
+      tidyr::complete(
+        !!!rlang::syms(c("model_id")),
+        tidyr::nesting(!!!rlang::syms(setdiff(task_id_cols, derived_tasks))),
+      ) |>
+      dplyr::filter(is.na(.data[["output_type"]])) |>
+      dplyr::arrange(!!!rlang::syms(c("model_id", dependent_tasks))) |>
+      dplyr::select(dplyr::all_of(c("model_id", setdiff(task_id_cols, derived_tasks))))
   }
 }
