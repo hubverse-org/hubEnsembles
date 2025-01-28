@@ -247,7 +247,7 @@ validate_sample_inputs <- function(model_out_tbl, weights = NULL,
   if (!is.null(weights) && length(unique(weights[[weights_col_name]])) != 1) {
     if (is.null(n_output_samples)) {
       cli::cli_abort("Component model weights were provided,
-                     so a number of ensemble samples {.arg n_output_samples} must be provided")
+                      so a value for {.arg n_output_samples} must be provided")
     }
 
     if (!all(colnames(weights) %in% c("model_id", compound_taskid_set, weights_col_name))) {

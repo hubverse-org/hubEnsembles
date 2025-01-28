@@ -23,6 +23,7 @@ validate_ensemble_inputs <- function(model_out_tbl, weights = NULL,
                                      task_id_cols = NULL,
                                      compound_taskid_set = NA,
                                      derived_tasks = NULL,
+                                     n_output_samples,
                                      valid_output_types) {
 
   if (!inherits(model_out_tbl, "model_out_tbl")) {
@@ -56,9 +57,13 @@ validate_ensemble_inputs <- function(model_out_tbl, weights = NULL,
   }
 
   if ("sample" %in% unique_output_types) {
-    validate_compound_taskid_set(model_out_tbl,
-                                 task_id_cols, compound_taskid_set, derived_tasks,
-                                 return_missing_combos = FALSE)
+    if (is.null(n_output_samples)) {
+      compound_taskid_set <- NULL
+    } else {
+      validate_compound_taskid_set(model_out_tbl,
+                                   task_id_cols, compound_taskid_set, derived_tasks,
+                                   return_missing_combos = FALSE)
+    }
   }
 
   # check if "cdf", "pmf", "quantile" distributions are valid
@@ -160,8 +165,8 @@ validate_compound_taskid_set <- function(model_out_tbl,
                                          task_id_cols, compound_taskid_set, derived_tasks = NULL,
                                          return_missing_combos = FALSE) {
   if (identical(compound_taskid_set, NA)) {
-    cli::cli_abort("{.arg compound_taskid_set} must be provided if 
-      {.arg model_out_tbl} contains the sample output type")
+    cli::cli_abort("{.arg compound_taskid_set} must be provided if {.arg model_out_tbl} contains
+                    the sample output type and {.arg n_output_samples} is not {{NULL}}")
   }
 
   if (!all(compound_taskid_set %in% task_id_cols)) {

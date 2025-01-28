@@ -94,6 +94,7 @@ linear_pool <- function(model_out_tbl, weights = NULL,
     task_id_cols = task_id_cols,
     compound_taskid_set = compound_taskid_set,
     derived_tasks = derived_tasks,
+    n_output_samples = n_output_samples,
     valid_output_types = valid_types
   )
 

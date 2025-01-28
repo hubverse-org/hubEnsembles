@@ -402,7 +402,7 @@ test_that("Not all component models forecasting for the same set of dependent ta
       weights = NULL,
       task_id_cols = sample_tasks,
       compound_taskid_set = c("target", "location", "target_date"),
-      n_output_samples = NULL
+      n_output_samples = 8
     ),
     regex = "Not all component models in `model_out_tbl` forecast for the same set of dependent tasks",
     fixed = TRUE
@@ -415,7 +415,7 @@ test_that("Not all component models forecasting for the same set of dependent ta
       task_id_cols = sample_tasks_derived,
       compound_taskid_set = c("target", "location", "target_date"),
       derived_tasks = "reference_date",
-      n_output_samples = NULL
+      n_output_samples = 8
     ),
     regex = "Not all component models in `model_out_tbl` forecast for the same set of dependent tasks",
     fixed = TRUE
@@ -468,7 +468,7 @@ test_that("If the specified `compound_taskid_set` is incompatible with component
       weights = NULL,
       task_id_cols = c("target_date", "target", "horizon", "location"),
       compound_taskid_set = c("target", "target_date"),
-      n_output_samples = NULL
+      n_output_samples = 8
     ),
     regex = "The specified `compound_taskid_set` is incompatible with ",
     fixed = TRUE
@@ -492,7 +492,7 @@ test_that(
         weights = NULL,
         task_id_cols = c("target_date", "target", "horizon", "location"),
         compound_taskid_set = c("target", "location", "target_date"),
-        n_output_samples = NULL
+        n_output_samples = 8
       ),
       regex = "Within each group defined by a combination of the compound task ID set variables",
       fixed = TRUE
@@ -510,14 +510,16 @@ test_that("Component models can have different sample indexing schemes and be po
       output_type_id = paste0(.data[["model_id"]], .data[["output_type_id"]]),
       model_id = "hub-ensemble"
     ) |>
+    dplyr::arrange(target, location, horizon, output_type_id) |>
     hubUtils::as_model_out_tbl()
   actual_outputs <- sample_outputs |>
     linear_pool(
       weights = NULL,
       task_id_cols = c("target_date", "target", "horizon", "location"),
       compound_taskid_set = c("target", "location", "target_date"),
-      n_output_samples = NULL
-    )
+      n_output_samples = 12
+    ) |>
+    dplyr::arrange(target, location, horizon, output_type_id)
   expect_equal(actual_outputs, expected_outputs)
 })
 
@@ -538,7 +540,6 @@ test_that("samples only collected and re-indexed for simplest case", {
     linear_pool(
       weights = NULL,
       task_id_cols = c("target_date", "target", "horizon", "location"),
-      compound_taskid_set = c("target", "location"),
       n_output_samples = NULL
     )
   expect_equal(actual_outputs, expected_outputs)
