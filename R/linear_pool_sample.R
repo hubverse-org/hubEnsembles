@@ -21,36 +21,54 @@ linear_pool_sample <- function(model_out_tbl, weights = NULL,
                                weights_col_name = "weight",
                                model_id = "hub-ensemble",
                                task_id_cols = NULL,
+                               compound_taskid_set,
                                n_output_samples = NULL) {
+  validate_sample_inputs(model_out_tbl, weights, weights_col_name, compound_taskid_set, n_output_samples)
 
-  validate_sample_inputs(model_out_tbl, weights, weights_col_name, n_output_samples)
-
+  # assign equal weight to all models if weights were not provided
   num_models <- length(unique(model_out_tbl$model_id))
-  samples_per_model <- model_out_tbl |>
-    dplyr::group_by(dplyr::across("model_id")) |>
-    dplyr::summarize(provided_n_component_samples = dplyr::n()) |>
-    dplyr::ungroup() |>
-    dplyr::select("model_id", "provided_n_component_samples") |>
-    dplyr::distinct(.keep_all = TRUE)
-  unique_provided_samples <- unique(samples_per_model[["provided_n_component_samples"]])
-
   if (is.null(weights)) {
     weights <- data.frame(
       model_id = unique(model_out_tbl$model_id),
-      weight = 1 / num_models,
       stringsAsFactors = FALSE
     )
-    weights_col_name <- "weight"
+    weights[[weights_col_name]] <- 1 / num_models
   }
-  unique_weights <- unique(weights[[weights_col_name]])
 
-  if (length(unique_weights) != 1 || length(unique_provided_samples) != 1 || !is.null(n_output_samples)) {
-    cli::cli_abort(
-      "The requested ensemble calculation doesn't satisfy all conditions:
-      1) {.arg model_out_tbl} contains the same number of samples from each component model,
-      2) {.arg weights} are {.val NULL} or equal for every model,
-      3) {.arg n_output_samples} = {.val NULL}"
+  # ensure that the weights are equal for every model;
+  # we only support this setting for now
+  unique_weights <- unique(weights[[weights_col_name]])
+  if (length(unique_weights) != 1) {
+    cli::cli_abort("{.arg weights} must be {.val NULL} or equal for every model")
+  }
+
+  if (!is.null(n_output_samples)) {
+    # calculate the number of samples to draw from each model for each unique
+    # combination of compound task ID set variables
+    samples_per_combo <- calc_samples_per_combo(
+      model_out_tbl,
+      weights,
+      weights_col_name,
+      task_id_cols,
+      compound_taskid_set,
+      n_output_samples
     )
+
+    # ensure that requested output samples per compound un doesn't exceed amount provided;
+    # we only support this setting for now
+    if (any(samples_per_combo$provided_samples < samples_per_combo$target_samples)) {
+      cli::cli_abort("Requested {.arg n_output_samples} cannot exceed the provided samples per compound unit.")
+    }
+
+    # draw the target number of samples from each model for each unique
+    # combination of compound task ID set variables
+    split_model_compound_set_tbl <- split(
+      model_out_tbl,
+      f = model_out_tbl[, c("model_id", compound_taskid_set)]
+    )
+    model_out_tbl <- split_model_compound_set_tbl |>
+      purrr::map(.f = draw_target_samples, samples_per_combo, compound_taskid_set) |>
+      purrr::list_rbind()
   }
 
   model_out_tbl |>
@@ -60,8 +78,8 @@ linear_pool_sample <- function(model_out_tbl, weights = NULL,
 }
 
 
-#' Make the output type ID values of sample forecasts unique for the same
-#' combination of task IDs but different models
+#' Make the output type ID values of sample forecasts distinct for different
+#' models
 #'
 #' @param model_out_tbl an object of class `model_out_tbl` with component
 #'   model outputs (e.g., predictions).
@@ -82,34 +100,141 @@ make_sample_indices_unique <- function(model_out_tbl) {
     dplyr::mutate(output_type_id = paste0(.data[["model_id"]], .data[["output_type_id"]]))
 
   if (numeric_output_type_ids) {
-    new_indices_outputs |>
-      dplyr::mutate(output_type_id = as.integer(factor(.data[["output_type_id"]])))
+    dplyr::mutate(
+      new_indices_outputs,
+      output_type_id = as.integer(factor(.data[["output_type_id"]], levels = unique(.data[["output_type_id"]])))
+    )
   } else {
     new_indices_outputs
   }
 }
 
 
+#' Helper function for drawing the requested number of samples from each model for
+#' every unique combination of compound task ID set variables when requesting a
+#' linear pool of the `sample` output type.
+#'
+#' @inheritParams linear_pool
+#' @param model_compound_set_tbl a `model_out_tbl` of all the sample predictions for
+#'   a single, unique combination of compound task ID set variables for a particular
+#'   model
+#' @param samples_per_combo a `data.frame` giving the number of provided and
+#'   target samples for every unique combination of compound task ID set variables
+#'   for each model, with columns: "model_id", compound task id set variables,
+#'   "provided_samples", "weight", "effective_weight", and "target_samples".
+#'
+#' @noRd
+#'
+#' @return a `model_out_tbl` containing the requested number sample predictions for a
+#' single, unique combination of compound task ID set variables for a particular
+#' model, drawn from the provided `model_compound_set_tbl`
+#'
+#' @importFrom rlang .data
+draw_target_samples <- function(model_compound_set_tbl, samples_per_combo, compound_taskid_set) {
+  if (nrow(model_compound_set_tbl) == 0) {
+    return(model_compound_set_tbl)
+  }
+
+  # current_compound_taskid_set has 1 row, where the column
+  # `target_samples` is the number of samples to draw for this
+  # combination of model_id and compound task ID set variables
+  current_compound_taskid_set <- dplyr::left_join(
+    model_compound_set_tbl[1, ],
+    samples_per_combo,
+    by = c("model_id", compound_taskid_set)
+  )
+  provided_indices <- unique(model_compound_set_tbl$output_type_id)
+
+  sample_idx <- sample(x = provided_indices, size = current_compound_taskid_set$target_samples, replace = FALSE)
+  dplyr::filter(model_compound_set_tbl, .data[["output_type_id"]] %in% sample_idx)
+}
+
+
+#' Helper function for computing the requested number of samples from each model for
+#' every unique combination of compound task ID set variables when requesting a
+#' linear pool of the `sample` output type.
+#'
+#' @inheritParams linear_pool
+#' @noRd
+#'
+#' @return a `data.frame` giving the number of provided and target samples for every
+#' unique combination of compound task ID set variables for each model, with columns:
+#' "model_id", compound task id set variables, "provided_samples", "weight",
+#' "effective_weight", and "target_samples".
+#'
+#' @importFrom rlang .data
+calc_samples_per_combo <- function(model_out_tbl, weights,
+                                   weights_col_name,
+                                   task_id_cols,
+                                   compound_taskid_set,
+                                   n_output_samples) {
+  weight_by_cols <- colnames(weights)[colnames(weights) != weights_col_name]
+  samples_per_combo <- model_out_tbl |>
+    # for each unique combination of model_id and compound task ID set variables,
+    # calculate the number of unique output type IDs (i.e., samples) provided
+    dplyr::group_by(dplyr::across(dplyr::all_of(c("model_id", compound_taskid_set)))) |>
+    dplyr::summarize(provided_samples = length(unique(.data[["output_type_id"]]))) |>
+    dplyr::ungroup() |>
+    tidyr::complete(
+      !!!rlang::syms(c("model_id", compound_taskid_set)),
+      fill = list(provided_samples = 0)
+    ) |>
+    # add model weights
+    dplyr::left_join(weights, weight_by_cols) |>
+    # calculate the target number of samples to draw from each model for each unique
+    # combination of compound task ID set variables.
+    # for each compound unit, models with no provided samples will have 0 target samples
+    dplyr::group_by(dplyr::across(dplyr::all_of(compound_taskid_set))) |>
+    dplyr::mutate(
+      effective_weight = as.integer(.data[["provided_samples"]] > 0) * .data[[weights_col_name]],
+      effective_weight = .data[["effective_weight"]] / sum(.data[["effective_weight"]]),
+      target_samples = floor(.data[["effective_weight"]] * n_output_samples)
+    ) |>
+    dplyr::ungroup()
+
+  if (is.null(compound_taskid_set)) {
+    samples_per_combo <- list(samples_per_combo)
+  } else {
+    samples_per_combo <- split(samples_per_combo, f = samples_per_combo[, compound_taskid_set])
+  }
+  # deal with n_output_samples not divisible evenly among component models
+  samples_per_combo <- samples_per_combo |>
+    purrr::map(.f = function(split_per_combo) {
+      actual_output_samples <- sum(split_per_combo$target_samples)
+      remainder_samples <- n_output_samples - actual_output_samples
+      valid_models <- split_per_combo$model_id[split_per_combo$provided_samples > 0]
+      models_to_resample <- sample(x = valid_models, size = remainder_samples)
+
+      dplyr::mutate(
+        split_per_combo,
+        target_samples = ifelse(
+          .data[["model_id"]] %in% models_to_resample,
+          .data[["target_samples"]] + 1,
+          .data[["target_samples"]]
+        )
+      )
+    }) |>
+    purrr::list_rbind()
+}
+
 #' Perform simple validations on the inputs used to calculate a linear pool
 #' of samples
 #'
+#' @inheritParams linear_pool
 #' @param model_out_tbl an object of class `model_out_tbl` with component
 #'   model outputs (e.g., predictions). May only contain the "sample" output type.
 #' @param weights an optional `data.frame` with component model weights. If
 #'   provided, it should have a column named `model_id` and a column containing
-#'   model weights. Default to `NULL`, which specifies an equally-weighted ensemble
-#' @param weights_col_name `character` string naming the column in `weights`
-#'   with model weights. Defaults to `"weight"`
-#' @param n_output_samples `numeric` that specifies how many sample forecasts to
-#'   return per unique combination of task IDs. Currently the only supported value
-#'   is NULL, in which case all provided component model samples are collected and
-#'   returned.
+#'   model weights. Optionally, it may contain additional columns corresponding to
+#'   variables in the compound task ID set for weights specific to the sample output
+#'   type. Defaults to `NULL`, which specifies an equally-weighted ensemble.
 #'
 #' @return no return value
 #'
 #' @noRd
 validate_sample_inputs <- function(model_out_tbl, weights = NULL,
                                    weights_col_name = "weight",
+                                   compound_taskid_set,
                                    n_output_samples = NULL) {
   if (!identical(unique(model_out_tbl$output_type), "sample")) {
     cli::cli_abort("{.arg model_out_tbl} should only contain the sample output type")
@@ -119,12 +244,34 @@ validate_sample_inputs <- function(model_out_tbl, weights = NULL,
     cli::cli_abort("{.arg n_output_samples} must be {.val NULL} or an integer value")
   }
 
-  if (!is.null(weights) && is.null(n_output_samples)) {
-    cli::cli_abort("Component model weights output samples provided,
-                   so a number of ensemble samples {.arg n_output_samples} must be provided")
+  if (!is.null(weights) && length(unique(weights[[weights_col_name]])) != 1) {
+    if (is.null(n_output_samples)) {
+      cli::cli_abort("Component model weights were provided,
+                      so a value for {.arg n_output_samples} must be provided")
+    }
+
+    if (!all(colnames(weights) %in% c("model_id", compound_taskid_set, weights_col_name))) {
+      cli::cli_abort("{.arg weights} may only vary for variables in the {.arg compound_taskid_set}.")
+    }
   }
 
-  if (!is.null(weights) && !all(colnames(weights) %in% c("model_id", weights_col_name))) {
-    cli::cli_abort("Currently weights for different task IDs are not supported for the sample output type.")
+  # check that for each compound unit defined by the compound task ID set variables,
+  # all models provide the same number of samples
+  same_num_output_ids <- model_out_tbl |>
+    dplyr::group_by(dplyr::across(dplyr::all_of(c(compound_taskid_set, "model_id")))) |>
+    dplyr::summarize(num_output_type_id = length(.data[["output_type_id"]])) |>
+    dplyr::ungroup() |>
+    dplyr::group_split(dplyr::across(dplyr::all_of(c(compound_taskid_set)))) |>
+    purrr::map_lgl(.f = function(split_outputs) {
+      length(unique(split_outputs$num_output_type_id)) == 1
+    })
+
+  false_counter <- sum(!same_num_output_ids)
+  if (false_counter != 0) {
+    cli::cli_abort(c(
+      "x" = "{.arg model_out_tbl} contains {.val {false_counter}} sample distribution{?s} that cannot be ensembled.",
+      "i" = "Within each group defined by a combination of the compound task ID set 
+        variables, all models must provide the same number of sample forecasts"
+    ))
   }
 }

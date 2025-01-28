@@ -2,14 +2,11 @@
 #' of values for task id variables and output type, all models provided the same
 #' set of output type ids. This check only applies to the `cdf`, `pmf`, and
 #' `quantile` output types to ensure the resulting distribution is valid.
+#'
 #' @param model_out_tbl an object of class `model_out_tbl` with component
 #'   model outputs (e.g., predictions).
 #' @param task_id_cols `character` vector with names of columns in
 #'   `model_out_tbl` that specify modeling tasks.
-#' @details If the ensembling function intended to be used is `"simple_ensemble"`,
-#'   the valid output types are `mean`, `median`, `quantile`, `cdf`, and `pmf`.
-#'   If the ensembling function will be `"linear_pool"`, the valid output types
-#'   are `mean`, `quantile`, `cdf`, `pmf`, and `sample`.
 #'
 #' @return no return value
 #' @noRd
@@ -22,7 +19,7 @@ validate_output_type_ids <- function(model_out_tbl, task_id_cols) {
     dplyr::group_by(dplyr::across(c(dplyr::all_of(task_id_cols), "model_id", "output_type"))) |>
     dplyr::summarize(output_type_id_list = list(sort(.data[["output_type_id"]]))) |>
     dplyr::ungroup() |>
-    dplyr::group_split(dplyr::across(dplyr::all_of(task_id_cols)), "output_type") |>
+    dplyr::group_split(dplyr::across(dplyr::all_of(c(task_id_cols, "output_type")))) |>
     purrr::map_lgl(.f = function(split_outputs) {
       length(unique(split_outputs$output_type_id_list)) == 1
     })

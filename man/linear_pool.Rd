@@ -13,6 +13,8 @@ linear_pool(
   weights_col_name = "weight",
   model_id = "hub-ensemble",
   task_id_cols = NULL,
+  compound_taskid_set = NA,
+  derived_tasks = NULL,
   n_samples = 10000,
   n_output_samples = NULL,
   ...
@@ -39,6 +41,24 @@ ensemble model.}
 \code{model_out_tbl} that specify modeling tasks. Defaults to \code{NULL}, in which
 case all columns in \code{model_out_tbl} other than \code{"model_id"}, \code{"output_type"},
 \code{"output_type_id"}, and \code{"value"} are used as task ids.}
+
+\item{compound_taskid_set}{\code{character} vector of the compound task ID variable
+set. This argument is only relevant for \code{output_type} \code{"sample"}. Can be one
+of three possible values, with the following meanings:
+\itemize{
+\item \code{NA}: the compound_taskid_set is not relevant for the current modeling task
+\item \code{NULL}: samples are from a multivariate joint distribution across all levels
+of all task id variables
+\item Equality to \code{task_id_cols}: samples are from separate univariate distributions
+for each individual prediction task
+}
+
+Defaults to NA. Derived task ids must be included if all of the task ids their
+values depend on are part of the \code{compound_taskid_set}.}
+
+\item{derived_tasks}{\code{character} vector of derived task IDs (variables whose
+values depend on that of other task ID variables). Defaults to NULL, meaning
+there are no derived task IDs.}
 
 \item{n_samples}{\code{numeric} that specifies the number of samples to use when
 calculating quantiles from an estimated quantile function. Defaults to \code{1e4}.}
@@ -84,6 +104,13 @@ quantiles.
 }
 
 Steps 1 and 2 in this process are performed by \code{distfromq::make_q_fn}.
+
+When the \code{output_type} is \code{sample}, we obtain the resulting linear pool by
+collecting samples from each model, updating the \code{output_type_id} values to be
+unique for predictions that are not joint across, and pooling them together.
+If there is a restriction on the number of samples to output per compound unit,
+this number is divided evenly among the models for that compound unit (with any
+remainder distributed randomly).
 }
 \examples{
 # We illustrate the calculation of a linear pool when we have quantiles from the
