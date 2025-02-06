@@ -165,7 +165,7 @@ head(weighted_mean_ens, 10)
 
 # Creating ensembles with `linear_pool`
 
-The `linear_pool()` function implements the linear opinion pool (LOP, also known as a distributional mixture) method when ensembling predictions. This function can be used to combine predictions with output types mean, quantile, CDF, and PMF. Unlike `simple_ensemble()`, this function handles its computation differently based on the output type. For the CDF, PMF, and mean output types, the linear pool method is equivalent to calling `simple_ensemble()` with a mean aggregation function, since `simple_ensemble()` produces a linear pool prediction (an average of individual model cumulative or bin probabilities).
+The `linear_pool()` function implements the linear opinion pool (LOP, also known as a distributional mixture) method when ensembling predictions. This function can be used to combine predictions with output types mean, CDF, PMF, sample, and quantile. Unlike `simple_ensemble()`, this function handles its computation differently based on the output type. For the CDF, PMF, and mean output types, the linear pool method is equivalent to calling `simple_ensemble()` with a mean aggregation function, since `simple_ensemble()` produces a linear pool prediction (an average of individual model cumulative or bin probabilities).
 
 For the quantile output type, the `linear_pool()` function first must approximate a full probability distribution using the value-quantile level pairs from each component model. As a default, this is done with functions in the `distfromq` package, which defaults to fitting a monotonic cubic spline for the interior and a Gaussian normal distribution for the tails. Quasi-random samples are drawn from each distributional estimate, which are then collected and used to extract the desired quantiles from the final ensemble distribution.
 
@@ -266,7 +266,9 @@ cowplot::plot_grid(
 )
 ```
 
-Like with `simple_ensemble()`, we can change the default aggregation settings. For example, weights that determine a model's contribution to the resulting ensemble may be provided.
+## Weighting model contributions
+
+Like with `simple_ensemble()`, we can change the default function settings. For example, weights that determine a model's contribution to the resulting ensemble may be provided.
 
 ```{r}
 model_weights <- data.frame(
@@ -281,6 +283,8 @@ weighted_linear_pool_norm <- hubExamples::forecast_outputs |>
   )
 head(weighted_linear_pool_norm, 10)
 ```
+
+## Changing distributional tails estimate for quantiles
 
 We can also change the distribution that `distfromq` uses to estimate the component models' distributional tails to either log normal or Cauchy using the `tail_dist` argument. (See documentation in the `distfromq` package for more details and function options.) Note, though, that the choice of tail distribution usually does not have a large impact on the resulting ensemble distribution, except in its outer edges.
 
