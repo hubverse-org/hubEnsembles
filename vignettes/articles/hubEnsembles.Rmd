@@ -286,17 +286,17 @@ head(weighted_linear_pool_norm, 10)
 
 ## Changing distributional tails estimate for quantiles
 
-We can also change the distribution that `distfromq` uses to estimate the component models' distributional tails to either log normal or Cauchy using the `tail_dist` argument. (See documentation in the `distfromq` package for more details and function options.) Note, though, that the choice of tail distribution usually does not have a large impact on the resulting ensemble distribution, except in its outer edges.
+We can also change the distribution that `distfromq` uses to estimate the component models' distributional tails for quantiles to either log normal or Cauchy using the `tail_dist` argument. This choice usually does not have a large impact on the resulting ensemble distribution, though, and can only be seen in its outer edges. (For more details and other function options, see the documentation in the [`distfromq` package](https://reichlab.io/distfromq/).)
 
 ```{r}
 linear_pool_lnorm <- hubExamples::forecast_outputs |>
-  dplyr::filter(!output_type %in% c("median", "sample")) |>
+  dplyr::filter(output_type %in% "quantile") |>
   hubEnsembles::linear_pool(
     model_id = "linear-pool-lognormal",
     tail_dist = "lnorm"
   )
 linear_pool_cauchy <- hubExamples::forecast_outputs |>
-  dplyr::filter(!output_type %in% c("median", "sample")) |>
+  dplyr::filter(output_type %in% "quantile") |>
   hubEnsembles::linear_pool(
     model_id = "linear-pool-cauchy",
     tail_dist = "cauchy"
