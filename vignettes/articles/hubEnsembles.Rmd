@@ -304,3 +304,28 @@ linear_pool_cauchy <- hubExamples::forecast_outputs |>
     tail_dist = "cauchy"
   )
 ```
+
+## Ensembling samples from joint distributions
+
+The sample output type is unique in that it may represent predictions from either joint or marginal predictive distributions, unlike the other output types which only ever summarize the latter. Hence, sample representation may capture dependence across combinations of multiple modeled task ID variables when recording samples from a joint predictive distribution. In this case, samples with the same index (specified by the `output_type_id`) may be assumed to correspond to a single sample from a joint distribution across multiple levels of the task id variables.
+
+When requesting a linear pool made up of a subset of the input sample predictions, the user must identify the dependence structure using the `compound_taskid_set` parameter to ensure the resulting ensemble is valid. The compound task ID set consists of task ID variables that do not display dependence amongst their values, and thus each unique combination of their values can be seen as representations of a single multivariate outcome of interest (or compound modeling task). If no task ID variables display dependents, then the `compound_taskid_set` consists of all task ID variables.
+
+The example data for the sample output type has task ID variables "reference_date", "location", "horizon", "target", and "target_end_date"; of these five, only "horizon" displays dependence while "target_end_date" is derived from a combination of "reference_date" and "horizon". The other three task ID variables thus make up the compound task ID set, which is specified in the call to `linear_pool()`.
+
+
+```{r}
+hubExamples::forecast_outputs |>
+  dplyr::filter(output_type == "sample") |>
+  dplyr::mutate(output_type_id = as.numeric(output_type_id)) |> # make indices numeric for readability
+  hubEnsembles::linear_pool(
+    weights = NULL,
+    model_id = "linear-pool-joint",
+    task_id_cols = c("reference_date", "location", "horizon", "target", "target_end_date"),
+    compound_taskid_set = c("reference_date", "location", "target"),
+    derived_tasks = "target_end_date",
+    n_output_samples = 100
+  )
+```
+
+Derived task IDs generally are not part of the compound task ID set **unless** all the task ID variables their values depend upon are already part of the compound task ID set. The `derived_tasks` argument is used to validate the provided compound task ID set is compatible with the input sample predictions. If there are no derived tasks, then the argument may be set to `NULL`.
