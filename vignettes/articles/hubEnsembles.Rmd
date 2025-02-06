@@ -30,17 +30,18 @@ library(hubEnsembles)
 
 We will use an example hub provided by the hubverse to demonstrate the functionality of the `hubEnsembles` package. This example hub was generated with modified forecasts from the FluSight forecasting challenge, a collaborative modeling exercise run by the US Centers for Disease Control and Prevention (CDC) since 2013 that solicits seasonal influenza forecasts from outside modeling teams. The example hub includes both example model output data and target data (sometimes known as "truth" data), which are stored in the `hubExamples` package as data objects named `forecast_outputs` and `forecast_target_ts`. Note that the toy model outputs contain predictions for only a small subset rows of select dates, locations, and output type IDs, far fewer than an actual modeling hub would typically collect.
 
-The model output data includes quantile, mean and median forecasts of future incident influenza hospitalizations and PMF forecasts of hospitalization intensity (categories determined by threshold of weekly hospital admissions per 100,000 population). Each forecast is made for five task ID variables, including the location for which the forecast was made (`location`), the date on which the forecast was made (`reference_date`), the number of steps ahead (`horizon`), the date of the forecast prediction (a combination of the date the forecast was made and the forecast horizon, `target_end_date`), and the forecast target (`target`). Below we print a subset of this example model output.
+The model output data includes mean, median, quantile, and sample forecasts of future incident influenza hospitalizations and PMF forecasts of hospitalization intensity (categories determined by threshold of weekly hospital admissions per 100,000 population). Each forecast is made for five task ID variables, including the location for which the forecast was made (`location`), the date on which the forecast was made (`reference_date`), the number of steps ahead (`horizon`), the date of the forecast prediction (a combination of the date the forecast was made and the forecast horizon, `target_end_date`), and the forecast target (`target`). Below we print a subset of this example model output.
 
 ```{r example-model-outputs}
 hubExamples::forecast_outputs |>
   dplyr::filter(
-    output_type %in% c("quantile", "median", "pmf"),
-    output_type_id %in% c(0.25, 0.75, NA, "low", "moderate", "high", "very high"),
+    output_type %in% c("median", "quantile", "sample", "pmf"),
+    output_type_id %in% c(NA, 0.25, 0.75, "2101", "2102", "2103", "low", "moderate", "high", "very high"),
     reference_date == "2022-12-17",
     location == "25",
     horizon == 1
-  )
+  ) |>
+  dplyr::arrange(model_id, dplyr::desc(target), output_type)
 ```
 
 We also have corresponding target data included in the `hubExamples` package. The example target data provide observed incident influenza hospitalizations (`observation`) in a given week (`date`) and for a given location (`location`). This target data could be used as calibration data for generating forecasts or for evaluating the forecasts post hoc. The forecast-specific task ID variables `reference_date` and `horizon` are not relevant for the target data.
