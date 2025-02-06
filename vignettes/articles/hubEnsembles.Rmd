@@ -167,13 +167,15 @@ head(weighted_mean_ens, 10)
 
 The `linear_pool()` function implements the linear opinion pool (LOP, also known as a distributional mixture) method when ensembling predictions. This function can be used to combine predictions with output types mean, CDF, PMF, sample, and quantile. Unlike `simple_ensemble()`, this function handles its computation differently based on the output type. For the CDF, PMF, and mean output types, the linear pool method is equivalent to calling `simple_ensemble()` with a mean aggregation function, since `simple_ensemble()` produces a linear pool prediction (an average of individual model cumulative or bin probabilities).
 
+For the sample output type, the LOP method pools the input sample predictions into a single ensemble distribution. By default, the `linear_pool()` function will simply collect and return all provided samples. However, the user may also specify a number of sample predictions for the ensemble to return using the `n_output_samples` argument, in which case a stratified draw will be performed to select a subset of predictions to create the linear pool of samples so that all component models are represented equally.
+
 For the quantile output type, the `linear_pool()` function first must approximate a full probability distribution using the value-quantile level pairs from each component model. As a default, this is done with functions in the `distfromq` package, which defaults to fitting a monotonic cubic spline for the interior and a Gaussian normal distribution for the tails. Quasi-random samples are drawn from each distributional estimate, which are then collected and used to extract the desired quantiles from the final ensemble distribution.
 
-Using the default options for `linear_pool()`, we can generate an equally-weighted linear pool for each of the output types in our example hub (except for the median and sample output types, which must be excluded). The resulting distribution for the linear pool of quantiles is estimated using a default of `n_samples = 1e4` quasi-random samples drawn from the distribution of each component model.
+Using the default options for `linear_pool()`, we can generate an equally-weighted linear pool for each of the output types in our example hub (except for the median output type, which must be excluded). The resulting distribution for the linear pool of quantiles is estimated using a default of `n_samples = 1e4` quasi-random samples drawn from the distribution of each component model.
 
 ```{r}
 linear_pool_norm <- hubExamples::forecast_outputs |>
-  dplyr::filter(!output_type %in% c("median", "sample")) |>
+  dplyr::filter(!output_type %in% "median") |>
   hubEnsembles::linear_pool(model_id = "linear-pool-normal")
 head(linear_pool_norm, 10)
 ```
@@ -268,7 +270,7 @@ cowplot::plot_grid(
 
 ## Weighting model contributions
 
-Like with `simple_ensemble()`, we can change the default function settings. For example, weights that determine a model's contribution to the resulting ensemble may be provided.
+Like with `simple_ensemble()`, we can change the default function settings. For example, weights that determine a model's contribution to the resulting ensemble may be provided. (Note that we must exclude the sample output type here because it is not yet supported for weighted ensembles.)
 
 ```{r}
 model_weights <- data.frame(
