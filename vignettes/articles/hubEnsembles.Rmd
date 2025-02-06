@@ -57,7 +57,7 @@ The `simple_ensemble()` function directly computes an ensemble from component mo
 
 By default, `simple_ensemble()` uses the mean for the aggregation function and equal weights for all models, though the user can create different types of weighted ensembles by specifying an aggregation function and weights. 
 
-Using the default options for `simple_ensemble()`, we can generate an equally weighted mean ensemble for each unique combination of values for the task ID variables, the `output_type` and the `output_type_id`. This means different ensemble methods will be used for different output types: for the `quantile` output type in our example data, the resulting ensemble is a quantile average, while for the mean, CDF, PMF output type, the ensemble is a linear pool. We must filter the sample output type because it is not yet supported.
+Using the default options for `simple_ensemble()`, we can generate an equally weighted mean ensemble for each unique combination of values for the task ID variables, the `output_type` and the `output_type_id`. This means different ensemble methods will be used for different output types: for the `quantile` output type in our example data, the resulting ensemble is a quantile average, while for the mean, CDF, PMF output type, the ensemble is a linear pool. We must filter the sample output type because it cannot be ensembled using the `simple_ensemble()` function.
 
 ```{r}
 mean_ens <- hubExamples::forecast_outputs |>
