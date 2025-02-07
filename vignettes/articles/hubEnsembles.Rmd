@@ -57,7 +57,7 @@ The `simple_ensemble()` function directly computes an ensemble from component mo
 
 By default, `simple_ensemble()` uses the mean for the aggregation function and equal weights for all models, though the user can create different types of weighted ensembles by specifying an aggregation function and weights. 
 
-Using the default options for `simple_ensemble()`, we can generate an equally weighted mean ensemble for each unique combination of values for the task ID variables, the `output_type` and the `output_type_id`. This means different ensemble methods will be used for different output types: for the `quantile` output type in our example data, the resulting ensemble is a quantile average, while for the mean, CDF, PMF output type, the ensemble is a linear pool. We must filter the sample output type because it cannot be ensembled using the `simple_ensemble()` function.
+Using the default options for `simple_ensemble()`, we can generate an equally weighted mean ensemble for each unique combination of values for the task ID variables, the `output_type` and the `output_type_id`. This means different ensemble methods will be used for different output types: for the `quantile` output type in our example data, the resulting ensemble is a quantile average, while for the mean, CDF, and PMF output types the ensemble is a linear pool. The `simple_ensemble()` function does not support the sample output type, so we remove the sample predictions from the forecast model outputs.
 
 ```{r}
 mean_ens <- hubExamples::forecast_outputs |>
@@ -167,7 +167,7 @@ head(weighted_mean_ens, 10)
 
 The `linear_pool()` function implements the linear opinion pool (LOP, also known as a distributional mixture) method when ensembling predictions. This function can be used to combine predictions with output types mean, CDF, PMF, sample, and quantile. Unlike `simple_ensemble()`, this function handles its computation differently based on the output type. For the CDF, PMF, and mean output types, the linear pool method is equivalent to calling `simple_ensemble()` with a mean aggregation function, since `simple_ensemble()` produces a linear pool prediction (an average of individual model cumulative or bin probabilities).
 
-For the sample output type, the LOP method pools the input sample predictions into a single ensemble distribution. By default, the `linear_pool()` function will simply collect and return all provided samples. However, the user may also specify a number of sample predictions for the ensemble to return using the `n_output_samples` argument, in which case a stratified draw will be performed to select a subset of predictions to create the linear pool of samples so that all component models are represented equally.
+For the sample output type, the LOP method pools the input sample predictions into a combined ensemble distribution. By default, the `linear_pool()` function will simply collect and return all provided samples. However, the user may also specify a number of sample predictions for the ensemble to return using the `n_output_samples` argument, in which case a random subset of predictions from individual models will be selected to create the linear pool of samples so that all component models are represented equally. This random selection of samples is stratified by model so that approximately the same number of samples from each individual model is included in the ensemble.
 
 For the quantile output type, the `linear_pool()` function first must approximate a full probability distribution using the value-quantile level pairs from each component model. As a default, this is done with functions in the `distfromq` package, which defaults to fitting a monotonic cubic spline for the interior and a Gaussian normal distribution for the tails. Quasi-random samples are drawn from each distributional estimate, which are then collected and used to extract the desired quantiles from the final ensemble distribution.
 
@@ -286,9 +286,9 @@ weighted_linear_pool_norm <- hubExamples::forecast_outputs |>
 head(weighted_linear_pool_norm, 10)
 ```
 
-## Changing distributional tails estimate for quantiles
+## Changing the parametric family used for extrapolation into distribution tails
 
-We can also change the distribution that `distfromq` uses to estimate the component models' distributional tails for quantiles to either log normal or Cauchy using the `tail_dist` argument. This choice usually does not have a large impact on the resulting ensemble distribution, though, and can only be seen in its outer edges. (For more details and other function options, see the documentation in the [`distfromq` package](https://reichlab.io/distfromq/).)
+We can also change the distribution that `distfromq` uses to approximate the tails of component models' predictive distributions to either log normal or Cauchy using the `tail_dist` argument. This choice usually does not have a large impact on the resulting ensemble distribution, though, and can only be seen in its outer edges. (For more details and other function options, see the documentation in the [`distfromq` package](https://reichlab.io/distfromq/).)
 
 ```{r}
 linear_pool_lnorm <- hubExamples::forecast_outputs |>
@@ -307,11 +307,11 @@ linear_pool_cauchy <- hubExamples::forecast_outputs |>
 
 ## Ensembling samples from joint distributions
 
-The sample output type is unique in that it may represent predictions from either joint or marginal predictive distributions, unlike the other output types which only ever summarize the latter. Hence, sample representation may capture dependence across combinations of multiple modeled task ID variables when recording samples from a joint predictive distribution. In this case, samples with the same index (specified by the `output_type_id`) may be assumed to correspond to a single sample from a joint distribution across multiple levels of the task id variables.
+The sample output type is unique in that it may represent predictions from either joint or marginal predictive distributions, unlike the other output types which only ever summarize the latter. Hence, the sample representation may capture dependence across combinations of multiple modeled task ID variables when recording samples from a joint predictive distribution. In this case, samples with the same index (specified by the `output_type_id`) may be assumed to correspond to a single sample from a joint distribution across multiple levels of the task id variables.
 
 When requesting a linear pool made up of a subset of the input sample predictions, the user must identify the dependence structure using the `compound_taskid_set` parameter to ensure the resulting ensemble is valid. The compound task ID set consists of task ID variables that do not display dependence amongst their values, and thus each unique combination of their values can be seen as representations of a single multivariate outcome of interest (or compound modeling task). If no task ID variables display dependents, then the `compound_taskid_set` consists of all task ID variables.
 
-The example data for the sample output type has task ID variables "reference_date", "location", "horizon", "target", and "target_end_date"; of these five, only "horizon" displays dependence while "target_end_date" is derived from a combination of "reference_date" and "horizon". The other three task ID variables thus make up the compound task ID set, which is specified in the call to `linear_pool()`.
+The example data for the sample output type has task ID variables `"reference_date"`, `"location"`, `"horizon"`, `"target"`, and `"target_end_date"`. In this example, the samples capture dependence across different forecast `"horizon"`s. However, the samples do not capture dependence across different `"reference_date"`s, `"location"`s, or `"target"`s. Thus, those three task id variables make up the compound task ID set that is specified in the call to `linear_pool()`. The `"target_end_date"` for a given forecast is derived from the combination of `"reference_date"` and `"horizon"`, and so it is specified as the argument for `derived_tasks`.
 
 
 ```{r}
@@ -328,4 +328,4 @@ hubExamples::forecast_outputs |>
   )
 ```
 
-Derived task IDs generally are not part of the compound task ID set **unless** all the task ID variables their values depend upon are already part of the compound task ID set. The `derived_tasks` argument is used to validate the provided compound task ID set is compatible with the input sample predictions. If there are no derived tasks, then the argument may be set to `NULL`.
+Derived task IDs generally are not part of the compound task ID set **unless** all the task ID variables their values depend upon are already part of the compound task ID set. The `derived_tasks` argument is used to validate that the provided compound task ID set is compatible with the input sample predictions. If there are no derived tasks, then the argument may be set to `NULL`.
