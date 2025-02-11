@@ -180,7 +180,7 @@ Using the default options for `linear_pool()`, we can generate an equally-weight
 
 ```{r}
 linear_pool_norm <- hubExamples::forecast_outputs |>
-  dplyr::filter(!output_type %in% "median") |>
+  dplyr::filter(output_type != "median") |>
   hubEnsembles::linear_pool(model_id = "linear-pool-normal")
 head(linear_pool_norm, 10)
 ```
@@ -297,13 +297,13 @@ We can also change the distribution that `distfromq` uses to approximate the tai
 
 ```{r}
 linear_pool_lnorm <- hubExamples::forecast_outputs |>
-  dplyr::filter(output_type %in% "quantile") |>
+  dplyr::filter(output_type == "quantile") |>
   hubEnsembles::linear_pool(
     model_id = "linear-pool-lognormal",
     tail_dist = "lnorm"
   )
 linear_pool_cauchy <- hubExamples::forecast_outputs |>
-  dplyr::filter(output_type %in% "quantile") |>
+  dplyr::filter(output_type == "quantile") |>
   hubEnsembles::linear_pool(
     model_id = "linear-pool-cauchy",
     tail_dist = "cauchy"
