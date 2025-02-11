@@ -33,14 +33,18 @@ We will use an example hub provided by the hubverse to demonstrate the functiona
 The model output data includes mean, median, quantile, and sample forecasts of future incident influenza hospitalizations; as well as CDF and PMF forecasts of hospitalization intensity (the latter made up of categories determined by threshold of weekly hospital admissions per 100,000 population). Each forecast is made for five task ID variables, including the location for which the forecast was made (`location`), the date on which the forecast was made (`reference_date`), the number of steps ahead (`horizon`), the date of the forecast prediction (a combination of the date the forecast was made and the forecast horizon, `target_end_date`), and the forecast target (`target`). Below we print a subset of this example model output.
 
 ```{r example-model-outputs}
+otid <- list(
+  mean = NA,
+  median = NA,
+  quantile = c(0, 0.25, 0.75),
+  sample = c("2101", "2102", "2103"),
+  pmf = c("low", "moderate", "high", "very high"),
+  cdf = c(1, 13, 15)
+)
+
 hubExamples::forecast_outputs |>
   dplyr::filter(
-    output_type_id %in% c(
-      NA, 0.1, 0.5, 0.9, # mean, median, quantiles
-      "2101", "2102", "2103", # samples
-      "low", "moderate", "high", "very high", # PMF
-      1, 13, 25 # CDF
-    ),
+    output_type_id %in% unlist(otid),
     reference_date == "2022-12-17",
     location == "25",
     horizon == 1
@@ -77,11 +81,7 @@ The resulting model output has the same structure as the original model output d
 ```{r mean-ensemble}
 mean_ens |>
   dplyr::filter(
-    output_type %in% c("quantile", "median", "pmf"),
-    output_type_id %in% c(
-      0.025, 0.25, 0.75, 0.975, NA,
-      "low", "moderate", "high", "very high"
-    ),
+    output_type_id %in% unlist(otid),
     reference_date == "2022-12-17",
     location == "25",
     horizon == 1
