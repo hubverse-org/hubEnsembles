@@ -27,7 +27,7 @@ jobs:
       contents: write
       pull-requests: write
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - uses: r-lib/actions/setup-tinytex@v2
 
@@ -53,13 +53,20 @@ jobs:
           clean: false
           branch: gh-pages
           folder: docs
-
+      - id: deploy-dir 
+        name: Determine dev status
+        run: |
+          if [[ $(grep -c -E 'sion. ([0-9]*\.){3}' ${{ github.workspace }}/DESCRIPTION) == 1 ]]; then
+            echo 'dir=./docs/dev' >> $GITHUB_OUTPUT
+          else
+            echo 'dir=./docs' >> $GITHUB_OUTPUT
+          fi
       - name: Deploy PR preview to Netlify
         if: contains(env.isPush, 'false')
         id: netlify-deploy
-        uses: nwtgck/actions-netlify@v2
+        uses: nwtgck/actions-netlify@v3
         with:
-          publish-dir: './docs'
+          publish-dir: '${{ steps.deploy-dir.outputs.dir }}'
           production-branch: main
           github-token: ${{ secrets.GITHUB_TOKEN }}
           deploy-message:
