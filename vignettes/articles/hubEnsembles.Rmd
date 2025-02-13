@@ -106,7 +106,7 @@ Custom functions can also be passed into the `agg_fun` argument. We illustrate t
 ```{r}
 geometric_mean <- function(x) {
   n <- length(x)
-  return(prod(x)^(1 / n))
+  prod(x)^(1 / n)
 }
 geometric_mean_ens <- hubExamples::forecast_outputs |>
   dplyr::filter(output_type != "sample") |>
