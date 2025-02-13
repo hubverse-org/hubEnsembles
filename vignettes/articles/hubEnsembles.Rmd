@@ -320,6 +320,12 @@ When requesting a linear pool made up of a subset of the input sample prediction
 
 Thus, in this example, those three task id variables (`"reference_date"`, `"location"`, and `"target"`) make up the compound task ID set that is specified in the call to `linear_pool()`. The `"target_end_date"` for a given forecast is derived from the combination of `"reference_date"` and `"horizon"`, and so it is specified as the argument for `derived_tasks`.
 
+Derived task IDs are another subset of task ID variables whose values are "derived" from a combination of the values from other task ID variables, which may or may not be part of the compound task ID set. In the example, the derived task ID `"target_end_date"` is not part of the compound task ID set because `"reference_date"` and `"horizon"` are not both part of the compound task ID set.  
+
+Generally, the derived task IDs are not needed to identify a single model unit with a multivariate outcome of interest (the purpose of the compound task id set), **unless** all of the task ID variables their values depend upon are already a part of the compound task ID set.
+
+Not all model outputs will contain derived task IDs, in which case the argument may be set to `NULL` (the default value). However, it is important to provide the `linear_pool()` function with any derived task IDs, as they are used to check that the provided compound task ID set is compatible with the input sample predictions so the resulting (multivariate) ensemble is valid.
+
 ```{r}
 hubExamples::forecast_outputs |>
   dplyr::filter(output_type == "sample") |>
@@ -333,7 +339,3 @@ hubExamples::forecast_outputs |>
     n_output_samples = 100
   )
 ```
-
-Derived task IDs are another subset of task ID variables whose values are "derived" from a combination of the values from other task ID variables. In the example above, `"target_end_date"` is derived from `"reference_date"` and `"horizon"`. In this case, the derived task ID `"target_end_date"` is not part of the compound task ID set. Generally, the derived task IDs are not needed to identify a single model unit with a multivariate outcome of interest (the purpose of the compound task id set), **unless** all of the task ID variables their values depend upon are already a part of the compound task ID set.
-
-Not all model outputs will contain derived task IDs, in which case the argument may be set to `NULL` (the default value). However, it is important to provide the `linear_pool()` function with any derived task IDs, as they are used to check that the provided compound task ID set is compatible with the input sample predictions so the resulting (multivariate) ensemble is valid.
