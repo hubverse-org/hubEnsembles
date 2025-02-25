@@ -285,7 +285,7 @@ test_that("duplicate forecast values still result in correct weighted median", {
 test_that("simple_ensemble accepts custom functions without error", {
   geometric_mean <- function(x) {
     n <- length(x)
-    return(prod(x)^(1 / n))
+    prod(x)^(1 / n)
   }
 
   model_outputs |>
