@@ -98,41 +98,58 @@ package as data objects named <code>forecast_outputs</code> and
 predictions for only a small subset rows of select dates, locations, and
 output type IDs, far fewer than an actual modeling hub would typically
 collect.</p>
-<p>The model output data includes quantile, mean and median forecasts of
-future incident influenza hospitalizations and PMF forecasts of
-hospitalization intensity (categories determined by threshold of weekly
-hospital admissions per 100,000 population). Each forecast is made for
-five task ID variables, including the location for which the forecast
-was made (<code>location</code>), the date on which the forecast was
-made (<code>reference_date</code>), the number of steps ahead
+<p>The model output data includes mean, median, quantile, and sample
+forecasts of future incident influenza hospitalizations; as well as CDF
+and PMF forecasts of hospitalization intensity (the latter made up of
+categories determined by threshold of weekly hospital admissions per
+100,000 population). Each forecast is made for five task ID variables,
+including the location for which the forecast was made
+(<code>location</code>), the date on which the forecast was made
+(<code>reference_date</code>), the number of steps ahead
 (<code>horizon</code>), the date of the forecast prediction (a
 combination of the date the forecast was made and the forecast horizon,
 <code>target_end_date</code>), and the forecast target
 (<code>target</code>). Below we print a subset of this example model
 output.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">hubExamples</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/hubExamples/man/forecast_data.html" class="external-link">forecast_outputs</a></span> <span class="op">|&gt;</span></span>
+<code class="sourceCode R"><span><span class="va">otid</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>  mean <span class="op">=</span> <span class="cn">NA</span>,</span>
+<span>  median <span class="op">=</span> <span class="cn">NA</span>,</span>
+<span>  quantile <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.25</span>, <span class="fl">0.75</span><span class="op">)</span>,</span>
+<span>  sample <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2101"</span>, <span class="st">"2102"</span>, <span class="st">"2103"</span><span class="op">)</span>,</span>
+<span>  pmf <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"low"</span>, <span class="st">"moderate"</span>, <span class="st">"high"</span>, <span class="st">"very high"</span><span class="op">)</span>,</span>
+<span>  cdf <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">13</span>, <span class="fl">15</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">hubExamples</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/hubExamples/man/forecast_data.html" class="external-link">forecast_outputs</a></span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
-<span>    <span class="va">output_type</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"quantile"</span>, <span class="st">"median"</span>, <span class="st">"pmf"</span><span class="op">)</span>,</span>
-<span>    <span class="va">output_type_id</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.25</span>, <span class="fl">0.75</span>, <span class="cn">NA</span>, <span class="st">"low"</span>, <span class="st">"moderate"</span>, <span class="st">"high"</span>, <span class="st">"very high"</span><span class="op">)</span>,</span>
+<span>    <span class="va">output_type_id</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="va">otid</span><span class="op">)</span>,</span>
 <span>    <span class="va">reference_date</span> <span class="op">==</span> <span class="st">"2022-12-17"</span>,</span>
 <span>    <span class="va">location</span> <span class="op">==</span> <span class="st">"25"</span>,</span>
 <span>    <span class="va">horizon</span> <span class="op">==</span> <span class="fl">1</span></span>
-<span>  <span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 21 × 9</span></span></span>
-<span><span class="co">#&gt;    model_id          reference_date target                    horizon location target_end_date output_type output_type_id        value</span></span>
-<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> Flusight-baseline 2022-12-17     wk inc flu hosp                 1 25       2022-12-24      quantile    0.25           566         </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> Flusight-baseline 2022-12-17     wk inc flu hosp                 1 25       2022-12-24      quantile    0.75           598         </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> Flusight-baseline 2022-12-17     wk inc flu hosp                 1 25       2022-12-24      median      <span style="color: #BB0000;">NA</span>             582         </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> Flusight-baseline 2022-12-17     wk flu hosp rate category       1 25       2022-12-24      pmf         low              0.000<span style="text-decoration: underline;">009</span>70</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> Flusight-baseline 2022-12-17     wk flu hosp rate category       1 25       2022-12-24      pmf         moderate         0.002<span style="text-decoration: underline;">94</span>   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> Flusight-baseline 2022-12-17     wk flu hosp rate category       1 25       2022-12-24      pmf         high             0.073<span style="text-decoration: underline;">5</span>    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> Flusight-baseline 2022-12-17     wk flu hosp rate category       1 25       2022-12-24      pmf         very high        0.924     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> MOBS-GLEAM_FLUH   2022-12-17     wk inc flu hosp                 1 25       2022-12-24      quantile    0.25           563         </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> MOBS-GLEAM_FLUH   2022-12-17     wk inc flu hosp                 1 25       2022-12-24      quantile    0.75           803         </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> MOBS-GLEAM_FLUH   2022-12-17     wk inc flu hosp                 1 25       2022-12-24      median      <span style="color: #BB0000;">NA</span>             664         </span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 11 more rows</span></span></span></code></pre></div>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">model_id</span>, <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/desc.html" class="external-link">desc</a></span><span class="op">(</span><span class="va">target</span><span class="op">)</span>, <span class="va">output_type</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">16</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 48 × 9</span></span></span>
+<span><span class="co">#&gt;    model_id          reference_date target                    horizon location target_end_date output_type output_type_id   value</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> Flusight-baseline 2022-12-17     wk inc flu hosp                 1 25       2022-12-24      mean        <span style="color: #BB0000;">NA</span>             5.82<span style="color: #949494;">e</span>+2</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> Flusight-baseline 2022-12-17     wk inc flu hosp                 1 25       2022-12-24      median      <span style="color: #BB0000;">NA</span>             5.82<span style="color: #949494;">e</span>+2</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> Flusight-baseline 2022-12-17     wk inc flu hosp                 1 25       2022-12-24      quantile    0.25           5.66<span style="color: #949494;">e</span>+2</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> Flusight-baseline 2022-12-17     wk inc flu hosp                 1 25       2022-12-24      quantile    0.75           5.98<span style="color: #949494;">e</span>+2</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> Flusight-baseline 2022-12-17     wk inc flu hosp                 1 25       2022-12-24      sample      2101           6.06<span style="color: #949494;">e</span>+2</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> Flusight-baseline 2022-12-17     wk inc flu hosp                 1 25       2022-12-24      sample      2102           5.76<span style="color: #949494;">e</span>+2</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> Flusight-baseline 2022-12-17     wk inc flu hosp                 1 25       2022-12-24      sample      2103           5.78<span style="color: #949494;">e</span>+2</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> Flusight-baseline 2022-12-17     wk flu hosp rate category       1 25       2022-12-24      pmf         low            9.70<span style="color: #949494;">e</span><span style="color: #BB0000;">-6</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> Flusight-baseline 2022-12-17     wk flu hosp rate category       1 25       2022-12-24      pmf         moderate       2.94<span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> Flusight-baseline 2022-12-17     wk flu hosp rate category       1 25       2022-12-24      pmf         high           7.35<span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span> Flusight-baseline 2022-12-17     wk flu hosp rate category       1 25       2022-12-24      pmf         very high      9.24<span style="color: #949494;">e</span><span style="color: #BB0000;">-1</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">12</span> Flusight-baseline 2022-12-17     wk flu hosp rate                1 25       2022-12-24      cdf         0.25           8.63<span style="color: #949494;">e</span><span style="color: #BB0000;">-9</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">13</span> Flusight-baseline 2022-12-17     wk flu hosp rate                1 25       2022-12-24      cdf         0.75           4.83<span style="color: #949494;">e</span><span style="color: #BB0000;">-8</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">14</span> Flusight-baseline 2022-12-17     wk flu hosp rate                1 25       2022-12-24      cdf         1              1.10<span style="color: #949494;">e</span><span style="color: #BB0000;">-7</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">15</span> Flusight-baseline 2022-12-17     wk flu hosp rate                1 25       2022-12-24      cdf         13             1.00<span style="color: #949494;">e</span>+0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">16</span> Flusight-baseline 2022-12-17     wk flu hosp rate                1 25       2022-12-24      cdf         15             1.00<span style="color: #949494;">e</span>+0</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 32 more rows</span></span></span></code></pre></div>
 <p>We also have corresponding target data included in the
 <code>hubExamples</code> package. The example target data provide
 observed incident influenza hospitalizations (<code>observation</code>)
@@ -178,9 +195,10 @@ of values for the task ID variables, the <code>output_type</code> and
 the <code>output_type_id</code>. This means different ensemble methods
 will be used for different output types: for the <code>quantile</code>
 output type in our example data, the resulting ensemble is a quantile
-average, while for the mean, CDF, PMF output type, the ensemble is a
-linear pool. We must filter the sample output type because it is not yet
-supported.</p>
+average, while for the mean, CDF, and PMF output types the ensemble is a
+linear pool. The <code><a href="../reference/simple_ensemble.html">simple_ensemble()</a></code> function does not
+support the sample output type, so we remove the sample predictions from
+the forecast model outputs.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mean_ens</span> <span class="op">&lt;-</span> <span class="fu">hubExamples</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/hubExamples/man/forecast_data.html" class="external-link">forecast_outputs</a></span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">output_type</span> <span class="op">!=</span> <span class="st">"sample"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -197,25 +215,27 @@ below.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mean_ens</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
-<span>    <span class="va">output_type</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"quantile"</span>, <span class="st">"median"</span>, <span class="st">"pmf"</span><span class="op">)</span>,</span>
-<span>    <span class="va">output_type_id</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>      <span class="fl">0.025</span>, <span class="fl">0.25</span>, <span class="fl">0.75</span>, <span class="fl">0.975</span>, <span class="cn">NA</span>,</span>
-<span>      <span class="st">"low"</span>, <span class="st">"moderate"</span>, <span class="st">"high"</span>, <span class="st">"very high"</span></span>
-<span>    <span class="op">)</span>,</span>
+<span>    <span class="va">output_type_id</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="va">otid</span><span class="op">)</span>,</span>
 <span>    <span class="va">reference_date</span> <span class="op">==</span> <span class="st">"2022-12-17"</span>,</span>
 <span>    <span class="va">location</span> <span class="op">==</span> <span class="st">"25"</span>,</span>
 <span>    <span class="va">horizon</span> <span class="op">==</span> <span class="fl">1</span></span>
 <span>  <span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 7 × 9</span></span></span>
-<span><span class="co">#&gt;   model_id             reference_date target                    horizon location target_end_date output_type output_type_id     value</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> simple-ensemble-mean 2022-12-17     wk flu hosp rate category       1 25       2022-12-24      pmf         high             0.151  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> simple-ensemble-mean 2022-12-17     wk flu hosp rate category       1 25       2022-12-24      pmf         low              0.004<span style="text-decoration: underline;">37</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> simple-ensemble-mean 2022-12-17     wk flu hosp rate category       1 25       2022-12-24      pmf         moderate         0.023<span style="text-decoration: underline;">3</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> simple-ensemble-mean 2022-12-17     wk flu hosp rate category       1 25       2022-12-24      pmf         very high        0.821  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> simple-ensemble-mean 2022-12-17     wk inc flu hosp                 1 25       2022-12-24      median      <span style="color: #BB0000;">NA</span>             620.     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> simple-ensemble-mean 2022-12-17     wk inc flu hosp                 1 25       2022-12-24      quantile    0.25           542.     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span> simple-ensemble-mean 2022-12-17     wk inc flu hosp                 1 25       2022-12-24      quantile    0.75           704.</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 13 × 9</span></span></span>
+<span><span class="co">#&gt;    model_id             reference_date target                    horizon location target_end_date output_type output_type_id      value</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>               <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> simple-ensemble-mean 2022-12-17     wk flu hosp rate                1 25       2022-12-24      cdf         0.25             0.000<span style="text-decoration: underline;">284</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> simple-ensemble-mean 2022-12-17     wk flu hosp rate                1 25       2022-12-24      cdf         0.75             0.000<span style="text-decoration: underline;">556</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> simple-ensemble-mean 2022-12-17     wk flu hosp rate                1 25       2022-12-24      cdf         1                0.000<span style="text-decoration: underline;">767</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> simple-ensemble-mean 2022-12-17     wk flu hosp rate                1 25       2022-12-24      cdf         13               0.947   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> simple-ensemble-mean 2022-12-17     wk flu hosp rate                1 25       2022-12-24      cdf         15               0.977   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> simple-ensemble-mean 2022-12-17     wk flu hosp rate category       1 25       2022-12-24      pmf         high             0.151   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> simple-ensemble-mean 2022-12-17     wk flu hosp rate category       1 25       2022-12-24      pmf         low              0.004<span style="text-decoration: underline;">37</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> simple-ensemble-mean 2022-12-17     wk flu hosp rate category       1 25       2022-12-24      pmf         moderate         0.023<span style="text-decoration: underline;">3</span>  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> simple-ensemble-mean 2022-12-17     wk flu hosp rate category       1 25       2022-12-24      pmf         very high        0.821   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> simple-ensemble-mean 2022-12-17     wk inc flu hosp                 1 25       2022-12-24      mean        <span style="color: #BB0000;">NA</span>             627.      </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span> simple-ensemble-mean 2022-12-17     wk inc flu hosp                 1 25       2022-12-24      median      <span style="color: #BB0000;">NA</span>             620.      </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">12</span> simple-ensemble-mean 2022-12-17     wk inc flu hosp                 1 25       2022-12-24      quantile    0.25           542.      </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">13</span> simple-ensemble-mean 2022-12-17     wk inc flu hosp                 1 25       2022-12-24      quantile    0.75           704.</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="changing-the-aggregation-function">Changing the aggregation function<a class="anchor" aria-label="anchor" href="#changing-the-aggregation-function"></a>
 </h3>
@@ -239,7 +259,7 @@ relevant, an argument <code>w</code> of numeric weights.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">geometric_mean</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">n</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
-<span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/prod.html" class="external-link">prod</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">^</span><span class="op">(</span><span class="fl">1</span> <span class="op">/</span> <span class="va">n</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/prod.html" class="external-link">prod</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">^</span><span class="op">(</span><span class="fl">1</span> <span class="op">/</span> <span class="va">n</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span><span class="va">geometric_mean_ens</span> <span class="op">&lt;-</span> <span class="fu">hubExamples</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/hubExamples/man/forecast_data.html" class="external-link">forecast_outputs</a></span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">output_type</span> <span class="op">!=</span> <span class="st">"sample"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -296,15 +316,27 @@ forecasts.</p>
 <h2 id="creating-ensembles-with-linear_pool">Creating ensembles with <code>linear_pool</code><a class="anchor" aria-label="anchor" href="#creating-ensembles-with-linear_pool"></a>
 </h2>
 <p>The <code><a href="../reference/linear_pool.html">linear_pool()</a></code> function implements the linear opinion
-pool (LOP, also known as a distributional mixture) method when
+pool (LOP, also known as a distributional mixture) method (<a href="https://doi.org/10.1214/aoms/1177704873" class="external-link">Stone 1961</a>, <a href="https://doi.org/10.1287/mnsc.1120.1667" class="external-link">Lichtendahl 2013</a>) when
 ensembling predictions. This function can be used to combine predictions
-with output types mean, quantile, CDF, and PMF. Unlike
+with output types mean, CDF, PMF, sample, and quantile. Unlike
 <code><a href="../reference/simple_ensemble.html">simple_ensemble()</a></code>, this function handles its computation
 differently based on the output type. For the CDF, PMF, and mean output
 types, the linear pool method is equivalent to calling
 <code><a href="../reference/simple_ensemble.html">simple_ensemble()</a></code> with a mean aggregation function, since
 <code><a href="../reference/simple_ensemble.html">simple_ensemble()</a></code> produces a linear pool prediction (an
 average of individual model cumulative or bin probabilities).</p>
+<p>For the sample output type, the LOP method pools the input sample
+predictions into a combined ensemble distribution. By default, the
+<code><a href="../reference/linear_pool.html">linear_pool()</a></code> function will simply collect and return all
+provided samples, so that the number of samples for the ensemble is
+equal to the sum of the number of samples from all individual models.
+However, the user may also specify a number of sample predictions for
+the ensemble to return using the <code>n_output_samples</code> argument,
+in which case a random subset of predictions from individual models will
+be selected to create the linear pool of samples so that all component
+models are represented equally. This random selection of samples is
+stratified by model so that approximately the same number of samples
+from each individual model is included in the ensemble.</p>
 <p>For the quantile output type, the <code><a href="../reference/linear_pool.html">linear_pool()</a></code> function
 first must approximate a full probability distribution using the
 value-quantile level pairs from each component model. As a default, this
@@ -316,14 +348,14 @@ used to extract the desired quantiles from the final ensemble
 distribution.</p>
 <p>Using the default options for <code><a href="../reference/linear_pool.html">linear_pool()</a></code>, we can
 generate an equally-weighted linear pool for each of the output types in
-our example hub (except for the median and sample output types, which
-must be excluded). The resulting distribution for the linear pool of
-quantiles is estimated using a default of <code>n_samples = 1e4</code>
+our example hub (except for the median output type, which must be
+excluded). The resulting distribution for the linear pool of quantiles
+is estimated using a default of <code>n_samples = 1e4</code>
 quasi-random samples drawn from the distribution of each component
 model.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">linear_pool_norm</span> <span class="op">&lt;-</span> <span class="fu">hubExamples</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/hubExamples/man/forecast_data.html" class="external-link">forecast_outputs</a></span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">!</span><span class="va">output_type</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"median"</span>, <span class="st">"sample"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">output_type</span> <span class="op">!=</span> <span class="st">"median"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">hubEnsembles</span><span class="fu">::</span><span class="fu"><a href="../reference/linear_pool.html">linear_pool</a></span><span class="op">(</span>model_id <span class="op">=</span> <span class="st">"linear-pool-normal"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">linear_pool_norm</span>, <span class="fl">10</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 10 × 9</span></span></span>
@@ -352,9 +384,14 @@ which is the definition of the linear pool ensemble method. This is not
 the case for the quantile output type, because the
 <code><a href="../reference/simple_ensemble.html">simple_ensemble()</a></code> is computing a quantile average.</p>
 <p><img src="hubEnsembles_files/figure-html/plot-ex-quantile-and-linear-pool-1.png" width="960"></p>
+<div class="section level3">
+<h3 id="weighting-model-contributions-1">Weighting model contributions<a class="anchor" aria-label="anchor" href="#weighting-model-contributions-1"></a>
+</h3>
 <p>Like with <code><a href="../reference/simple_ensemble.html">simple_ensemble()</a></code>, we can change the default
-aggregation settings. For example, weights that determine a model’s
-contribution to the resulting ensemble may be provided.</p>
+function settings. For example, weights that determine a model’s
+contribution to the resulting ensemble may be provided. (Note that we
+must exclude the sample output type here because it is not yet supported
+for weighted ensembles.)</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">model_weights</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  model_id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"MOBS-GLEAM_FLUH"</span>, <span class="st">"PSI-DICE"</span>, <span class="st">"Flusight-baseline"</span><span class="op">)</span>,</span>
@@ -380,26 +417,132 @@ contribution to the resulting ensemble may be provided.</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> linear-pool-weighted 2022-11-19     wk flu hosp rate       0 25       2022-11-19      cdf         10             1     </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> linear-pool-weighted 2022-11-19     wk flu hosp rate       0 25       2022-11-19      cdf         10.25          1     </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> linear-pool-weighted 2022-11-19     wk flu hosp rate       0 25       2022-11-19      cdf         10.5           1</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="changing-the-parametric-family-used-for-extrapolation-into-distribution-tails">Changing the parametric family used for extrapolation into
+distribution tails<a class="anchor" aria-label="anchor" href="#changing-the-parametric-family-used-for-extrapolation-into-distribution-tails"></a>
+</h3>
 <p>We can also change the distribution that <code>distfromq</code> uses
-to estimate the component models’ distributional tails to either log
-normal or Cauchy using the <code>tail_dist</code> argument. (See
-documentation in the <code>distfromq</code> package for more details and
-function options.) Note, though, that the choice of tail distribution
-usually does not have a large impact on the resulting ensemble
-distribution, except in its outer edges.</p>
+to approximate the tails of component models’ predictive distributions
+to either log normal or Cauchy using the <code>tail_dist</code>
+argument. This choice usually does not have a large impact on the
+resulting ensemble distribution, though, and can only be seen in its
+outer edges. (For more details and other function options, see the
+documentation in the <a href="https://reichlab.io/distfromq/" class="external-link"><code>distfromq</code>
+package</a>.)</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">linear_pool_lnorm</span> <span class="op">&lt;-</span> <span class="fu">hubExamples</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/hubExamples/man/forecast_data.html" class="external-link">forecast_outputs</a></span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">!</span><span class="va">output_type</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"median"</span>, <span class="st">"sample"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">output_type</span> <span class="op">==</span> <span class="st">"quantile"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">hubEnsembles</span><span class="fu">::</span><span class="fu"><a href="../reference/linear_pool.html">linear_pool</a></span><span class="op">(</span></span>
 <span>    model_id <span class="op">=</span> <span class="st">"linear-pool-lognormal"</span>,</span>
 <span>    tail_dist <span class="op">=</span> <span class="st">"lnorm"</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="va">linear_pool_cauchy</span> <span class="op">&lt;-</span> <span class="fu">hubExamples</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/hubExamples/man/forecast_data.html" class="external-link">forecast_outputs</a></span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">!</span><span class="va">output_type</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"median"</span>, <span class="st">"sample"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">output_type</span> <span class="op">==</span> <span class="st">"quantile"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">hubEnsembles</span><span class="fu">::</span><span class="fu"><a href="../reference/linear_pool.html">linear_pool</a></span><span class="op">(</span></span>
 <span>    model_id <span class="op">=</span> <span class="st">"linear-pool-cauchy"</span>,</span>
 <span>    tail_dist <span class="op">=</span> <span class="st">"cauchy"</span></span>
 <span>  <span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="ensembling-samples-from-joint-distributions">Ensembling samples from joint distributions<a class="anchor" aria-label="anchor" href="#ensembling-samples-from-joint-distributions"></a>
+</h3>
+<p>All output types will summarize predictions from marginal
+distributions. The sample output type is unique in that <strong>it can
+additionally represent predictions from joint predictive
+distributions</strong>. Hence, the sample representation may capture
+dependence across multiple combinations of values for modeled task ID
+variables when recording samples from a joint predictive distribution.
+In this case, samples with the same index (specified by the
+<code>output_type_id</code>) may be assumed to correspond to a single
+sample from a joint distribution across multiple combinations of values
+for the task ID variables.</p>
+<p>The example data for the sample output type has task ID variables
+<code>"reference_date"</code>, <code>"location"</code>,
+<code>"horizon"</code>, <code>"target"</code>, and
+<code>"target_end_date"</code>. In this example, the samples capture
+dependence across different forecast <code>"horizon"</code>s. However,
+the samples do not capture dependence across different
+<code>"reference_date"</code>s, <code>"location"</code>s, or
+<code>"target"</code>s.</p>
+<p>When specifically requesting a linear pool made up of a
+<strong>subset of the input sample predictions</strong>, the user must
+identify the dependence structure using the
+<code>compound_taskid_set</code> parameter to ensure the resulting
+ensemble is valid. The compound task ID set consists of task ID
+variables that, together, identify a “compound modeling task”
+corresponding to a single modeled unit with a multivariate outcome of
+interest. Samples are expected to capture dependence across different
+outcomes within the same compound task.</p>
+<p>For example, a compound task could be predicting the number of weekly
+incident influenza hospitalizations (<code>"target"</code>) in
+Massachusetts (<code>"location"</code>) starting on November 19, 2022
+(<code>"reference_date"</code>). Here, <code>"horizon"</code> is not
+part of the compound task ID set, indicating that sample predictions
+made at each horizon depend on those for the other horizons within every
+compound task for the sample output type. Each sample can therefore be
+interpreted as a trajectory giving a possible path of hospitalizations
+over time.</p>
+<p>If samples are not expected to capture dependence across the levels
+of any task ID variables (that is, we are summarizing predictions for
+marginal distributions), the <code>compound_taskid_set</code> consists
+of all task ID variables. Please see the <a href="https://hubverse.io/en/latest/user-guide/sample-output-type.html" class="external-link">hubverse
+documentation on samples</a> for more information about compound
+tasks.</p>
+<p>Thus, in this example, those three task id variables
+(<code>"reference_date"</code>, <code>"location"</code>, and
+<code>"target"</code>) make up the compound task ID set that is
+specified in the call to <code><a href="../reference/linear_pool.html">linear_pool()</a></code>. The
+<code>"target_end_date"</code> for a given forecast is derived from the
+combination of <code>"reference_date"</code> and <code>"horizon"</code>,
+and so it is specified as the argument for
+<code>derived_tasks</code>.</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">hubExamples</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/hubExamples/man/forecast_data.html" class="external-link">forecast_outputs</a></span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">output_type</span> <span class="op">==</span> <span class="st">"sample"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>output_type_id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">output_type_id</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="co"># make indices numeric for readability</span></span>
+<span>  <span class="fu">hubEnsembles</span><span class="fu">::</span><span class="fu"><a href="../reference/linear_pool.html">linear_pool</a></span><span class="op">(</span></span>
+<span>    weights <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>    model_id <span class="op">=</span> <span class="st">"linear-pool-joint"</span>,</span>
+<span>    task_id_cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"reference_date"</span>, <span class="st">"location"</span>, <span class="st">"horizon"</span>, <span class="st">"target"</span>, <span class="st">"target_end_date"</span><span class="op">)</span>,</span>
+<span>    compound_taskid_set <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"reference_date"</span>, <span class="st">"location"</span>, <span class="st">"target"</span><span class="op">)</span>,</span>
+<span>    derived_tasks <span class="op">=</span> <span class="st">"target_end_date"</span>,</span>
+<span>    n_output_samples <span class="op">=</span> <span class="fl">100</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1,600 × 9</span></span></span>
+<span><span class="co">#&gt;    model_id          reference_date target          horizon location target_end_date output_type output_type_id value</span></span>
+<span><span class="co">#&gt;  <span style="color: #BCBCBC;">*</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> linear-pool-joint 2022-11-19     wk inc flu hosp       0 25       2022-11-19      sample                   1     2</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> linear-pool-joint 2022-11-19     wk inc flu hosp       0 25       2022-11-19      sample                   2    47</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> linear-pool-joint 2022-11-19     wk inc flu hosp       0 25       2022-11-19      sample                   3    56</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> linear-pool-joint 2022-11-19     wk inc flu hosp       0 25       2022-11-19      sample                   4    47</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> linear-pool-joint 2022-11-19     wk inc flu hosp       0 25       2022-11-19      sample                   5    64</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> linear-pool-joint 2022-11-19     wk inc flu hosp       0 25       2022-11-19      sample                   6    55</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> linear-pool-joint 2022-11-19     wk inc flu hosp       0 25       2022-11-19      sample                   7    54</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> linear-pool-joint 2022-11-19     wk inc flu hosp       0 25       2022-11-19      sample                   8    56</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> linear-pool-joint 2022-11-19     wk inc flu hosp       0 25       2022-11-19      sample                   9    58</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> linear-pool-joint 2022-11-19     wk inc flu hosp       0 25       2022-11-19      sample                  10    36</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 1,590 more rows</span></span></span></code></pre></div>
+<p>Derived task IDs are another subset of task ID variables whose values
+are “derived” from a combination of the values from other task ID
+variables, which may or may not be part of the compound task ID set. In
+the example, the derived task ID <code>"target_end_date"</code> is not
+part of the compound task ID set because <code>"reference_date"</code>
+and <code>"horizon"</code> are not both part of the compound task ID
+set.</p>
+<p>Generally, the derived task IDs are not needed to identify a single
+model unit with a multivariate outcome of interest (the purpose of the
+compound task id set), <strong>unless</strong> all of the task ID
+variables their values depend upon are already a part of the compound
+task ID set.</p>
+<p>Not all model outputs will contain derived task IDs, in which case
+the argument may be set to <code>NULL</code> (the default value).
+However, it is important to provide the <code><a href="../reference/linear_pool.html">linear_pool()</a></code>
+function with any derived task IDs, as they are used to check that the
+provided compound task ID set is compatible with the input sample
+predictions to help ensure the resulting (multivariate) ensemble is
+valid.</p>
+</div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
