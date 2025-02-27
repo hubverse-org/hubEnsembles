@@ -12,7 +12,7 @@ knitr::opts_chunk$set(
 options(width = 300)
 ```
 
-# Introduction
+## Introduction
 
 The `hubEnsembles` package provides a flexible framework for aggregating model outputs, such as forecasts or projections, that are submitted to a hub by multiple models and combined into ensemble model outputs. The package includes two main functions: `simple_ensemble` and `linear_pool`. We illustrate these functions in this vignette, and briefly compare them.
 
@@ -26,7 +26,7 @@ library(hubVis)
 library(hubEnsembles)
 ```
 
-# Example data: a forecast hub
+## Example data: a forecast hub
 
 We will use an example hub provided by the hubverse to demonstrate the functionality of the `hubEnsembles` package. This example hub was generated with modified forecasts from the FluSight forecasting challenge, a collaborative modeling exercise run by the US Centers for Disease Control and Prevention (CDC) since 2013 that solicits seasonal influenza forecasts from outside modeling teams. The example hub includes both example model output data and target data (sometimes known as "truth" data), which are stored in the `hubExamples` package as data objects named `forecast_outputs` and `forecast_target_ts`. Note that the toy model outputs contain predictions for only a small subset rows of select dates, locations, and output type IDs, far fewer than an actual modeling hub would typically collect.
 
@@ -60,7 +60,7 @@ head(hubExamples::forecast_target_ts, 10)
 ```
 
 
-# Creating ensembles with `simple_ensemble`
+## Creating ensembles with `simple_ensemble`
 
 The `simple_ensemble()` function directly computes an ensemble from component model outputs by combining them via some function within each unique combination of task ID variables, output types, and output type IDs. This function can be used to summarize predictions of output types mean, median, quantile, CDF, and PMF. The mechanics of the ensemble calculations are the same for each of the output types, though the resulting statistical ensembling method differs for different output types.
 
@@ -88,7 +88,7 @@ mean_ens |>
   )
 ```
 
-## Changing the aggregation function
+### Changing the aggregation function
 
 We can change the function that is used to aggregate model outputs. For example, we may want to calculate a median of the component models' submitted values for each quantile. We do so by specifying `agg_fun = median`.
 
@@ -150,7 +150,7 @@ hubVis::plot_step_ahead_model_output(
   labs(y = "incident hospitalizations")
 ```
 
-## Weighting model contributions
+### Weighting model contributions
 
 We can weight the contributions of each model in the ensemble using the `weights` argument of `simple_ensemble()`. This argument takes a `data.frame` that should include a `model_id` column containing each unique model ID and a `weight` column. In the following example, we include the baseline model in the ensemble, but give it less weight than the other forecasts.
 
@@ -168,7 +168,7 @@ weighted_mean_ens <- hubExamples::forecast_outputs |>
 head(weighted_mean_ens, 10)
 ```
 
-# Creating ensembles with `linear_pool`
+## Creating ensembles with `linear_pool`
 
 The `linear_pool()` function implements the linear opinion pool (LOP, also known as a distributional mixture) method ([Stone 1961](https://doi.org/10.1214/aoms/1177704873), [Lichtendahl 2013](https://doi.org/10.1287/mnsc.1120.1667)) when ensembling predictions. This function can be used to combine predictions with output types mean, CDF, PMF, sample, and quantile. Unlike `simple_ensemble()`, this function handles its computation differently based on the output type. For the CDF, PMF, and mean output types, the linear pool method is equivalent to calling `simple_ensemble()` with a mean aggregation function, since `simple_ensemble()` produces a linear pool prediction (an average of individual model cumulative or bin probabilities).
 
@@ -273,7 +273,7 @@ cowplot::plot_grid(
 )
 ```
 
-## Weighting model contributions
+### Weighting model contributions
 
 Like with `simple_ensemble()`, we can change the default function settings. For example, weights that determine a model's contribution to the resulting ensemble may be provided. (Note that we must exclude the sample output type here because it is not yet supported for weighted ensembles.)
 
@@ -291,7 +291,7 @@ weighted_linear_pool_norm <- hubExamples::forecast_outputs |>
 head(weighted_linear_pool_norm, 10)
 ```
 
-## Changing the parametric family used for extrapolation into distribution tails
+### Changing the parametric family used for extrapolation into distribution tails
 
 We can also change the distribution that `distfromq` uses to approximate the tails of component models' predictive distributions to either log normal or Cauchy using the `tail_dist` argument. This choice usually does not have a large impact on the resulting ensemble distribution, though, and can only be seen in its outer edges. (For more details and other function options, see the documentation in the [`distfromq` package](https://reichlab.io/distfromq/).)
 
@@ -310,7 +310,7 @@ linear_pool_cauchy <- hubExamples::forecast_outputs |>
   )
 ```
 
-## Ensembling samples from joint distributions
+### Ensembling samples from joint distributions
 
 All output types will summarize predictions from marginal distributions. The sample output type is unique in that **it can additionally represent predictions from joint predictive distributions**. Hence, the sample representation may capture dependence across multiple combinations of values for modeled task ID variables when recording samples from a joint predictive distribution. In this case, samples with the same index (specified by the `output_type_id`) may be assumed to correspond to a single sample from a joint distribution across multiple combinations of values for the task ID variables.
 
