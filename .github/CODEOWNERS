@@ -1,0 +1,5 @@
+# require core team member review for updates to GitHub workflows
+/.github/CODEOWNERS @hubverse-org/hubverse-developers
+/.github/actions/ @hubverse-org/hubverse-developers
+/.github/shared/ @hubverse-org/hubverse-developers
+/.github/workflows/ @hubverse-org/hubverse-developers
