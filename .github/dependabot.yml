@@ -1,0 +1,15 @@
+# instruct GitHub dependabot to scan github actions for updates
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    # dependabot automatically checks .github/workflows/ and .github/actions/
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    # group all run-of-the mill updates into a single pull request
+    groups:
+      updates:
+        applies-to: version-updates
+        update-types:
+          - patch
+          - minor
