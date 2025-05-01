@@ -2,7 +2,7 @@
 
 This outlines how to propose a change to `hubEnsembles`.
 For more general info about contributing to this, and other hubverse packages, please see the
-[**hubverse contributing guide**](https://hubverse.io/en/latest/overview/contribute.html).
+[**hubverse contributing guide**](https://docs.hubverse.io/en/latest/overview/contribute.html).
 
 You can fix typos, spelling mistakes, or grammatical errors in the documentation directly using the GitHub web interface, as long as the changes are made in the *source* file.
 This generally means you'll need to edit [roxygen2 comments](https://roxygen2.r-lib.org/articles/roxygen2.html) in an `.R`, not a `.Rd` file.
