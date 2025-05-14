@@ -38,11 +38,11 @@ Examples of unacceptable behavior include:
 
 ## Enforcement Responsibilities
 
-Community leaders are responsible for clarifying our standards of acceptable behavior. Enforcement is the responsibility of the [Code of Conduct Committee](https://hubverse.io/en/latest/coc/committee.html), who will take appropriate and fair corrective action in response to any behavior that they deem inappropriate, threatening, offensive, or harmful. 
+Community leaders are responsible for clarifying our standards of acceptable behavior. Enforcement is the responsibility of the [Code of Conduct Committee](https://docs.hubverse.io/en/latest/coc/committee.html), who will take appropriate and fair corrective action in response to any behavior that they deem inappropriate, threatening, offensive, or harmful. 
 
-Instances of abusive, harassing, or otherwise unacceptable behavior [may be reported to any member of the Code of Conduct Committee](https://hubverse.io/en/latest/coc/committee.html). All complaints will be reviewed and investigated promptly and fairly. 
+Instances of abusive, harassing, or otherwise unacceptable behavior [may be reported to any member of the Code of Conduct Committee](https://docs.hubverse.io/en/latest/coc/committee.html). All complaints will be reviewed and investigated promptly and fairly. 
 
-The Code of Conduct Committee will use the [Enforcement Manual](https://hubverse.io/en/latest/coc/enforcement-manual.html) in determining the consequences for any action they deem in violation of this Code of Conduct. All community leaders and Code of Conduct Committee members are obligated to respect the privacy and security of the reporter of any incident.
+The Code of Conduct Committee will use the [Enforcement Manual](https://docs.hubverse.io/en/latest/coc/enforcement-manual.html) in determining the consequences for any action they deem in violation of this Code of Conduct. All community leaders and Code of Conduct Committee members are obligated to respect the privacy and security of the reporter of any incident.
 
 
 ## Scope
