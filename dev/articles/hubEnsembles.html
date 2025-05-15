@@ -86,17 +86,20 @@ these functions in this vignette, and briefly compare them.</p>
 </h2>
 <p>We will use an example hub provided by the hubverse to demonstrate
 the functionality of the <code>hubEnsembles</code> package. This example
-hub was generated with modified forecasts from the FluSight forecasting
-challenge, a collaborative modeling exercise run by the US Centers for
-Disease Control and Prevention (CDC) since 2013 that solicits seasonal
-influenza forecasts from outside modeling teams. The example hub
-includes both example model output data and target data (sometimes known
-as “truth” data), which are stored in the <code>hubExamples</code>
-package as data objects named <code>forecast_outputs</code> and
-<code>forecast_target_ts</code>. Note that the toy model outputs contain
-predictions for only a small subset rows of select dates, locations, and
-output type IDs, far fewer than an actual modeling hub would typically
-collect.</p>
+hub, stored in the <code>hubExamples</code> package, was generated with
+modified forecasts from the FluSight forecasting challenge, a
+collaborative modeling exercise run by the US Centers for Disease
+Control and Prevention (CDC) since 2013 that solicits seasonal influenza
+forecasts from outside modeling teams. The <code>hubExamples</code>
+package includes model output data and target data (observed data
+corresponding to each prediction target, sometimes known as “truth”
+data) in the two forms defined by the hubverse: target time series data
+and oracle output data. We load the <code>forecast_outputs</code> and
+<code>forecast_target_ts</code> data objects containing the model output
+and target time series data, respectively. Note that the toy model
+outputs contain predictions for only a small subset rows of select
+dates, locations, and output type IDs, far fewer than an actual modeling
+hub would typically collect.</p>
 <p>The model output data includes mean, median, quantile, and sample
 forecasts of future incident influenza hospitalizations; as well as CDF
 and PMF forecasts of hospitalization intensity (the latter made up of
@@ -149,14 +152,16 @@ output.</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">15</span> Flusight-baseline 2022-12-17     wk flu hosp rate                1 25       2022-12-24      cdf         13             1.00<span style="color: #949494;">e</span>+0</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">16</span> Flusight-baseline 2022-12-17     wk flu hosp rate                1 25       2022-12-24      cdf         15             1.00<span style="color: #949494;">e</span>+0</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 32 more rows</span></span></span></code></pre></div>
-<p>We also have corresponding target data included in the
-<code>hubExamples</code> package. The example target data provide
-observed incident influenza hospitalizations (<code>observation</code>)
-in a given week (<code>date</code>) and for a given location
-(<code>location</code>). This target data could be used as calibration
-data for generating forecasts or for evaluating the forecasts post hoc.
-The forecast-specific task ID variables <code>reference_date</code> and
-<code>horizon</code> are not relevant for the target data.</p>
+<p>The corresponding target time series data provide observed incident
+influenza hospitalizations (<code>observation</code>) in a given week
+(<code>date</code>) and for a given location (<code>location</code>).
+This format of target data is generally used as calibration data for
+generating forecasts or in conjunction with forecasts for
+visualizations. (The other form of target data, oracle output, is
+suitable for evaluating the forecasts post hoc, which is not in scope
+for this vignette). The forecast-specific task ID variables
+<code>reference_date</code> and <code>horizon</code> are not relevant
+for the use cases of target time series data and are thus omitted.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">hubExamples</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/hubExamples/man/forecast_data.html" class="external-link">forecast_target_ts</a></span>, <span class="fl">10</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 10 × 3</span></span></span>
@@ -335,7 +340,10 @@ in which case a random subset of predictions from individual models will
 be selected to create the linear pool of samples so that all component
 models are represented equally. This random selection of samples is
 stratified by model so that approximately the same number of samples
-from each individual model is included in the ensemble.</p>
+from each individual model is included in the ensemble. See <a href="#requesting-an-ensemble-that-subsets-samples">Requesting an
+ensemble that subsets samples</a> for more details, including an
+explanation of a few additional hubverse concepts relevant to the
+process.</p>
 <p>For the quantile output type, the <code><a href="../reference/linear_pool.html">linear_pool()</a></code> function
 first must approximate a full probability distribution using the
 value-quantile level pairs from each component model. As a default, this
@@ -444,35 +452,45 @@ package</a>.)</p>
 <span>  <span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="ensembling-samples-from-joint-distributions">Ensembling samples from joint distributions<a class="anchor" aria-label="anchor" href="#ensembling-samples-from-joint-distributions"></a>
+<h3 id="requesting-an-ensemble-that-subsets-samples">Requesting an ensemble that subsets samples<a class="anchor" aria-label="anchor" href="#requesting-an-ensemble-that-subsets-samples"></a>
 </h3>
-<p>All output types will summarize predictions from marginal
-distributions. The sample output type is unique in that <strong>it can
-additionally represent predictions from joint predictive
-distributions</strong>. Hence, the sample representation may capture
-dependence across multiple combinations of values for modeled task ID
-variables when recording samples from a joint predictive distribution.
-In this case, samples with the same index (specified by the
-<code>output_type_id</code>) may be assumed to correspond to a single
-sample from a joint distribution across multiple combinations of values
-for the task ID variables.</p>
+<p>If one wishes to request a subsetted ensemble of samples, it becomes
+important to distinguish between marginal and joint predictive
+distributions, as the dependence structure must be defined in the call
+to <code><a href="../reference/linear_pool.html">linear_pool()</a></code>. The concepts of the compound task ID set
+and derived task ID variables must also be understood since they are
+used to help identify the dependence structure (or lack thereof, in the
+case of marginal distributions) of the ensembled predictive
+distributions.</p>
+<p>In the hubverse, all output types summarize predictions from marginal
+distributions, e.g. for a single location and time point. The sample
+output type is unique in that <strong>it can additionally represent
+predictions from joint predictive distributions</strong>. This means
+that samples may encode dependence across combinations of multiple
+values for task ID variables, e.g. across multiple locations and/or time
+points. In this case, sample predictions with the same index (specified
+by the <code>output_type_id</code>) from a particular model may be
+assumed to correspond to a single sample from a joint distribution.</p>
 <p>The example data for the sample output type has task ID variables
 <code>"reference_date"</code>, <code>"location"</code>,
 <code>"horizon"</code>, <code>"target"</code>, and
 <code>"target_end_date"</code>. In this example, the samples capture
-dependence across different forecast <code>"horizon"</code>s. However,
+dependence across different forecast <code>"horizon"</code>s; however,
 the samples do not capture dependence across different
 <code>"reference_date"</code>s, <code>"location"</code>s, or
 <code>"target"</code>s.</p>
-<p>When specifically requesting a linear pool made up of a
-<strong>subset of the input sample predictions</strong>, the user must
-identify the dependence structure using the
-<code>compound_taskid_set</code> parameter to ensure the resulting
-ensemble is valid. The compound task ID set consists of task ID
-variables that, together, identify a “compound modeling task”
-corresponding to a single modeled unit with a multivariate outcome of
-interest. Samples are expected to capture dependence across different
-outcomes within the same compound task.</p>
+<p>When specifically requesting a linear pool made up of a subset of the
+input sample predictions, the user must identify the dependence
+structure using the <code>compound_taskid_set</code> parameter to ensure
+the resulting ensemble is valid. The compound task ID set consists of
+independent task ID variables that, together, identify a “compound
+modeling task” corresponding to a single modeled unit with a
+multivariate outcome of interest. Samples summarizing a marginal
+distribution will generally have a compound task ID set composed of all
+the task ID variables<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content="&lt;p&gt;Derived task IDs are the one exception to this rule&lt;/p&gt;"><sup>1</sup></a>. On the other hand, samples summarizing a
+joint distribution will have a compound task ID set that only contains
+task ID variables for which the joint distribution does not capture
+dependence.</p>
 <p>For example, a compound task could be predicting the number of weekly
 incident influenza hospitalizations (<code>"target"</code>) in
 Massachusetts (<code>"location"</code>) starting on November 19, 2022
@@ -481,21 +499,20 @@ part of the compound task ID set, indicating that sample predictions
 made at each horizon depend on those for the other horizons within every
 compound task for the sample output type. Each sample can therefore be
 interpreted as a trajectory giving a possible path of hospitalizations
-over time.</p>
-<p>If samples are not expected to capture dependence across the levels
-of any task ID variables (that is, we are summarizing predictions for
-marginal distributions), the <code>compound_taskid_set</code> consists
-of all task ID variables. Please see the <a href="https://docs.hubverse.io/en/latest/user-guide/sample-output-type.html" class="external-link">hubverse
-documentation on samples</a> for more information about compound
-tasks.</p>
-<p>Thus, in this example, those three task id variables
-(<code>"reference_date"</code>, <code>"location"</code>, and
-<code>"target"</code>) make up the compound task ID set that is
-specified in the call to <code><a href="../reference/linear_pool.html">linear_pool()</a></code>. The
-<code>"target_end_date"</code> for a given forecast is derived from the
-combination of <code>"reference_date"</code> and <code>"horizon"</code>,
-and so it is specified as the argument for
-<code>derived_tasks</code>.</p>
+over time. These three task id variables (<code>"reference_date"</code>,
+<code>"location"</code>, and <code>"target"</code>) make up the compound
+task ID set that is specified in the call to
+<code><a href="../reference/linear_pool.html">linear_pool()</a></code>.</p>
+<p>Derived task IDs are another subset of task ID variables whose values
+are “derived” solely from a combination of the values from other task ID
+variables, which may or may not be part of the compound task ID set. In
+the above example, the <code>"target_end_date"</code> for a given
+forecast is derived from the combination of
+<code>"reference_date"</code> and <code>"horizon"</code>, and so it is
+specified as the argument for <code>derived_tasks</code>. The derived
+task <code>"target_end_date"</code> is not part of the compound task ID
+set because <code>"reference_date"</code> and <code>"horizon"</code> are
+not both part of the compound task ID set.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">hubExamples</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/hubExamples/man/forecast_data.html" class="external-link">forecast_outputs</a></span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">output_type</span> <span class="op">==</span> <span class="st">"sample"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -522,13 +539,6 @@ and so it is specified as the argument for
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> linear-pool-joint 2022-11-19     wk inc flu hosp       0 25       2022-11-19      sample                   9    58</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> linear-pool-joint 2022-11-19     wk inc flu hosp       0 25       2022-11-19      sample                  10    36</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 1,590 more rows</span></span></span></code></pre></div>
-<p>Derived task IDs are another subset of task ID variables whose values
-are “derived” from a combination of the values from other task ID
-variables, which may or may not be part of the compound task ID set. In
-the example, the derived task ID <code>"target_end_date"</code> is not
-part of the compound task ID set because <code>"reference_date"</code>
-and <code>"horizon"</code> are not both part of the compound task ID
-set.</p>
 <p>Generally, the derived task IDs are not needed to identify a single
 model unit with a multivariate outcome of interest (the purpose of the
 compound task id set), <strong>unless</strong> all of the task ID
@@ -543,6 +553,7 @@ predictions to help ensure the resulting (multivariate) ensemble is
 valid.</p>
 </div>
 </div>
+
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
 </div>
