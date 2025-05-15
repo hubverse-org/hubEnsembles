@@ -12,7 +12,7 @@ knitr::opts_chunk$set(
 options(width = 300)
 ```
 
-# Introduction
+## Introduction
 
 The `hubEnsembles` package provides a flexible framework for aggregating model outputs, such as forecasts or projections, that are submitted to a hub by multiple models and combined into ensemble model outputs. The package includes two main functions: `simple_ensemble` and `linear_pool`. We illustrate these functions in this vignette, and briefly compare them.
 
@@ -26,9 +26,9 @@ library(hubVis)
 library(hubEnsembles)
 ```
 
-# Example data: a forecast hub
+## Example data: a forecast hub
 
-We will use an example hub provided by the hubverse to demonstrate the functionality of the `hubEnsembles` package. This example hub was generated with modified forecasts from the FluSight forecasting challenge, a collaborative modeling exercise run by the US Centers for Disease Control and Prevention (CDC) since 2013 that solicits seasonal influenza forecasts from outside modeling teams. The example hub includes both example model output data and target data (sometimes known as "truth" data), which are stored in the `hubExamples` package as data objects named `forecast_outputs` and `forecast_target_ts`. Note that the toy model outputs contain predictions for only a small subset rows of select dates, locations, and output type IDs, far fewer than an actual modeling hub would typically collect.
+We will use an example hub provided by the hubverse to demonstrate the functionality of the `hubEnsembles` package. This example hub, stored in the `hubExamples` package, was generated with modified forecasts from the FluSight forecasting challenge, a collaborative modeling exercise run by the US Centers for Disease Control and Prevention (CDC) since 2013 that solicits seasonal influenza forecasts from outside modeling teams. The `hubExamples` package includes model output data and target data (observed data corresponding to each prediction target, sometimes known as "truth" data) in the two forms defined by the hubverse: target time series data and oracle output data. We load the `forecast_outputs` and `forecast_target_ts` data objects containing the model output and target time series data, respectively. Note that the toy model outputs contain predictions for only a small subset rows of select dates, locations, and output type IDs, far fewer than an actual modeling hub would typically collect.
 
 The model output data includes mean, median, quantile, and sample forecasts of future incident influenza hospitalizations; as well as CDF and PMF forecasts of hospitalization intensity (the latter made up of categories determined by threshold of weekly hospital admissions per 100,000 population). Each forecast is made for five task ID variables, including the location for which the forecast was made (`location`), the date on which the forecast was made (`reference_date`), the number of steps ahead (`horizon`), the date of the forecast prediction (a combination of the date the forecast was made and the forecast horizon, `target_end_date`), and the forecast target (`target`). Below we print a subset of this example model output.
 
@@ -53,14 +53,14 @@ hubExamples::forecast_outputs |>
   print(n = 16)
 ```
 
-We also have corresponding target data included in the `hubExamples` package. The example target data provide observed incident influenza hospitalizations (`observation`) in a given week (`date`) and for a given location (`location`). This target data could be used as calibration data for generating forecasts or for evaluating the forecasts post hoc. The forecast-specific task ID variables `reference_date` and `horizon` are not relevant for the target data.
+The corresponding target time series data provide observed incident influenza hospitalizations (`observation`) in a given week (`date`) and for a given location (`location`). This format of target data is generally used as calibration data for generating forecasts or in conjunction with forecasts for visualizations. (The other form of target data, oracle output, is suitable for evaluating the forecasts post hoc, which is not in scope for this vignette). The forecast-specific task ID variables `reference_date` and `horizon` are not relevant for the use cases of target time series data and are thus omitted.
 
 ```{r example-target-data}
 head(hubExamples::forecast_target_ts, 10)
 ```
 
 
-# Creating ensembles with `simple_ensemble`
+## Creating ensembles with `simple_ensemble`
 
 The `simple_ensemble()` function directly computes an ensemble from component model outputs by combining them via some function within each unique combination of task ID variables, output types, and output type IDs. This function can be used to summarize predictions of output types mean, median, quantile, CDF, and PMF. The mechanics of the ensemble calculations are the same for each of the output types, though the resulting statistical ensembling method differs for different output types.
 
@@ -88,7 +88,7 @@ mean_ens |>
   )
 ```
 
-## Changing the aggregation function
+### Changing the aggregation function
 
 We can change the function that is used to aggregate model outputs. For example, we may want to calculate a median of the component models' submitted values for each quantile. We do so by specifying `agg_fun = median`.
 
@@ -150,7 +150,7 @@ hubVis::plot_step_ahead_model_output(
   labs(y = "incident hospitalizations")
 ```
 
-## Weighting model contributions
+### Weighting model contributions
 
 We can weight the contributions of each model in the ensemble using the `weights` argument of `simple_ensemble()`. This argument takes a `data.frame` that should include a `model_id` column containing each unique model ID and a `weight` column. In the following example, we include the baseline model in the ensemble, but give it less weight than the other forecasts.
 
@@ -168,11 +168,11 @@ weighted_mean_ens <- hubExamples::forecast_outputs |>
 head(weighted_mean_ens, 10)
 ```
 
-# Creating ensembles with `linear_pool`
+## Creating ensembles with `linear_pool`
 
 The `linear_pool()` function implements the linear opinion pool (LOP, also known as a distributional mixture) method ([Stone 1961](https://doi.org/10.1214/aoms/1177704873), [Lichtendahl 2013](https://doi.org/10.1287/mnsc.1120.1667)) when ensembling predictions. This function can be used to combine predictions with output types mean, CDF, PMF, sample, and quantile. Unlike `simple_ensemble()`, this function handles its computation differently based on the output type. For the CDF, PMF, and mean output types, the linear pool method is equivalent to calling `simple_ensemble()` with a mean aggregation function, since `simple_ensemble()` produces a linear pool prediction (an average of individual model cumulative or bin probabilities).
 
-For the sample output type, the LOP method pools the input sample predictions into a combined ensemble distribution. By default, the `linear_pool()` function will simply collect and return all provided samples, so that the number of samples for the ensemble is equal to the sum of the number of samples from all individual models. However, the user may also specify a number of sample predictions for the ensemble to return using the `n_output_samples` argument, in which case a random subset of predictions from individual models will be selected to create the linear pool of samples so that all component models are represented equally. This random selection of samples is stratified by model so that approximately the same number of samples from each individual model is included in the ensemble.
+For the sample output type, the LOP method pools the input sample predictions into a combined ensemble distribution. By default, the `linear_pool()` function will simply collect and return all provided samples, so that the number of samples for the ensemble is equal to the sum of the number of samples from all individual models. However, the user may also specify a number of sample predictions for the ensemble to return using the `n_output_samples` argument, in which case a random subset of predictions from individual models will be selected to create the linear pool of samples so that all component models are represented equally. This random selection of samples is stratified by model so that approximately the same number of samples from each individual model is included in the ensemble. See [Requesting an ensemble that subsets samples](#requesting-an-ensemble-that-subsets-samples) for more details, including an explanation of a few additional hubverse concepts relevant to the process.
 
 For the quantile output type, the `linear_pool()` function first must approximate a full probability distribution using the value-quantile level pairs from each component model. As a default, this is done with functions in the `distfromq` package, which defaults to fitting a monotonic cubic spline for the interior and a Gaussian normal distribution for the tails. Quasi-random samples are drawn from each distributional estimate, which are then collected and used to extract the desired quantiles from the final ensemble distribution.
 
@@ -273,7 +273,7 @@ cowplot::plot_grid(
 )
 ```
 
-## Weighting model contributions
+### Weighting model contributions
 
 Like with `simple_ensemble()`, we can change the default function settings. For example, weights that determine a model's contribution to the resulting ensemble may be provided. (Note that we must exclude the sample output type here because it is not yet supported for weighted ensembles.)
 
@@ -291,7 +291,7 @@ weighted_linear_pool_norm <- hubExamples::forecast_outputs |>
 head(weighted_linear_pool_norm, 10)
 ```
 
-## Changing the parametric family used for extrapolation into distribution tails
+### Changing the parametric family used for extrapolation into distribution tails
 
 We can also change the distribution that `distfromq` uses to approximate the tails of component models' predictive distributions to either log normal or Cauchy using the `tail_dist` argument. This choice usually does not have a large impact on the resulting ensemble distribution, though, and can only be seen in its outer edges. (For more details and other function options, see the documentation in the [`distfromq` package](https://reichlab.io/distfromq/).)
 
@@ -310,19 +310,19 @@ linear_pool_cauchy <- hubExamples::forecast_outputs |>
   )
 ```
 
-## Ensembling samples from joint distributions
+### Requesting an ensemble that subsets samples
 
-All output types will summarize predictions from marginal distributions. The sample output type is unique in that **it can additionally represent predictions from joint predictive distributions**. Hence, the sample representation may capture dependence across multiple combinations of values for modeled task ID variables when recording samples from a joint predictive distribution. In this case, samples with the same index (specified by the `output_type_id`) may be assumed to correspond to a single sample from a joint distribution across multiple combinations of values for the task ID variables.
+If one wishes to request a subsetted ensemble of samples, it becomes important to distinguish between marginal and joint predictive distributions, as the dependence structure must be defined in the call to `linear_pool()`. The concepts of the compound task ID set and derived task ID variables must also be understood since they are used to help identify the dependence structure (or lack thereof, in the case of marginal distributions) of the ensembled predictive distributions.
 
-The example data for the sample output type has task ID variables `"reference_date"`, `"location"`, `"horizon"`, `"target"`, and `"target_end_date"`. In this example, the samples capture dependence across different forecast `"horizon"`s. However, the samples do not capture dependence across different `"reference_date"`s, `"location"`s, or `"target"`s.
+In the hubverse, all output types summarize predictions from marginal distributions, e.g. for a single location and time point. The sample output type is unique in that **it can additionally represent predictions from joint predictive distributions**. This means that samples may encode dependence across combinations of multiple values for task ID variables, e.g. across multiple locations and/or time points. In this case, sample predictions with the same index (specified by the `output_type_id`) from a particular model may be assumed to correspond to a single sample from a joint distribution.
 
-When specifically requesting a linear pool made up of a **subset of the input sample predictions**, the user must identify the dependence structure using the `compound_taskid_set` parameter to ensure the resulting ensemble is valid. The compound task ID set consists of task ID variables that, together, identify a "compound modeling task" corresponding to a single modeled unit with a multivariate outcome of interest. Samples are expected to capture dependence across different outcomes within the same compound task.
+The example data for the sample output type has task ID variables `"reference_date"`, `"location"`, `"horizon"`, `"target"`, and `"target_end_date"`. In this example, the samples capture dependence across different forecast `"horizon"`s; however, the samples do not capture dependence across different `"reference_date"`s, `"location"`s, or `"target"`s.
 
-For example, a compound task could be predicting the number of weekly incident influenza hospitalizations (`"target"`) in Massachusetts (`"location"`) starting on November 19, 2022 (`"reference_date"`). Here, `"horizon"` is not part of the compound task ID set, indicating that sample predictions made at each horizon depend on those for the other horizons within every compound task for the sample output type. Each sample can therefore be interpreted as a trajectory giving a possible path of hospitalizations over time.
+When specifically requesting a linear pool made up of a subset of the input sample predictions, the user must identify the dependence structure using the `compound_taskid_set` parameter to ensure the resulting ensemble is valid. The compound task ID set consists of independent task ID variables that, together, identify a "compound modeling task" corresponding to a single modeled unit with a multivariate outcome of interest. Samples summarizing a marginal distribution will generally have a compound task ID set composed of all the task ID variables^[Derived task IDs are the one exception to this rule]. On the other hand, samples summarizing a joint distribution will have a compound task ID set that only contains task ID variables for which the joint distribution does not capture dependence.
 
-If samples are not expected to capture dependence across the levels of any task ID variables (that is, we are summarizing predictions for marginal distributions), the `compound_taskid_set` consists of all task ID variables. Please see the [hubverse documentation on samples](https://docs.hubverse.io/en/latest/user-guide/sample-output-type.html) for more information about compound tasks.
+For example, a compound task could be predicting the number of weekly incident influenza hospitalizations (`"target"`) in Massachusetts (`"location"`) starting on November 19, 2022 (`"reference_date"`). Here, `"horizon"` is not part of the compound task ID set, indicating that sample predictions made at each horizon depend on those for the other horizons within every compound task for the sample output type. Each sample can therefore be interpreted as a trajectory giving a possible path of hospitalizations over time. These three task id variables (`"reference_date"`, `"location"`, and `"target"`) make up the compound task ID set that is specified in the call to `linear_pool()`. 
 
-Thus, in this example, those three task id variables (`"reference_date"`, `"location"`, and `"target"`) make up the compound task ID set that is specified in the call to `linear_pool()`. The `"target_end_date"` for a given forecast is derived from the combination of `"reference_date"` and `"horizon"`, and so it is specified as the argument for `derived_tasks`.
+Derived task IDs are another subset of task ID variables whose values are "derived" solely from a combination of the values from other task ID variables, which may or may not be part of the compound task ID set. In the above example, the `"target_end_date"` for a given forecast is derived from the combination of `"reference_date"` and `"horizon"`, and so it is specified as the argument for `derived_tasks`. The derived task `"target_end_date"` is not part of the compound task ID set because `"reference_date"` and `"horizon"` are not both part of the compound task ID set.
 
 ```{r}
 hubExamples::forecast_outputs |>
@@ -337,8 +337,6 @@ hubExamples::forecast_outputs |>
     n_output_samples = 100
   )
 ```
-
-Derived task IDs are another subset of task ID variables whose values are "derived" from a combination of the values from other task ID variables, which may or may not be part of the compound task ID set. In the example, the derived task ID `"target_end_date"` is not part of the compound task ID set because `"reference_date"` and `"horizon"` are not both part of the compound task ID set.  
 
 Generally, the derived task IDs are not needed to identify a single model unit with a multivariate outcome of interest (the purpose of the compound task id set), **unless** all of the task ID variables their values depend upon are already a part of the compound task ID set.
 
