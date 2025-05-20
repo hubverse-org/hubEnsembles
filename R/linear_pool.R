@@ -20,7 +20,7 @@
 #'
 #'   Defaults to NA. Derived task ids must be included if all of the task ids their
 #'   values depend on are part of the `compound_taskid_set`.
-#' @param derived_tasks `character` vector of derived task IDs (variables whose
+#' @param derived_task_ids `character` vector of derived task IDs (variables whose
 #'   values depend on that of other task ID variables). Defaults to NULL, meaning
 #'   there are no derived task IDs.
 #' @param n_output_samples `numeric` that specifies how many sample forecasts to
@@ -80,7 +80,7 @@ linear_pool <- function(model_out_tbl, weights = NULL,
                         model_id = "hub-ensemble",
                         task_id_cols = NULL,
                         compound_taskid_set = NA,
-                        derived_tasks = NULL,
+                        derived_task_ids = NULL,
                         n_samples = 1e4,
                         n_output_samples = NULL,
                         ...) {
@@ -93,7 +93,7 @@ linear_pool <- function(model_out_tbl, weights = NULL,
     weights_col_name = weights_col_name,
     task_id_cols = task_id_cols,
     compound_taskid_set = compound_taskid_set,
-    derived_tasks = derived_tasks,
+    derived_task_ids = derived_task_ids,
     n_output_samples = n_output_samples,
     valid_output_types = valid_types
   )

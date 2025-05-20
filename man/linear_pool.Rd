@@ -14,7 +14,7 @@ linear_pool(
   model_id = "hub-ensemble",
   task_id_cols = NULL,
   compound_taskid_set = NA,
-  derived_tasks = NULL,
+  derived_task_ids = NULL,
   n_samples = 10000,
   n_output_samples = NULL,
   ...
@@ -56,7 +56,7 @@ for each individual prediction task
 Defaults to NA. Derived task ids must be included if all of the task ids their
 values depend on are part of the \code{compound_taskid_set}.}
 
-\item{derived_tasks}{\code{character} vector of derived task IDs (variables whose
+\item{derived_task_ids}{\code{character} vector of derived task IDs (variables whose
 values depend on that of other task ID variables). Defaults to NULL, meaning
 there are no derived task IDs.}
 

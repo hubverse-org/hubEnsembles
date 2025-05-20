@@ -322,7 +322,7 @@ When specifically requesting a linear pool made up of a subset of the input samp
 
 For example, a compound task could be predicting the number of weekly incident influenza hospitalizations (`"target"`) in Massachusetts (`"location"`) starting on November 19, 2022 (`"reference_date"`). Here, `"horizon"` is not part of the compound task ID set, indicating that sample predictions made at each horizon depend on those for the other horizons within every compound task for the sample output type. Each sample can therefore be interpreted as a trajectory giving a possible path of hospitalizations over time. These three task id variables (`"reference_date"`, `"location"`, and `"target"`) make up the compound task ID set that is specified in the call to `linear_pool()`. 
 
-Derived task IDs are another subset of task ID variables whose values are "derived" solely from a combination of the values from other task ID variables, which may or may not be part of the compound task ID set. In the above example, the `"target_end_date"` for a given forecast is derived from the combination of `"reference_date"` and `"horizon"`, and so it is specified as the argument for `derived_tasks`. The derived task `"target_end_date"` is not part of the compound task ID set because `"reference_date"` and `"horizon"` are not both part of the compound task ID set.
+Derived task IDs are another subset of task ID variables whose values are "derived" solely from a combination of the values from other task ID variables, which may or may not be part of the compound task ID set. In the above example, the `"target_end_date"` for a given forecast is derived from the combination of `"reference_date"` and `"horizon"`, and so it is specified as the argument for `derived_task_ids`. The derived task `"target_end_date"` is not part of the compound task ID set because `"reference_date"` and `"horizon"` are not both part of the compound task ID set.
 
 ```{r}
 hubExamples::forecast_outputs |>
@@ -333,7 +333,7 @@ hubExamples::forecast_outputs |>
     model_id = "linear-pool-joint",
     task_id_cols = c("reference_date", "location", "horizon", "target", "target_end_date"),
     compound_taskid_set = c("reference_date", "location", "target"),
-    derived_tasks = "target_end_date",
+    derived_task_ids = "target_end_date",
     n_output_samples = 100
   )
 ```

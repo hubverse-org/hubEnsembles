@@ -8,7 +8,7 @@ test_that("(#128) linear pool will group by output_type", {
       model_id = "linear-pool-normal",
       task_id_cols = NULL,
       compound_taskid_set = c("reference_date", "location", "target"),
-      derived_tasks = "target_end_date"
+      derived_task_ids = "target_end_date"
     )
   })
   expect_lt(nrow(res), nrow(forecast))
@@ -22,7 +22,7 @@ test_that("(#128) linear pool will group by output_type", {
       model_id = "linear-pool-normal",
       task_id_cols = NULL,
       compound_taskid_set = c("reference_date", "location", "target"),
-      derived_tasks = "target_end_date"
+      derived_task_ids = "target_end_date"
     )
   })
   expect_equal(res[res$output_type == "cdf", -1], ser[ser$output_type == "cdf", -1], tolerance = 1e-10)
@@ -414,7 +414,7 @@ test_that("Not all component models forecasting for the same set of dependent ta
       weights = NULL,
       task_id_cols = sample_tasks_derived,
       compound_taskid_set = c("target", "location", "target_date"),
-      derived_tasks = "reference_date",
+      derived_task_ids = "reference_date",
       n_output_samples = 8
     ),
     regex = "Not all component models in `model_out_tbl` forecast for the same set of dependent tasks",
@@ -430,7 +430,7 @@ test_that("Not all component models forecasting for the same set of dependent ta
     sample_outputs,
     task_id_cols = sample_tasks,
     compound_taskid_set = c("target", "location", "target_date"),
-    derived_tasks = NULL,
+    derived_task_ids = NULL,
     return_missing_combos = TRUE
   )
   expect_equal(missing_actual, dplyr::tibble(missing_expected))
@@ -445,7 +445,7 @@ test_that("Not all component models forecasting for the same set of dependent ta
     sample_outputs_derived,
     task_id_cols = sample_tasks_derived,
     compound_taskid_set = c("target", "location", "target_date"),
-    derived_tasks = "reference_date",
+    derived_task_ids = "reference_date",
     return_missing_combos = TRUE
   )
   expect_equal(missing_actual_derived, dplyr::tibble(missing_expected_derived))
