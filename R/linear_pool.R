@@ -27,6 +27,8 @@
 #'   return per unique combination of task IDs. Currently the only supported value
 #'   is NULL, in which case all provided component model samples are collected and
 #'   returned.
+#' @param derived_tasks `r lifecycle::badge("deprecated")` Use `derived_task_ids`
+#'   instead. A `character` vector of derived task IDs.
 #'
 #' @details The underlying mechanism for the computations varies for different
 #'   `output_type`s. When the `output_type` is `cdf`, `pmf`, or `mean`, this
@@ -74,16 +76,22 @@
 #' all.equal(lp_from_component_qs$value, expected_quantiles, tolerance = 1e-2,
 #'           check.attributes = FALSE)
 #'
-
+#' @importFrom lifecycle deprecated
 linear_pool <- function(model_out_tbl, weights = NULL,
                         weights_col_name = "weight",
                         model_id = "hub-ensemble",
                         task_id_cols = NULL,
                         compound_taskid_set = NA,
                         derived_task_ids = NULL,
+                        derived_tasks = lifecycle::deprecated(),
                         n_samples = 1e4,
                         n_output_samples = NULL,
                         ...) {
+  # detect and warn for usage of `derived_tasks`
+  if (lifecycle::is_present(derived_tasks)) {
+    lifecycle::deprecate_warn("1.0.0", "linear_pool(derived_tasks)", "linear_pool(derived_task_ids)")
+    derived_task_ids <- derived_tasks
+  }
 
   # validate_ensemble_inputs
   valid_types <- c("mean", "quantile", "cdf", "pmf", "sample")
