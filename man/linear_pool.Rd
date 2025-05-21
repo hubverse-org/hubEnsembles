@@ -15,6 +15,7 @@ linear_pool(
   task_id_cols = NULL,
   compound_taskid_set = NA,
   derived_task_ids = NULL,
+  derived_tasks = lifecycle::deprecated(),
   n_samples = 10000,
   n_output_samples = NULL,
   ...
@@ -59,6 +60,9 @@ values depend on are part of the \code{compound_taskid_set}.}
 \item{derived_task_ids}{\code{character} vector of derived task IDs (variables whose
 values depend on that of other task ID variables). Defaults to NULL, meaning
 there are no derived task IDs.}
+
+\item{derived_tasks}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Use \code{derived_task_ids}
+instead. A \code{character} vector of derived task IDs.}
 
 \item{n_samples}{\code{numeric} that specifies the number of samples to use when
 calculating quantiles from an estimated quantile function. Defaults to \code{1e4}.}
