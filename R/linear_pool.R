@@ -83,10 +83,10 @@ linear_pool <- function(model_out_tbl, weights = NULL,
                         task_id_cols = NULL,
                         compound_taskid_set = NA,
                         derived_task_ids = NULL,
-                        derived_tasks = lifecycle::deprecated(),
                         n_samples = 1e4,
                         n_output_samples = NULL,
-                        ...) {
+                        ...,
+                        derived_tasks = lifecycle::deprecated()) {
   # detect and warn for usage of `derived_tasks`
   if (lifecycle::is_present(derived_tasks)) {
     lifecycle::deprecate_warn("1.0.0", "linear_pool(derived_tasks)", "linear_pool(derived_task_ids)")
