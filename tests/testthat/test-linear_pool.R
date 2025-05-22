@@ -679,3 +679,20 @@ test_that("ensemble of samples throws an error for the more complex cases", {
     "`weights` must be \"NULL\" or equal for every model", fixed = TRUE
   )
 })
+
+test_that("Arg `derived_tasks` is deprecated", {
+  sample_outputs <- create_test_sample_outputs() |>
+    dplyr::mutate(reference_date = target_date - 7 * horizon)
+  expect_snapshot({
+    expect_warning(
+      linear_pool(
+        sample_outputs,
+        weights = NULL,
+        task_id_cols = c("target_date", "target", "horizon", "location"),
+        compound_taskid_set = c("target", "location", "target_date"),
+        derived_tasks = "reference_date"
+      ),
+      "The `derived_tasks` argument of `linear_pool()` is deprecated as of hubEnsembles 1.0.0.", fixed = TRUE
+    )
+  })
+})
