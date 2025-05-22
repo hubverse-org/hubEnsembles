@@ -13,7 +13,7 @@ validate_compound_taskid_set(
   model_out_tbl,
   task_id_cols,
   compound_taskid_set,
-  derived_tasks = NULL,
+  derived_task_ids = NULL,
   return_missing_combos = FALSE
 )
 }
@@ -40,7 +40,7 @@ for each individual prediction task
 Defaults to NA. Derived task ids must be included if all of the task ids their
 values depend on are part of the \code{compound_taskid_set}.}
 
-\item{derived_tasks}{\code{character} vector of derived task IDs (variables whose
+\item{derived_task_ids}{\code{character} vector of derived task IDs (variables whose
 values depend on that of other task ID variables). Defaults to NULL, meaning
 there are no derived task IDs.}
 

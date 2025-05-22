@@ -20,13 +20,15 @@
 #'
 #'   Defaults to NA. Derived task ids must be included if all of the task ids their
 #'   values depend on are part of the `compound_taskid_set`.
-#' @param derived_tasks `character` vector of derived task IDs (variables whose
+#' @param derived_task_ids `character` vector of derived task IDs (variables whose
 #'   values depend on that of other task ID variables). Defaults to NULL, meaning
 #'   there are no derived task IDs.
 #' @param n_output_samples `numeric` that specifies how many sample forecasts to
 #'   return per unique combination of task IDs. Currently the only supported value
 #'   is NULL, in which case all provided component model samples are collected and
 #'   returned.
+#' @param derived_tasks `r lifecycle::badge("deprecated")` Use `derived_task_ids`
+#'   instead. A `character` vector of derived task IDs.
 #'
 #' @details The underlying mechanism for the computations varies for different
 #'   `output_type`s. When the `output_type` is `cdf`, `pmf`, or `mean`, this
@@ -74,16 +76,22 @@
 #' all.equal(lp_from_component_qs$value, expected_quantiles, tolerance = 1e-2,
 #'           check.attributes = FALSE)
 #'
-
+#' @importFrom lifecycle deprecated
 linear_pool <- function(model_out_tbl, weights = NULL,
                         weights_col_name = "weight",
                         model_id = "hub-ensemble",
                         task_id_cols = NULL,
                         compound_taskid_set = NA,
-                        derived_tasks = NULL,
+                        derived_task_ids = NULL,
                         n_samples = 1e4,
                         n_output_samples = NULL,
-                        ...) {
+                        ...,
+                        derived_tasks = lifecycle::deprecated()) {
+  # detect and warn for usage of `derived_tasks`
+  if (lifecycle::is_present(derived_tasks)) {
+    lifecycle::deprecate_warn("1.0.0", "linear_pool(derived_tasks)", "linear_pool(derived_task_ids)")
+    derived_task_ids <- derived_tasks
+  }
 
   # validate_ensemble_inputs
   valid_types <- c("mean", "quantile", "cdf", "pmf", "sample")
@@ -93,7 +101,7 @@ linear_pool <- function(model_out_tbl, weights = NULL,
     weights_col_name = weights_col_name,
     task_id_cols = task_id_cols,
     compound_taskid_set = compound_taskid_set,
-    derived_tasks = derived_tasks,
+    derived_task_ids = derived_task_ids,
     n_output_samples = n_output_samples,
     valid_output_types = valid_types
   )

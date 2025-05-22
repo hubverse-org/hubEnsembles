@@ -14,10 +14,11 @@ linear_pool(
   model_id = "hub-ensemble",
   task_id_cols = NULL,
   compound_taskid_set = NA,
-  derived_tasks = NULL,
+  derived_task_ids = NULL,
   n_samples = 10000,
   n_output_samples = NULL,
-  ...
+  ...,
+  derived_tasks = lifecycle::deprecated()
 )
 }
 \arguments{
@@ -56,7 +57,7 @@ for each individual prediction task
 Defaults to NA. Derived task ids must be included if all of the task ids their
 values depend on are part of the \code{compound_taskid_set}.}
 
-\item{derived_tasks}{\code{character} vector of derived task IDs (variables whose
+\item{derived_task_ids}{\code{character} vector of derived task IDs (variables whose
 values depend on that of other task ID variables). Defaults to NULL, meaning
 there are no derived task IDs.}
 
@@ -71,6 +72,9 @@ returned.}
 \item{...}{parameters that are passed to \code{distfromq::make_q_fn}, specifying
 details of how to estimate a quantile function from provided quantile levels
 and quantile values for \code{output_type} \code{"quantile"}.}
+
+\item{derived_tasks}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Use \code{derived_task_ids}
+instead. A \code{character} vector of derived task IDs.}
 }
 \value{
 a \code{model_out_tbl} object of ensemble predictions. Note that any

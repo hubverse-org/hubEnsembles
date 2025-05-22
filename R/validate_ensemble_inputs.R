@@ -22,7 +22,7 @@ validate_ensemble_inputs <- function(model_out_tbl, weights = NULL,
                                      weights_col_name = "weight",
                                      task_id_cols = NULL,
                                      compound_taskid_set = NA,
-                                     derived_tasks = NULL,
+                                     derived_task_ids = NULL,
                                      n_output_samples,
                                      valid_output_types) {
 
@@ -61,7 +61,7 @@ validate_ensemble_inputs <- function(model_out_tbl, weights = NULL,
       compound_taskid_set <- NULL
     } else {
       validate_compound_taskid_set(model_out_tbl,
-                                   task_id_cols, compound_taskid_set, derived_tasks,
+                                   task_id_cols, compound_taskid_set, derived_task_ids,
                                    return_missing_combos = FALSE)
     }
   }
@@ -162,7 +162,7 @@ validate_weights <- function(model_out_cols, weights = NULL, weights_col_name = 
 #'   FALSE, or a `data.frame` of the missing combinations of dependent tasks will be
 #'   returned. See above for more details.
 validate_compound_taskid_set <- function(model_out_tbl,
-                                         task_id_cols, compound_taskid_set, derived_tasks = NULL,
+                                         task_id_cols, compound_taskid_set, derived_task_ids = NULL,
                                          return_missing_combos = FALSE) {
   if (identical(compound_taskid_set, NA)) {
     cli::cli_abort("{.arg compound_taskid_set} must be provided if {.arg model_out_tbl} contains
@@ -180,7 +180,7 @@ validate_compound_taskid_set <- function(model_out_tbl,
   # dependence. It is sufficient to check for dependence for just these variables
   # below, since if indexing is correct for these variables, it will also be correct
   # for any task ids that are derived from them.
-  dependent_tasks <- setdiff(task_id_cols, c(compound_taskid_set, derived_tasks))
+  dependent_tasks <- setdiff(task_id_cols, c(compound_taskid_set, derived_task_ids))
 
   # check component model outputs are compatible with the specified compound task id set vars.
   # output_type_id levels (i.e., sample indices) must be shared across all combinations of
@@ -233,10 +233,10 @@ validate_compound_taskid_set <- function(model_out_tbl,
     model_out_tbl |>
       tidyr::complete(
         !!!rlang::syms(c("model_id")),
-        tidyr::nesting(!!!rlang::syms(setdiff(task_id_cols, derived_tasks))),
+        tidyr::nesting(!!!rlang::syms(setdiff(task_id_cols, derived_task_ids))),
       ) |>
       dplyr::filter(is.na(.data[["output_type"]])) |>
       dplyr::arrange(!!!rlang::syms(c("model_id", dependent_tasks))) |>
-      dplyr::select(dplyr::all_of(c("model_id", setdiff(task_id_cols, derived_tasks))))
+      dplyr::select(dplyr::all_of(c("model_id", setdiff(task_id_cols, derived_task_ids))))
   }
 }
