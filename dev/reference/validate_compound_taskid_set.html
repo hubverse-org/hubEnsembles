@@ -58,7 +58,7 @@ variables.</p>
 <span>  <span class="va">model_out_tbl</span>,</span>
 <span>  <span class="va">task_id_cols</span>,</span>
 <span>  <span class="va">compound_taskid_set</span>,</span>
-<span>  derived_tasks <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  derived_task_ids <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  return_missing_combos <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -91,7 +91,7 @@ for each individual prediction task</p></li>
 values depend on are part of the <code>compound_taskid_set</code>.</p></dd>
 
 
-<dt id="arg-derived-tasks">derived_tasks<a class="anchor" aria-label="anchor" href="#arg-derived-tasks"></a></dt>
+<dt id="arg-derived-task-ids">derived_task_ids<a class="anchor" aria-label="anchor" href="#arg-derived-task-ids"></a></dt>
 <dd><p><code>character</code> vector of derived task IDs (variables whose
 values depend on that of other task ID variables). Defaults to NULL, meaning
 there are no derived task IDs.</p></dd>

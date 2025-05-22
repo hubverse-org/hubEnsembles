@@ -55,10 +55,11 @@ output types include <code>mean</code>, <code>quantile</code>, <code>cdf</code>,
 <span>  model_id <span class="op">=</span> <span class="st">"hub-ensemble"</span>,</span>
 <span>  task_id_cols <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  compound_taskid_set <span class="op">=</span> <span class="cn">NA</span>,</span>
-<span>  derived_tasks <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  derived_task_ids <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  n_samples <span class="op">=</span> <span class="fl">10000</span>,</span>
 <span>  n_output_samples <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  <span class="va">...</span></span>
+<span>  <span class="va">...</span>,</span>
+<span>  derived_tasks <span class="op">=</span> <span class="fu">lifecycle</span><span class="fu">::</span><span class="fu"><a href="https://lifecycle.r-lib.org/reference/deprecated.html" class="external-link">deprecated</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -109,7 +110,7 @@ for each individual prediction task</p></li>
 values depend on are part of the <code>compound_taskid_set</code>.</p></dd>
 
 
-<dt id="arg-derived-tasks">derived_tasks<a class="anchor" aria-label="anchor" href="#arg-derived-tasks"></a></dt>
+<dt id="arg-derived-task-ids">derived_task_ids<a class="anchor" aria-label="anchor" href="#arg-derived-task-ids"></a></dt>
 <dd><p><code>character</code> vector of derived task IDs (variables whose
 values depend on that of other task ID variables). Defaults to NULL, meaning
 there are no derived task IDs.</p></dd>
@@ -131,6 +132,11 @@ returned.</p></dd>
 <dd><p>parameters that are passed to <code><a href="http://reichlab.io/distfromq/reference/make_q_fn.html" class="external-link">distfromq::make_q_fn</a></code>, specifying
 details of how to estimate a quantile function from provided quantile levels
 and quantile values for <code>output_type</code> <code>"quantile"</code>.</p></dd>
+
+
+<dt id="arg-derived-tasks">derived_tasks<a class="anchor" aria-label="anchor" href="#arg-derived-tasks"></a></dt>
+<dd><p><a href="https://lifecycle.r-lib.org/articles/stages.html#deprecated" class="external-link"><img src="figures/lifecycle-deprecated.svg" alt="[Deprecated]"></a> Use <code>derived_task_ids</code>
+instead. A <code>character</code> vector of derived task IDs.</p></dd>
 
 </dl></div>
     <div class="section level2">
