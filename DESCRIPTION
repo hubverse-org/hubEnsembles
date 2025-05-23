@@ -40,7 +40,7 @@ Suggests:
     cowplot,
     ggplot2,
     hubExamples,
-    hubVis (>= 0.0.0.9100),
+    hubVis (>= 0.0.1),
     knitr,
     rmarkdown,
     testthat (>= 3.0.0)
