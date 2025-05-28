@@ -19,3 +19,4 @@
 ^revdep$
 ^vignettes/articles$
 ^CRAN-SUBMISSION$
+^dev$
