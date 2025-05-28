@@ -15,8 +15,8 @@ status](https://www.r-pkg.org/badges/version/hubEnsembles)](https://CRAN.R-proje
 The goal of hubEnsembles is to provide standard implementations of
 commonly used methods for ensembling model outputs. The hubEnsembles
 package is part of [the hubverse
-project](https://docs.hubverse.io/en/latest/) and expects all input data
-to the key functions to be formatted as an object of a [`model_out_tbl`
+project](https://docs.hubverse.io/en/latest/) and expects all input data to
+the key functions to be formatted as an object of a [`model_out_tbl`
 class](https://hubverse-org.github.io/hubUtils/reference/as_model_out_tbl.html).
 
 ## Installation
@@ -53,6 +53,6 @@ By contributing to this project, you agree to abide by its terms.
 
 Interested in contributing back to the open-source Hubverse project?
 Learn more about how to [get involved in the Hubverse
-Community](https://docs.hubverse.io/en/latest/overview/contribute.html)
-or [how to contribute to the hubEnsembles
+Community](https://docs.hubverse.io/en/latest/overview/contribute.html) or
+[how to contribute to the hubEnsembles
 package](https://hubverse-org.github.io/hubEnsembles/CONTRIBUTING.html).

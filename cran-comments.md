@@ -1,6 +1,10 @@
+This submission fixes a previously unidentified bug that may occur when custom functions are passed to the `agg_fun` argument
+
 ## R CMD check results
 
 0 errors | 0 warnings | 1 note
+
+* Days since last update: 6
 
 * Suggests or Enhances not in mainstream repositories:
     hubExamples, hubVis

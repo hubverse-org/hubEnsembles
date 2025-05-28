@@ -1,4 +1,4 @@
-# hubEnsembles 1.0.0
+# hubEnsembles (development version)
 
 * `hubEnsembles.Rmd` article now explains how to ensemble samples using `linear_pool()`
 * `linear_pool()` supports requesting a subset of component model sample forecasts when ensembling samples (#144)
