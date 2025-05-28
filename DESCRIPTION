@@ -1,6 +1,6 @@
 Package: hubEnsembles
 Title: Ensemble Methods for Combining Hub Model Outputs
-Version: 1.0.0
+Version: 1.0.0.9000
 Authors@R: c(
     person(given = "Li", family = "Shandross", email = "lshandross@umass.edu", role = c("aut", "cre"),
            comment = c(ORCID = "0009-0008-1348-1954")),
