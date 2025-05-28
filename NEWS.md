@@ -1,3 +1,5 @@
+# hubEnsembles (development version)
+
 # hubEnsembles 1.0.0
 
 * `hubEnsembles.Rmd` article now explains how to ensemble samples using `linear_pool()`
