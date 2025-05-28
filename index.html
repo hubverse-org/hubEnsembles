@@ -6,16 +6,15 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Ensemble Methods for Combining Hub Model Outputs • hubEnsembles</title>
-<!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
-<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="apple-touch-icon.png">
-<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="apple-touch-icon-120x120.png">
-<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="apple-touch-icon-76x76.png">
-<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="apple-touch-icon-60x60.png">
+<!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="favicon-96x96.png">
+<link rel="icon" type="”image/svg+xml”" href="favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="icon" sizes="any" href="favicon.ico">
+<link rel="manifest" href="site.webmanifest">
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
-<link href="deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
+<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Ensemble Methods for Combining Hub Model Outputs">
 <meta name="description" content="Functions for combining model outputs (e.g. predictions or estimates) from multiple models into an aggregated ensemble model output.">
 <meta property="og:description" content="Functions for combining model outputs (e.g. predictions or estimates) from multiple models into an aggregated ensemble model output.">
@@ -29,7 +28,7 @@
     <a href="https://hubdocs.readthedocs.io/en/latest/" class="external-link"><img src="https://raw.githubusercontent.com/hubverse-org/hubStyle/main/inst/hubverse.png" id="logo" height="30" alt="hubverse"></a>
     <a class="navbar-brand me-2" href="index.html">hubEnsembles</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.9</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">1.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -60,7 +59,7 @@
 </div>
 <!-- badges: start -->
 
-<p>The goal of hubEnsembles is to provide standard implementations of commonly used methods for ensembling model outputs. The hubEnsembles package is part of <a href="https://hubverse.io/en/latest/" class="external-link">the hubverse project</a> and expects all input data to the key functions to be formatted as an object of a <a href="https://hubverse-org.github.io/hubUtils/reference/as_model_out_tbl.html" class="external-link"><code>model_out_tbl</code> class</a>.</p>
+<p>The goal of hubEnsembles is to provide standard implementations of commonly used methods for ensembling model outputs. The hubEnsembles package is part of <a href="https://docs.hubverse.io/en/latest/" class="external-link">the hubverse project</a> and expects all input data to the key functions to be formatted as an object of a <a href="https://hubverse-org.github.io/hubUtils/reference/as_model_out_tbl.html" class="external-link"><code>model_out_tbl</code> class</a>.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
@@ -76,7 +75,7 @@
 </h3>
 <p>If you want to test out new features that have not yet been released, you can install the development version of hubEnsembles from <a href="https://github.com/" class="external-link">GitHub</a> with:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"hubverse-org/hubEnsembles"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"hubverse-org/hubEnsembles"</span><span class="op">)</span></span></code></pre></div>
 <hr>
 </div>
 </div>
@@ -88,7 +87,7 @@
 <div class="section level2">
 <h2 id="contributing">Contributing<a class="anchor" aria-label="anchor" href="#contributing"></a>
 </h2>
-<p>Interested in contributing back to the open-source Hubverse project? Learn more about how to <a href="https://hubverse.io/en/latest/overview/contribute.html" class="external-link">get involved in the Hubverse Community</a> or <a href="https://hubverse-org.github.io/hubEnsembles/CONTRIBUTING.html">how to contribute to the hubEnsembles package</a>.</p>
+<p>Interested in contributing back to the open-source Hubverse project? Learn more about how to <a href="https://docs.hubverse.io/en/latest/overview/contribute.html" class="external-link">get involved in the Hubverse Community</a> or <a href="https://hubverse-org.github.io/hubEnsembles/CONTRIBUTING.html">how to contribute to the hubEnsembles package</a>.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">
@@ -126,9 +125,9 @@
 <div class="developers">
 <h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
-<li>Evan L Ray <br><small class="roles"> Author </small>  </li>
-<li>Li Shandross <br><small class="roles"> Author, maintainer </small> <a href="https://orcid.org/0009-0008-1348-1954" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a> </li>
-<li>Emily Howerton <br><small class="roles"> Author </small> <a href="https://orcid.org/0000-0002-0639-3728" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a> </li>
+<li>Li Shandross <br><small class="roles"> Author, maintainer </small> <a href="https://orcid.org/0009-0008-1348-1954" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a>  </li>
+<li>Emily Howerton <br><small class="roles"> Author </small> <a href="https://orcid.org/0000-0002-0639-3728" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a>  </li>
+<li>Evan L Ray <br><small class="roles"> Author </small>   </li>
 <li><a href="authors.html">More about authors...</a></li>
 </ul>
 </div>
@@ -140,11 +139,11 @@
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Evan L Ray, Li Shandross, Emily Howerton.</p>
+  <p>Developed by Li Shandross, Emily Howerton, Evan L Ray.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1. PR Previews built by <a href="https://www.netlify.com" class="external-link">Netlify</a>. Provided without <strong>any warranty</strong>.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3. PR Previews built by <a href="https://www.netlify.com" class="external-link">Netlify</a>. Provided without <strong>any warranty</strong>.</p>
 </div>
 
     </footer>
