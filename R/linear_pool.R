@@ -24,9 +24,9 @@
 #'   values depend on that of other task ID variables). Defaults to NULL, meaning
 #'   there are no derived task IDs.
 #' @param n_output_samples `numeric` that specifies how many sample forecasts to
-#'   return per unique combination of task IDs. Currently the only supported value
-#'   is NULL, in which case all provided component model samples are collected and
-#'   returned.
+#'   return per unique combination of task IDs. Cannot exceed the number of provided
+#'   samples per compound unit (defined by the compound task id set). Defaults to NULL,
+#'   in which case all provided component model samples are collected and returned.
 #' @param derived_tasks `r lifecycle::badge("deprecated")` Use `derived_task_ids`
 #'   instead. A `character` vector of derived task IDs.
 #'

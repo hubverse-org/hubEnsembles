@@ -65,9 +65,9 @@ there are no derived task IDs.}
 calculating quantiles from an estimated quantile function. Defaults to \code{1e4}.}
 
 \item{n_output_samples}{\code{numeric} that specifies how many sample forecasts to
-return per unique combination of task IDs. Currently the only supported value
-is NULL, in which case all provided component model samples are collected and
-returned.}
+return per unique combination of task IDs. Cannot exceed the number of provided
+samples per compound unit (defined by the compound task id set). Defaults to NULL,
+in which case all provided component model samples are collected and returned.}
 
 \item{...}{parameters that are passed to \code{distfromq::make_q_fn}, specifying
 details of how to estimate a quantile function from provided quantile levels
