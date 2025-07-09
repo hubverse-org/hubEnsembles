@@ -123,9 +123,9 @@ calculating quantiles from an estimated quantile function. Defaults to <code>1e4
 
 <dt id="arg-n-output-samples">n_output_samples<a class="anchor" aria-label="anchor" href="#arg-n-output-samples"></a></dt>
 <dd><p><code>numeric</code> that specifies how many sample forecasts to
-return per unique combination of task IDs. Currently the only supported value
-is NULL, in which case all provided component model samples are collected and
-returned.</p></dd>
+return per unique combination of task IDs. Cannot exceed the number of provided
+samples per compound unit (defined by the compound task id set). Defaults to NULL,
+in which case all provided component model samples are collected and returned.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
