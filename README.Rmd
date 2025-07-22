@@ -52,6 +52,6 @@ Please note that the hubEnsembles package is released with a [Contributor Code o
 ## Contributing
 
 Interested in contributing back to the open-source Hubverse project?
-Learn more about how to [get involved in the Hubverse Community](https://docs.hubverse.io/en/latest/overview/contribute.html) or [how to contribute to the hubEnsembles package](https://hubverse-org.github.io/hubEnsembles/CONTRIBUTING.html).
+Learn more about how to [get involved in the Hubverse Community](https://hubverse.io/community/) or [how to contribute to the hubEnsembles package](https://hubverse-org.github.io/hubEnsembles/CONTRIBUTING.html).
 
 
