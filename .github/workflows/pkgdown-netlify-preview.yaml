@@ -33,17 +33,17 @@ jobs:
       contents: write
       pull-requests: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: r-lib/actions/setup-tinytex@bd49c52ffe281809afa6f0fecbf37483c5dd0b93 #v2.11.3
+      - uses: r-lib/actions/setup-tinytex@bd49c52ffe281809afa6f0fecbf37483c5dd0b93  #v2.11.3
 
-      - uses: r-lib/actions/setup-pandoc@bd49c52ffe281809afa6f0fecbf37483c5dd0b93 #v2.11.3
+      - uses: r-lib/actions/setup-pandoc@bd49c52ffe281809afa6f0fecbf37483c5dd0b93  #v2.11.3
 
-      - uses: r-lib/actions/setup-r@bd49c52ffe281809afa6f0fecbf37483c5dd0b93 #v2.11.3
+      - uses: r-lib/actions/setup-r@bd49c52ffe281809afa6f0fecbf37483c5dd0b93  #v2.11.3
         with:
           use-public-rspm: true
 
-      - uses: r-lib/actions/setup-r-dependencies@bd49c52ffe281809afa6f0fecbf37483c5dd0b93 #v2.11.3
+      - uses: r-lib/actions/setup-r-dependencies@bd49c52ffe281809afa6f0fecbf37483c5dd0b93  #v2.11.3
         with:
           extra-packages: any::pkgdown, local::.
           needs: website
@@ -54,7 +54,7 @@ jobs:
 
       - name: Deploy production to GitHub pages 🚀
         if: contains(env.PUBLISH, 'true')
-        uses: JamesIves/github-pages-deploy-action@6c2d9db40f9296374acc17b90404b6e8864128c8 #v4.7.3
+        uses: JamesIves/github-pages-deploy-action@6c2d9db40f9296374acc17b90404b6e8864128c8  #v4.7.3
         with:
           clean: false
           branch: gh-pages
@@ -70,7 +70,7 @@ jobs:
       - name: Deploy PR preview to Netlify
         if: contains(env.PUBLISH, 'false')
         id: netlify-deploy
-        uses: nwtgck/actions-netlify@4cbaf4c08f1a7bfa537d6113472ef4424e4eb654 #v3.0.0
+        uses: nwtgck/actions-netlify@4cbaf4c08f1a7bfa537d6113472ef4424e4eb654  #v3.0.0
         with:
           publish-dir: '${{ steps.deploy-dir.outputs.dir }}'
           production-branch: main
