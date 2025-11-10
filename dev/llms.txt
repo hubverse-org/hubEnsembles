@@ -1,0 +1,110 @@
+# hubEnsembles
+
+The goal of hubEnsembles is to provide standard implementations of
+commonly used methods for ensembling model outputs. The hubEnsembles
+package is part of [the hubverse
+project](https://docs.hubverse.io/en/latest/) and expects all input data
+to the key functions to be formatted as an object of a [`model_out_tbl`
+class](https://hubverse-org.github.io/hubUtils/reference/as_model_out_tbl.html).
+
+## Installation
+
+### Latest
+
+You can install the released version of `hubEnsembles` from
+[CRAN](https://CRAN.R-project.org) with:
+
+``` r
+install.packages("hubEnsembles")
+```
+
+### Development
+
+If you want to test out new features that have not yet been released,
+you can install the development version of hubEnsembles from
+[GitHub](https://github.com/) with:
+
+``` r
+remotes::install_github("hubverse-org/hubEnsembles")
+```
+
+------------------------------------------------------------------------
+
+## Code of Conduct
+
+Please note that the hubEnsembles package is released with a
+[Contributor Code of
+Conduct](https://hubverse-org.github.io/hubEnsembles/CODE_OF_CONDUCT.html).
+By contributing to this project, you agree to abide by its terms.
+
+## Contributing
+
+Interested in contributing back to the open-source Hubverse project?
+Learn more about how to [get involved in the Hubverse
+Community](https://hubverse.io/community/) or [how to contribute to the
+hubEnsembles
+package](https://hubverse-org.github.io/hubEnsembles/CONTRIBUTING.html).
+
+# Package index
+
+## All functions
+
+- [`component_outputs`](https://hubverse-org.github.io/hubEnsembles/dev/reference/component_outputs.md)
+  :
+
+  Example model output data for
+  [`linear_pool()`](https://hubverse-org.github.io/hubEnsembles/dev/reference/linear_pool.md)
+
+- [`fweights`](https://hubverse-org.github.io/hubEnsembles/dev/reference/fweights.md)
+  :
+
+  Example weights data for
+  [`simple_ensemble()`](https://hubverse-org.github.io/hubEnsembles/dev/reference/simple_ensemble.md)
+
+- [`linear_pool()`](https://hubverse-org.github.io/hubEnsembles/dev/reference/linear_pool.md)
+  :
+
+  Compute ensemble model outputs as a linear pool, otherwise known as a
+  distributional mixture, of component model outputs for each
+  combination of model task, output type, and output type id. Supported
+  output types include `mean`, `quantile`, `cdf`, `pmf`, and `sample`.
+
+- [`make_sample_indices_unique()`](https://hubverse-org.github.io/hubEnsembles/dev/reference/make_sample_indices_unique.md)
+  : Make the output type ID values of sample forecasts distinct for
+  different models
+
+- [`model_outputs`](https://hubverse-org.github.io/hubEnsembles/dev/reference/model_outputs.md)
+  :
+
+  Example model output data for
+  [`simple_ensemble()`](https://hubverse-org.github.io/hubEnsembles/dev/reference/simple_ensemble.md)
+
+- [`simple_ensemble()`](https://hubverse-org.github.io/hubEnsembles/dev/reference/simple_ensemble.md)
+  :
+
+  Compute ensemble model outputs by summarizing component model outputs
+  for each combination of model task, output type, and output type id.
+  Supported output types include `mean`, `median`, `quantile`, `cdf`,
+  and `pmf`.
+
+- [`validate_compound_taskid_set()`](https://hubverse-org.github.io/hubEnsembles/dev/reference/validate_compound_taskid_set.md)
+  :
+
+  Perform validations on the compound task ID set used to calculate an
+  ensemble of component model outputs for the sample output type,
+  including checks that (1) `compound_taskid_set` is a subset of
+  `task_id_cols`, (2) the provided `model_out_tbl` is compatible with
+  the specified `compound_taskid_set`, and (3) all models submit
+  predictions for the same set of non `compound_taskid_set` variables.
+
+- [`weights`](https://hubverse-org.github.io/hubEnsembles/dev/reference/weights.md)
+  :
+
+  Example weights data for
+  [`linear_pool()`](https://hubverse-org.github.io/hubEnsembles/dev/reference/linear_pool.md)
+
+# Articles
+
+### All vignettes
+
+- [hubEnsembles](https://hubverse-org.github.io/hubEnsembles/dev/articles/hubEnsembles.md):
