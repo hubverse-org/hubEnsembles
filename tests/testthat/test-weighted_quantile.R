@@ -4,7 +4,8 @@ test_that("non-numeric x throws an error", {
 
   weighted_quantile(x, weights = NULL, normalize = FALSE, probs) |>
     expect_error(
-      regexp = "`x` must be numeric", fixed = TRUE
+      regexp = "`x` must be numeric",
+      fixed = TRUE
     )
 })
 
@@ -15,7 +16,8 @@ test_that("non-numeric weights throws an error", {
 
   weighted_quantile(x, weights, normalize = TRUE, probs) |>
     expect_error(
-      regexp = "`weights` must be numeric", fixed = TRUE
+      regexp = "`weights` must be numeric",
+      fixed = TRUE
     )
 })
 
@@ -26,7 +28,8 @@ test_that("weights that don't sum to 1 and aren't normalized throw an error", {
 
   weighted_quantile(x, weights, normalize = FALSE, probs) |>
     expect_error(
-      regexp = "`weights` must sum to 1 or be normalized", fixed = TRUE
+      regexp = "`weights` must sum to 1 or be normalized",
+      fixed = TRUE
     )
 })
 
@@ -36,7 +39,8 @@ test_that("invalid probs (quantile levels) throws an error", {
 
   weighted_quantile(x, weights = NULL, normalize = TRUE, probs) |>
     expect_error(
-      regexp = "`probs` must be numeric and between 0 and 1", fixed = TRUE
+      regexp = "`probs` must be numeric and between 0 and 1",
+      fixed = TRUE
     )
 })
 

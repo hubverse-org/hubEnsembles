@@ -34,12 +34,54 @@ Our procedures for contributing bigger changes, code in particular, generally fo
 ### Code style
 
 - New code should follow the tidyverse [style guide](https://style.tidyverse.org).
-  You can use the [styler](https://CRAN.R-project.org/package=styler) package to apply these styles, but please don't restyle code that has nothing to do with your PR.
+  We use [Air](https://posit-dev.github.io/air/) for code formatting.
 
 - We use [roxygen2](https://cran.r-project.org/package=roxygen2), with [Markdown syntax](https://cran.r-project.org/web/packages/roxygen2/vignettes/rd-formatting.html), for documentation.
 
 - We use [testthat](https://cran.r-project.org/package=testthat) for unit tests.
   Contributions with test cases included are easier to accept.
+
+#### Setting up Air
+
+The project contains configuration files (`air.toml`, `.vscode/`) that ensure formatting is scoped to this repository only—your personal projects remain unaffected.
+
+**Positron**
+
+Air ships built-in with Positron. The project settings are already configured, so format-on-save is enabled automatically when working in this repo.
+
+**VS Code**
+
+1. Install the [Air extension](https://marketplace.visualstudio.com/items?itemName=Posit.air-vscode)
+2. The project settings are already configured, so format-on-save is enabled automatically when working in this repo
+
+**RStudio (2024.12.0+)**
+
+RStudio requires manual setup. Note that RStudio does not support per-project settings, so these are global options.
+
+1. Install the Air CLI:
+   - macOS/Linux: `curl -LsSf https://github.com/posit-dev/air/releases/latest/download/air-installer.sh | sh`
+   - macOS (Homebrew): `brew install air`
+   - Windows: `powershell -ExecutionPolicy Bypass -c "irm https://github.com/posit-dev/air/releases/latest/download/air-installer.ps1 | iex"`
+
+2. In RStudio, go to **Tools > Global Options > Code > Formatting** and:
+   - Check "Use external formatter"
+   - Set "Reformat command:" to `{path/to/air} format` (find the path with `which air` on macOS/Linux)
+   - See the [RStudio setup guide](https://posit-dev.github.io/air/editor-rstudio.html) for more details
+
+3. Optionally, enable format-on-save globally:
+   - In the same settings pane, check "Format code on save"
+   - **Note:** This applies to all projects, not just hubverse repos
+
+4. If you prefer not to enable format-on-save globally, format manually before committing:
+   - Use **Code > Reformat Code** (Cmd/Ctrl+Shift+A) or right-click and select "Reformat Code"
+   - CI will check formatting on PRs and fail if code is not formatted
+
+**Command Line**
+
+Works from any terminal:
+- Format entire project: `air format .`
+- Check without modifying: `air format . --check`
+
 
 ## Code of Conduct
 

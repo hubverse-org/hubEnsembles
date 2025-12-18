@@ -10,21 +10,32 @@
 #'
 #' @return a vector of weighted quantile values for the requested quantile levels
 
-weighted_quantile <- function(x, weights = NULL, normalize = TRUE, probs = c(0, .25, .5, .75, 1)) {
-  if (!is.numeric(x)) cli::cli_abort("{.arg x} must be numeric.")
+weighted_quantile <- function(
+  x,
+  weights = NULL,
+  normalize = TRUE,
+  probs = c(0, .25, .5, .75, 1)
+) {
+  if (!is.numeric(x)) {
+    cli::cli_abort("{.arg x} must be numeric.")
+  }
 
   if (is.null(weights)) {
     weights <- rep(1, length(x))
     normalize <- TRUE
   }
-  if (!is.numeric(weights)) cli::cli_abort("{.arg weights} must be numeric.")
+  if (!is.numeric(weights)) {
+    cli::cli_abort("{.arg weights} must be numeric.")
+  }
 
   if (length(x) != length(weights)) {
     cli::cli_abort("'x' and 'weights' must have the same length.")
   }
 
   # if normalize = TRUE, normalize the weights
-  if (normalize) weights <- weights / sum(weights)
+  if (normalize) {
+    weights <- weights / sum(weights)
+  }
 
   # check that the sum of weights is 1
   if (!isTRUE(all.equal(sum(weights), 1, tolerance = 1e-3))) {
