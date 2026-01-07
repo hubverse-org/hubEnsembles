@@ -77,19 +77,26 @@
 #'           check.attributes = FALSE)
 #'
 #' @importFrom lifecycle deprecated
-linear_pool <- function(model_out_tbl, weights = NULL,
-                        weights_col_name = "weight",
-                        model_id = "hub-ensemble",
-                        task_id_cols = NULL,
-                        compound_taskid_set = NA,
-                        derived_task_ids = NULL,
-                        n_samples = 1e4,
-                        n_output_samples = NULL,
-                        ...,
-                        derived_tasks = lifecycle::deprecated()) {
+linear_pool <- function(
+  model_out_tbl,
+  weights = NULL,
+  weights_col_name = "weight",
+  model_id = "hub-ensemble",
+  task_id_cols = NULL,
+  compound_taskid_set = NA,
+  derived_task_ids = NULL,
+  n_samples = 1e4,
+  n_output_samples = NULL,
+  ...,
+  derived_tasks = lifecycle::deprecated()
+) {
   # detect and warn for usage of `derived_tasks`
   if (lifecycle::is_present(derived_tasks)) {
-    lifecycle::deprecate_warn("1.0.0", "linear_pool(derived_tasks)", "linear_pool(derived_task_ids)")
+    lifecycle::deprecate_warn(
+      "1.0.0",
+      "linear_pool(derived_tasks)",
+      "linear_pool(derived_task_ids)"
+    )
     derived_task_ids <- derived_tasks
   }
 
@@ -120,25 +127,35 @@ linear_pool <- function(model_out_tbl, weights = NULL,
     purrr::map(.f = function(split_outputs) {
       type <- split_outputs$output_type[1]
       if (type %in% c("mean", "cdf", "pmf")) {
-        simple_ensemble(split_outputs, weights = weights_validated,
-                        weights_col_name = weights_col_name,
-                        agg_fun = "mean", agg_args = list(),
-                        model_id = model_id,
-                        task_id_cols = task_id_cols_validated)
+        simple_ensemble(
+          split_outputs,
+          weights = weights_validated,
+          weights_col_name = weights_col_name,
+          agg_fun = "mean",
+          agg_args = list(),
+          model_id = model_id,
+          task_id_cols = task_id_cols_validated
+        )
       } else if (type == "quantile") {
-        linear_pool_quantile(split_outputs, weights = weights_validated,
-                             weights_col_name = weights_col_name,
-                             model_id = model_id,
-                             n_samples = n_samples,
-                             task_id_cols = task_id_cols_validated,
-                             ...)
+        linear_pool_quantile(
+          split_outputs,
+          weights = weights_validated,
+          weights_col_name = weights_col_name,
+          model_id = model_id,
+          n_samples = n_samples,
+          task_id_cols = task_id_cols_validated,
+          ...
+        )
       } else if (type == "sample") {
-        linear_pool_sample(split_outputs, weights = weights_validated,
-                           weights_col_name = weights_col_name,
-                           model_id = model_id,
-                           task_id_cols = task_id_cols_validated,
-                           compound_taskid_set = compound_taskid_set_validated,
-                           n_output_samples = n_output_samples)
+        linear_pool_sample(
+          split_outputs,
+          weights = weights_validated,
+          weights_col_name = weights_col_name,
+          model_id = model_id,
+          task_id_cols = task_id_cols_validated,
+          compound_taskid_set = compound_taskid_set_validated,
+          n_output_samples = n_output_samples
+        )
       }
     }) |>
     purrr::list_rbind() |>

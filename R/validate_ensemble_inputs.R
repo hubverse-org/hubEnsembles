@@ -18,14 +18,16 @@
 #'
 #' @noRd
 
-validate_ensemble_inputs <- function(model_out_tbl, weights = NULL,
-                                     weights_col_name = "weight",
-                                     task_id_cols = NULL,
-                                     compound_taskid_set = NA,
-                                     derived_task_ids = NULL,
-                                     n_output_samples,
-                                     valid_output_types) {
-
+validate_ensemble_inputs <- function(
+  model_out_tbl,
+  weights = NULL,
+  weights_col_name = "weight",
+  task_id_cols = NULL,
+  compound_taskid_set = NA,
+  derived_task_ids = NULL,
+  n_output_samples,
+  valid_output_types
+) {
   if (!inherits(model_out_tbl, "model_out_tbl")) {
     model_out_tbl <- hubUtils::as_model_out_tbl(model_out_tbl)
   }
@@ -47,7 +49,9 @@ validate_ensemble_inputs <- function(model_out_tbl, weights = NULL,
   hubUtils::validate_model_out_tbl(model_out_tbl)
 
   unique_output_types <- unique(model_out_tbl[["output_type"]])
-  invalid_output_types <- unique_output_types[!unique_output_types %in% valid_output_types]
+  invalid_output_types <- unique_output_types[
+    !unique_output_types %in% valid_output_types
+  ]
   if (length(invalid_output_types) > 0) {
     cli::cli_abort(c(
       "x" = "{.arg model_out_tbl} contains unsupported output type.",
@@ -60,9 +64,13 @@ validate_ensemble_inputs <- function(model_out_tbl, weights = NULL,
     if (is.null(n_output_samples)) {
       compound_taskid_set <- NULL
     } else {
-      validate_compound_taskid_set(model_out_tbl,
-                                   task_id_cols, compound_taskid_set, derived_task_ids,
-                                   return_missing_combos = FALSE)
+      validate_compound_taskid_set(
+        model_out_tbl,
+        task_id_cols,
+        compound_taskid_set,
+        derived_task_ids,
+        return_missing_combos = FALSE
+      )
     }
   }
 
@@ -74,9 +82,14 @@ validate_ensemble_inputs <- function(model_out_tbl, weights = NULL,
   if (!is.null(weights)) {
     validate_weights(model_out_cols, weights, weights_col_name)
 
-    if (any(c("cdf", "pmf") %in% unique_output_types) && "output_type_id" %in% colnames(weights)) {
+    if (
+      any(c("cdf", "pmf") %in% unique_output_types) &&
+        "output_type_id" %in% colnames(weights)
+    ) {
       # nolint start
-      cdf_pmf_types <- unique_output_types[unique_output_types %in% c("cdf", "pmf")]
+      cdf_pmf_types <- unique_output_types[
+        unique_output_types %in% c("cdf", "pmf")
+      ]
       # nolint end
       cli::cli_abort(c(
         "x" = "{.args weights} contains weights dependent on the output type id, 
@@ -86,10 +99,12 @@ validate_ensemble_inputs <- function(model_out_tbl, weights = NULL,
     }
   }
 
-  validated_inputs <- list(model_out_tbl = model_out_tbl,
-                           weights = weights,
-                           task_id_cols = task_id_cols,
-                           compound_taskid_set = compound_taskid_set)
+  validated_inputs <- list(
+    model_out_tbl = model_out_tbl,
+    weights = weights,
+    task_id_cols = task_id_cols,
+    compound_taskid_set = compound_taskid_set
+  )
   return(validated_inputs)
 }
 
@@ -111,7 +126,11 @@ validate_ensemble_inputs <- function(model_out_tbl, weights = NULL,
 #' @return no return value
 #' @noRd
 
-validate_weights <- function(model_out_cols, weights = NULL, weights_col_name = "weight") {
+validate_weights <- function(
+  model_out_cols,
+  weights = NULL,
+  weights_col_name = "weight"
+) {
   req_weight_cols <- c("model_id", weights_col_name)
   if (!all(req_weight_cols %in% colnames(weights))) {
     cli::cli_abort(c(
@@ -161,12 +180,18 @@ validate_weights <- function(model_out_cols, weights = NULL, weights_col_name = 
 #'   Otherwise, the function will either throw an error if `return_missing_combos` is
 #'   FALSE, or a `data.frame` of the missing combinations of dependent tasks will be
 #'   returned. See above for more details.
-validate_compound_taskid_set <- function(model_out_tbl,
-                                         task_id_cols, compound_taskid_set, derived_task_ids = NULL,
-                                         return_missing_combos = FALSE) {
+validate_compound_taskid_set <- function(
+  model_out_tbl,
+  task_id_cols,
+  compound_taskid_set,
+  derived_task_ids = NULL,
+  return_missing_combos = FALSE
+) {
   if (identical(compound_taskid_set, NA)) {
-    cli::cli_abort("{.arg compound_taskid_set} must be provided if {.arg model_out_tbl} contains
-                    the sample output type and {.arg n_output_samples} is not {{NULL}}")
+    cli::cli_abort(
+      "{.arg compound_taskid_set} must be provided if {.arg model_out_tbl} contains
+                    the sample output type and {.arg n_output_samples} is not {{NULL}}"
+    )
   }
 
   if (!all(compound_taskid_set %in% task_id_cols)) {
@@ -180,7 +205,10 @@ validate_compound_taskid_set <- function(model_out_tbl,
   # dependence. It is sufficient to check for dependence for just these variables
   # below, since if indexing is correct for these variables, it will also be correct
   # for any task ids that are derived from them.
-  dependent_tasks <- setdiff(task_id_cols, c(compound_taskid_set, derived_task_ids))
+  dependent_tasks <- setdiff(
+    task_id_cols,
+    c(compound_taskid_set, derived_task_ids)
+  )
 
   # check component model outputs are compatible with the specified compound task id set vars.
   # output_type_id levels (i.e., sample indices) must be shared across all combinations of
@@ -188,8 +216,13 @@ validate_compound_taskid_set <- function(model_out_tbl,
   # those variables.
   same_output_type_ids_by_model <- model_out_tbl |>
     dplyr::filter(.data[["output_type"]] == "sample") |>
-    dplyr::group_by(dplyr::across(dplyr::all_of(c("model_id", dependent_tasks)))) |>
-    dplyr::summarize(output_type_id_list = list(sort(.data[["output_type_id"]]))) |>
+    dplyr::group_by(dplyr::across(dplyr::all_of(c(
+      "model_id",
+      dependent_tasks
+    )))) |>
+    dplyr::summarize(
+      output_type_id_list = list(sort(.data[["output_type_id"]]))
+    ) |>
     dplyr::ungroup() |>
     dplyr::group_split(dplyr::across(dplyr::all_of(c("model_id")))) |>
     purrr::map_lgl(.f = function(split_outputs) {
@@ -209,7 +242,10 @@ validate_compound_taskid_set <- function(model_out_tbl,
   # check all component models forecast the same set of non-compound task id set vars
   sample_actual <- model_out_tbl |>
     dplyr::filter(.data[["output_type"]] == "sample") |>
-    dplyr::group_by(dplyr::across(dplyr::all_of(c("model_id", dependent_tasks)))) |>
+    dplyr::group_by(dplyr::across(dplyr::all_of(c(
+      "model_id",
+      dependent_tasks
+    )))) |>
     dplyr::summarize(unique_forecasts = dplyr::n()) |>
     dplyr::ungroup() |>
     dplyr::arrange(!!!rlang::syms(c("model_id", dependent_tasks))) |>
@@ -237,6 +273,9 @@ validate_compound_taskid_set <- function(model_out_tbl,
       ) |>
       dplyr::filter(is.na(.data[["output_type"]])) |>
       dplyr::arrange(!!!rlang::syms(c("model_id", dependent_tasks))) |>
-      dplyr::select(dplyr::all_of(c("model_id", setdiff(task_id_cols, derived_task_ids))))
+      dplyr::select(dplyr::all_of(c(
+        "model_id",
+        setdiff(task_id_cols, derived_task_ids)
+      )))
   }
 }

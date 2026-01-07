@@ -54,19 +54,24 @@
 #' all.equal(weighted_median1, weighted_median2)
 #'
 
-simple_ensemble <- function(model_out_tbl, weights = NULL,
-                            weights_col_name = "weight",
-                            agg_fun = mean, agg_args = list(),
-                            model_id = "hub-ensemble",
-                            task_id_cols = NULL) {
-
+simple_ensemble <- function(
+  model_out_tbl,
+  weights = NULL,
+  weights_col_name = "weight",
+  agg_fun = mean,
+  agg_args = list(),
+  model_id = "hub-ensemble",
+  task_id_cols = NULL
+) {
   # validate_ensemble_inputs
   valid_types <- c("mean", "median", "quantile", "cdf", "pmf")
   validated_inputs <- model_out_tbl |>
-    validate_ensemble_inputs(weights = weights,
-                             weights_col_name = weights_col_name,
-                             task_id_cols = task_id_cols,
-                             valid_output_types = valid_types)
+    validate_ensemble_inputs(
+      weights = weights,
+      weights_col_name = weights_col_name,
+      task_id_cols = task_id_cols,
+      valid_output_types = valid_types
+    )
 
   model_out_tbl_validated <- validated_inputs$model_out_tbl
   weights_validated <- validated_inputs$weights
@@ -76,7 +81,9 @@ simple_ensemble <- function(model_out_tbl, weights = NULL,
     agg_args <- c(agg_args, list(x = quote(.data[["value"]])))
   } else {
     weight_by_cols <-
-      colnames(weights_validated)[colnames(weights_validated) != weights_col_name]
+      colnames(weights_validated)[
+        colnames(weights_validated) != weights_col_name
+      ]
 
     model_out_tbl_validated <- model_out_tbl_validated |>
       dplyr::left_join(weights_validated, by = weight_by_cols)
@@ -89,8 +96,10 @@ simple_ensemble <- function(model_out_tbl, weights = NULL,
       agg_fun <- matrixStats::weightedMedian
     }
 
-    agg_args <- c(agg_args, list(x = quote(.data[["value"]]),
-                                 w = quote(.data[[weights_col_name]])))
+    agg_args <- c(
+      agg_args,
+      list(x = quote(.data[["value"]]), w = quote(.data[[weights_col_name]]))
+    )
   }
 
   # don't interpolate when calling `matrixStats::weightedMedian`

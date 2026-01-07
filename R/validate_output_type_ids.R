@@ -16,10 +16,19 @@
 validate_output_type_ids <- function(model_out_tbl, task_id_cols) {
   same_output_id <- model_out_tbl |>
     dplyr::filter(.data[["output_type"]] %in% c("cdf", "pmf", "quantile")) |>
-    dplyr::group_by(dplyr::across(c(dplyr::all_of(task_id_cols), "model_id", "output_type"))) |>
-    dplyr::summarize(output_type_id_list = list(sort(.data[["output_type_id"]]))) |>
+    dplyr::group_by(dplyr::across(c(
+      dplyr::all_of(task_id_cols),
+      "model_id",
+      "output_type"
+    ))) |>
+    dplyr::summarize(
+      output_type_id_list = list(sort(.data[["output_type_id"]]))
+    ) |>
     dplyr::ungroup() |>
-    dplyr::group_split(dplyr::across(dplyr::all_of(c(task_id_cols, "output_type")))) |>
+    dplyr::group_split(dplyr::across(dplyr::all_of(c(
+      task_id_cols,
+      "output_type"
+    )))) |>
     purrr::map_lgl(.f = function(split_outputs) {
       length(unique(split_outputs$output_type_id_list)) == 1
     })
