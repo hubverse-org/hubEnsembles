@@ -25,14 +25,14 @@
 Source:
 [`DESCRIPTION`](https://github.com/hubverse-org/hubEnsembles/blob/main/DESCRIPTION)
 
-Shandross L, Howerton E, Ray E (2025). *hubEnsembles: Ensemble Methods
+Shandross L, Howerton E, Ray E (2026). *hubEnsembles: Ensemble Methods
 for Combining Hub Model Outputs*. R package version 1.0.0.9000,
 <https://github.com/hubverse-org/hubEnsembles>.
 
     @Manual{,
       title = {hubEnsembles: Ensemble Methods for Combining Hub Model Outputs},
       author = {Li Shandross and Emily Howerton and Evan L Ray},
-      year = {2025},
+      year = {2026},
       note = {R package version 1.0.0.9000},
       url = {https://github.com/hubverse-org/hubEnsembles},
     }

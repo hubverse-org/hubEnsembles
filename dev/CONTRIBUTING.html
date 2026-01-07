@@ -50,10 +50,46 @@
 </ul></div>
 <div class="section level3">
 <h3 id="code-style">Code style<a class="anchor" aria-label="anchor" href="#code-style"></a></h3>
-<ul><li><p>New code should follow the tidyverse <a href="https://style.tidyverse.org" class="external-link">style guide</a>. You can use the <a href="https://CRAN.R-project.org/package=styler" class="external-link">styler</a> package to apply these styles, but please don’t restyle code that has nothing to do with your PR.</p></li>
+<ul><li><p>New code should follow the tidyverse <a href="https://style.tidyverse.org" class="external-link">style guide</a>. We use <a href="https://posit-dev.github.io/air/" class="external-link">Air</a> for code formatting.</p></li>
 <li><p>We use <a href="https://cran.r-project.org/package=roxygen2" class="external-link">roxygen2</a>, with <a href="https://cran.r-project.org/web/packages/roxygen2/vignettes/rd-formatting.html" class="external-link">Markdown syntax</a>, for documentation.</p></li>
 <li><p>We use <a href="https://cran.r-project.org/package=testthat" class="external-link">testthat</a> for unit tests. Contributions with test cases included are easier to accept.</p></li>
-</ul></div>
+</ul><div class="section level4">
+<h4 id="setting-up-air">Setting up Air<a class="anchor" aria-label="anchor" href="#setting-up-air"></a></h4>
+<p>The project contains configuration files (<code>air.toml</code>, <code>.vscode/</code>) that ensure formatting is scoped to this repository only—your personal projects remain unaffected.</p>
+<p><strong>Positron</strong></p>
+<p>Air ships built-in with Positron. The project settings are already configured, so format-on-save is enabled automatically when working in this repo.</p>
+<p><strong>VS Code</strong></p>
+<ol style="list-style-type: decimal"><li>Install the <a href="https://marketplace.visualstudio.com/items?itemName=Posit.air-vscode" class="external-link">Air extension</a>
+</li>
+<li>The project settings are already configured, so format-on-save is enabled automatically when working in this repo</li>
+</ol><p><strong>RStudio (2024.12.0+)</strong></p>
+<p>RStudio requires manual setup. Note that RStudio does not support per-project settings, so these are global options.</p>
+<ol style="list-style-type: decimal"><li>Install the Air CLI:
+<ul><li>macOS/Linux: <code>curl -LsSf https://github.com/posit-dev/air/releases/latest/download/air-installer.sh | sh</code>
+</li>
+<li>macOS (Homebrew): <code>brew install air</code>
+</li>
+<li>Windows: <code>powershell -ExecutionPolicy Bypass -c "irm https://github.com/posit-dev/air/releases/latest/download/air-installer.ps1 | iex"</code>
+</li>
+</ul></li>
+<li>In RStudio, go to <strong>Tools &gt; Global Options &gt; Code &gt; Formatting</strong> and:
+<ul><li>Check “Use external formatter”</li>
+<li>Set “Reformat command:” to <code>{path/to/air} format</code> (find the path with <code>which air</code> on macOS/Linux)</li>
+<li>See the <a href="https://posit-dev.github.io/air/editor-rstudio.html" class="external-link">RStudio setup guide</a> for more details</li>
+</ul></li>
+<li>Optionally, enable format-on-save globally:
+<ul><li>In the same settings pane, check “Format code on save”</li>
+<li>
+<strong>Note:</strong> This applies to all projects, not just hubverse repos</li>
+</ul></li>
+<li>If you prefer not to enable format-on-save globally, format manually before committing:
+<ul><li>Use <strong>Code &gt; Reformat Code</strong> (Cmd/Ctrl+Shift+A) or right-click and select “Reformat Code”</li>
+<li>CI will check formatting on PRs and fail if code is not formatted</li>
+</ul></li>
+</ol><p><strong>Command Line</strong></p>
+<p>Works from any terminal: - Format entire project: <code>air format .</code> - Check without modifying: <code>air format . --check</code></p>
+</div>
+</div>
 </div>
 <div class="section level2">
 <h2 id="code-of-conduct">Code of Conduct<a class="anchor" aria-label="anchor" href="#code-of-conduct"></a></h2>

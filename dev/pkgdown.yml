@@ -3,7 +3,7 @@ pkgdown: 2.2.0
 pkgdown_sha: ~
 articles:
   articles/hubEnsembles: hubEnsembles.html
-last_built: 2025-11-10T19:58Z
+last_built: 2026-01-07T21:31Z
 urls:
   reference: https://hubverse-org.github.io/hubEnsembles/reference
   article: https://hubverse-org.github.io/hubEnsembles/articles
