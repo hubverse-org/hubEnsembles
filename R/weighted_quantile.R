@@ -65,5 +65,5 @@ weighted_quantile <- function(
   ) |>
     unlist()
 
-  return(quantiles)
+  quantiles
 }

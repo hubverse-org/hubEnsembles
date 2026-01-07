@@ -73,5 +73,5 @@ linear_pool_quantile <- function(
     dplyr::mutate(output_type = "quantile", .before = "output_type_id") |>
     dplyr::ungroup()
 
-  return(quantile_outputs)
+  quantile_outputs
 }
