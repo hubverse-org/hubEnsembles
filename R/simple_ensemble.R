@@ -115,5 +115,5 @@ simple_ensemble <- function(
     dplyr::ungroup() |>
     hubUtils::as_model_out_tbl()
 
-  return(ensemble_model_outputs)
+  ensemble_model_outputs
 }

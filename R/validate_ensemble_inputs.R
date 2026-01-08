@@ -105,7 +105,7 @@ validate_ensemble_inputs <- function(
     task_id_cols = task_id_cols,
     compound_taskid_set = compound_taskid_set
   )
-  return(validated_inputs)
+  validated_inputs
 }
 
 
