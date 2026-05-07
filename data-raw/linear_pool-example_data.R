@@ -13,7 +13,7 @@ for (m in seq_len(3)) {
 }
 
 component_qs <- purrr::map(component_means, ~ qnorm(ps, mean = .x)) |> unlist()
-component_outputs <- data.frame(
+lop_component_outputs <- data.frame(
   stringsAsFactors = FALSE,
   model_id = rep(component_ids, each = length(lp_qs)),
   target = "inc death",
@@ -22,7 +22,7 @@ component_outputs <- data.frame(
   value = component_qs
 )
 
-weights <- data.frame(model_id = component_ids, weight = component_weights)
+lop_weights <- data.frame(model_id = component_ids, weight = component_weights)
 
-save(component_outputs, file = "data/linear_pool-example_outputs.rda")
-save(weights, file = "data/linear_pool-example_weights.rda")
+save(lop_component_outputs, file = "data/lop_component_outputs.rda")
+save(lop_weights, file = "data/lop_weights.rda")
