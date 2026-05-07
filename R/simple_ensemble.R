@@ -111,7 +111,7 @@ simple_ensemble <- function(
   ensemble_model_outputs <- model_out_tbl_validated |>
     dplyr::group_by(dplyr::across(dplyr::all_of(group_by_cols))) |>
     dplyr::summarize(value = do.call(agg_fun, args = agg_args)) |>
-    dplyr::mutate(model_id = model_id, .before = 1) |>
+    dplyr::mutate(model_id = .env$model_id, .before = 1) |>
     dplyr::ungroup() |>
     hubUtils::as_model_out_tbl()
 

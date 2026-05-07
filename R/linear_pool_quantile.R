@@ -69,7 +69,7 @@ linear_pool_quantile <- function(
       .groups = "drop"
     ) |>
     tidyr::unnest(cols = tidyselect::all_of(c("output_type_id", "value"))) |>
-    dplyr::mutate(model_id = model_id, .before = 1) |>
+    dplyr::mutate(model_id = .env$model_id, .before = 1) |>
     dplyr::mutate(output_type = "quantile", .before = "output_type_id") |>
     dplyr::ungroup()
 
