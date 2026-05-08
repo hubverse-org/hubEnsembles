@@ -17,6 +17,7 @@ linear_pool_quantile <- function(
   n_samples = 1e4,
   ...
 ) {
+  ensemble_model_id <- model_id
   quantile_levels <- unique(model_out_tbl$output_type_id)
 
   if (is.null(weights)) {
@@ -69,7 +70,7 @@ linear_pool_quantile <- function(
       .groups = "drop"
     ) |>
     tidyr::unnest(cols = tidyselect::all_of(c("output_type_id", "value"))) |>
-    dplyr::mutate(model_id = .env$model_id, .before = 1) |>
+    dplyr::mutate(model_id = ensemble_model_id, .before = 1) |>
     dplyr::mutate(output_type = "quantile", .before = "output_type_id") |>
     dplyr::ungroup()
 
