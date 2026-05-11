@@ -236,18 +236,17 @@ test_that("group_by(output_type_id) produces expected results", {
 
 
 test_that("(weighted) medians and means correctly calculated", {
-  median_expected <- mean_expected <-
-    weighted_median_expected <- weighted_mean_expected <-
-      data.frame(
-        model_id = "hub-ensemble",
-        location = rep(c("222", "888"), each = 3),
-        horizon = 1,
-        target = "inc death",
-        target_date = as.Date("2021-12-25"),
-        output_type = "quantile",
-        output_type_id = rep(c(.1, .5, .9), 2),
-        value = NA_real_
-      )
+  median_expected <- mean_expected <- weighted_median_expected <- weighted_mean_expected <-
+    data.frame(
+      model_id = "hub-ensemble",
+      location = rep(c("222", "888"), each = 3),
+      horizon = 1,
+      target = "inc death",
+      target_date = as.Date("2021-12-25"),
+      output_type = "quantile",
+      output_type_id = rep(c(.1, .5, .9), 2),
+      value = NA_real_
+    )
 
   median_vals <- sapply(list(v2_1, v2_5, v2_9, v8_1, v8_5, v8_9), median)
   mean_vals <- sapply(list(v2_1, v2_5, v2_9, v8_1, v8_5, v8_9), mean)
