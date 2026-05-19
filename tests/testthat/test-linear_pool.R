@@ -4,10 +4,6 @@ test_that("(#128) linear pool will group by output_type", {
   forecast <- forecast[
     forecast$output_type %in% c("mean", "quantile", "cdf", "pmf", "sample"),
   ]
-  skip_if(
-    nrow(forecast) == 0L,
-    "forecast_outputs has no output types supported by linear_pool"
-  )
   expect_no_error({
     res <- linear_pool(
       forecast,
