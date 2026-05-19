@@ -1,7 +1,9 @@
 test_that("(#128) linear pool will group by output_type", {
   skip_if_not_installed("hubExamples")
   forecast <- hubExamples::forecast_outputs
-  forecast <- forecast[!forecast$output_type %in% c("median"), ]
+  forecast <- forecast[
+    forecast$output_type %in% c("mean", "quantile", "cdf", "pmf", "sample"),
+  ]
   expect_no_error({
     res <- linear_pool(
       forecast,
@@ -231,19 +233,18 @@ test_that("(weighted) quantiles correctly calculated", {
   # F_1 = N(-3, 1), F_2 = N(0,1), and F_3 = N(3, 1)
   # The linear pool is a (weighted) mixture with cdf F(x) = \sum_m w_m F_m(x)
   # We test with equal weights w_m = 1/3 and with weights w_1 = 0.25, w_2 = 0.5, w_3 = 0.25
-  quantile_expected <-
-    weighted_quantile_expected <-
-      data.frame(
-        stringsAsFactors = FALSE,
-        model_id = "hub-ensemble",
-        location = "111",
-        horizon = 1,
-        target = "inc death",
-        target_date = as.Date("2021-12-25"),
-        output_type = "quantile",
-        output_type_id = rep(NA, 21),
-        value = NA_real_
-      )
+  quantile_expected <- weighted_quantile_expected <-
+    data.frame(
+      stringsAsFactors = FALSE,
+      model_id = "hub-ensemble",
+      location = "111",
+      horizon = 1,
+      target = "inc death",
+      target_date = as.Date("2021-12-25"),
+      output_type = "quantile",
+      output_type_id = rep(NA, 21),
+      value = NA_real_
+    )
 
   quantile_values <- weighted_quantile_values <- seq(
     from = -5,
@@ -353,19 +354,18 @@ test_that("(weighted) quantiles correctly calculated - lognormal family", {
     by = 0.5
   )) # expected
 
-  quantile_expected <-
-    weighted_quantile_expected <-
-      data.frame(
-        stringsAsFactors = FALSE,
-        model_id = "hub-ensemble",
-        location = "111",
-        horizon = 1,
-        target = "inc death",
-        target_date = as.Date("2021-12-25"),
-        output_type = "quantile",
-        output_type_id = rep(NA, length(quantile_values)),
-        value = NA_real_
-      )
+  quantile_expected <- weighted_quantile_expected <-
+    data.frame(
+      stringsAsFactors = FALSE,
+      model_id = "hub-ensemble",
+      location = "111",
+      horizon = 1,
+      target = "inc death",
+      target_date = as.Date("2021-12-25"),
+      output_type = "quantile",
+      output_type_id = rep(NA, length(quantile_values)),
+      value = NA_real_
+    )
 
   output_prob <- stats::plnorm(quantile_values, mean = -3) /
     3 +
@@ -619,8 +619,7 @@ test_that("If the specified `compound_taskid_set` is incompatible with component
 })
 
 
-test_that("Unequal numbers of samples across component models for unique combination of
-  compound task ID set vars throws an error", {
+test_that("Unequal numbers of samples across component models for unique compound task ID set vars throws an error", {
   # there are four models, "a", "b", "c", and "d".
   # The first three models each submit 3 samples, while model "d" submits only 1 sample.
   # We expect an error in this situation, because our methods currently do not support it.

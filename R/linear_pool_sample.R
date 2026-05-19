@@ -26,6 +26,7 @@ linear_pool_sample <- function(
   compound_taskid_set,
   n_output_samples = NULL
 ) {
+  ensemble_model_id <- model_id
   validate_sample_inputs(
     model_out_tbl,
     weights,
@@ -93,7 +94,7 @@ linear_pool_sample <- function(
   model_out_tbl |>
     make_sample_indices_unique() |>
     dplyr::select(-"model_id") |>
-    dplyr::mutate(model_id = model_id, .before = 1)
+    dplyr::mutate(model_id = ensemble_model_id, .before = 1)
 }
 
 

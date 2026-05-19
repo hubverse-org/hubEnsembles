@@ -73,6 +73,7 @@ simple_ensemble <- function(
       valid_output_types = valid_types
     )
 
+  ensemble_model_id <- model_id
   model_out_tbl_validated <- validated_inputs$model_out_tbl
   weights_validated <- validated_inputs$weights
   task_id_cols_validated <- validated_inputs$task_id_cols
@@ -111,7 +112,7 @@ simple_ensemble <- function(
   ensemble_model_outputs <- model_out_tbl_validated |>
     dplyr::group_by(dplyr::across(dplyr::all_of(group_by_cols))) |>
     dplyr::summarize(value = do.call(agg_fun, args = agg_args)) |>
-    dplyr::mutate(model_id = model_id, .before = 1) |>
+    dplyr::mutate(model_id = ensemble_model_id, .before = 1) |>
     dplyr::ungroup() |>
     hubUtils::as_model_out_tbl()
 
