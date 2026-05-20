@@ -43,24 +43,24 @@
 
       <dl><dt>
 
-          <code><a href="component_outputs.html">component_outputs</a></code>
+          <code><a href="linear_pool.html">linear_pool()</a></code>
+
+        </dt>
+        <dd>Compute ensemble model outputs as a linear pool, otherwise known as a distributional mixture, of component model outputs for each combination of model task, output type, and output type id. Supported output types include <code>mean</code>, <code>quantile</code>, <code>cdf</code>, <code>pmf</code>, and <code>sample</code>.</dd>
+
+        <dt>
+
+          <code><a href="lop_component_outputs.html">lop_component_outputs</a></code>
 
         </dt>
         <dd>Example model output data for <code><a href="../reference/linear_pool.html">linear_pool()</a></code></dd>
 
         <dt>
 
-          <code><a href="fweights.html">fweights</a></code>
+          <code><a href="lop_weights.html">lop_weights</a></code>
 
         </dt>
-        <dd>Example weights data for <code><a href="../reference/simple_ensemble.html">simple_ensemble()</a></code></dd>
-
-        <dt>
-
-          <code><a href="linear_pool.html">linear_pool()</a></code>
-
-        </dt>
-        <dd>Compute ensemble model outputs as a linear pool, otherwise known as a distributional mixture, of component model outputs for each combination of model task, output type, and output type id. Supported output types include <code>mean</code>, <code>quantile</code>, <code>cdf</code>, <code>pmf</code>, and <code>sample</code>.</dd>
+        <dd>Example weights data for <code><a href="../reference/linear_pool.html">linear_pool()</a></code></dd>
 
         <dt>
 
@@ -71,7 +71,14 @@
 
         <dt>
 
-          <code><a href="model_outputs.html">model_outputs</a></code>
+          <code><a href="s_ens_fweights.html">s_ens_fweights</a></code>
+
+        </dt>
+        <dd>Example weights data for <code><a href="../reference/simple_ensemble.html">simple_ensemble()</a></code></dd>
+
+        <dt>
+
+          <code><a href="s_ens_model_outputs.html">s_ens_model_outputs</a></code>
 
         </dt>
         <dd>Example model output data for <code><a href="../reference/simple_ensemble.html">simple_ensemble()</a></code></dd>
@@ -89,13 +96,6 @@
 
         </dt>
         <dd>Perform validations on the compound task ID set used to calculate an ensemble of component model outputs for the sample output type, including checks that (1) <code>compound_taskid_set</code> is a subset of <code>task_id_cols</code>, (2) the provided <code>model_out_tbl</code> is compatible with the specified <code>compound_taskid_set</code>, and (3) all models submit predictions for the same set of non <code>compound_taskid_set</code> variables.</dd>
-
-        <dt>
-
-          <code><a href="weights.html">weights</a></code>
-
-        </dt>
-        <dd>Example weights data for <code><a href="../reference/linear_pool.html">linear_pool()</a></code></dd>
       </dl></div>
   </main></div>
 

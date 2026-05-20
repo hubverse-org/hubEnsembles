@@ -175,13 +175,11 @@ remainder distributed randomly).</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># We illustrate the calculation of a linear pool when we have quantiles from the</span></span></span>
 <span class="r-in"><span><span class="co"># component models. We take the components to be normal distributions with</span></span></span>
 <span class="r-in"><span><span class="co"># means -3, 0, and 3, all standard deviations 1, and weights 0.25, 0.5, and 0.25.</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">component_outputs</span><span class="op">)</span></span></span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>data set ‘component_outputs’ not found</span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">weights</span><span class="op">)</span></span></span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>data set ‘weights’ not found</span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">lop_component_outputs</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">lop_weights</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">expected_quantiles</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span>from <span class="op">=</span> <span class="op">-</span><span class="fl">5</span>, to <span class="op">=</span> <span class="fl">5</span>, by <span class="op">=</span> <span class="fl">0.25</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">lp_from_component_qs</span> <span class="op">&lt;-</span> <span class="fu">linear_pool</span><span class="op">(</span><span class="va">component_outputs</span>, <span class="va">weights</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">lp_from_component_qs</span> <span class="op">&lt;-</span> <span class="fu">linear_pool</span><span class="op">(</span><span class="va">lop_component_outputs</span>, <span class="va">lop_weights</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">lp_from_component_qs</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 × 5</span></span>

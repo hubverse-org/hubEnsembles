@@ -126,14 +126,12 @@ calculation issue that results in invalid distributions.</p>
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Calculate a weighted median in two ways</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">model_outputs</span><span class="op">)</span></span></span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>data set ‘model_outputs’ not found</span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">fweights</span><span class="op">)</span></span></span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>data set ‘fweights’ not found</span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">s_ens_model_outputs</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">s_ens_fweights</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">weighted_median1</span> <span class="op">&lt;-</span> <span class="fu">simple_ensemble</span><span class="op">(</span><span class="va">model_outputs</span>, weights <span class="op">=</span> <span class="va">fweights</span>,</span></span>
+<span class="r-in"><span><span class="va">weighted_median1</span> <span class="op">&lt;-</span> <span class="fu">simple_ensemble</span><span class="op">(</span><span class="va">s_ens_model_outputs</span>, weights <span class="op">=</span> <span class="va">s_ens_fweights</span>,</span></span>
 <span class="r-in"><span>                                    agg_fun <span class="op">=</span> <span class="fu">stats</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/r/stats/median.html" class="external-link">median</a></span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">weighted_median2</span> <span class="op">&lt;-</span> <span class="fu">simple_ensemble</span><span class="op">(</span><span class="va">model_outputs</span>, weights <span class="op">=</span> <span class="va">fweights</span>,</span></span>
+<span class="r-in"><span><span class="va">weighted_median2</span> <span class="op">&lt;-</span> <span class="fu">simple_ensemble</span><span class="op">(</span><span class="va">s_ens_model_outputs</span>, weights <span class="op">=</span> <span class="va">s_ens_fweights</span>,</span></span>
 <span class="r-in"><span>                                     agg_fun <span class="op">=</span> <span class="fu">matrixStats</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/matrixStats/man/weightedMedian.html" class="external-link">weightedMedian</a></span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/all.equal.html" class="external-link">all.equal</a></span><span class="op">(</span><span class="va">weighted_median1</span>, <span class="va">weighted_median2</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
