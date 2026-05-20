@@ -1,5 +1,5 @@
-# create example model_outputs
-model_outputs <- expand.grid(
+# create example s_ens_model_outputs
+s_ens_model_outputs <- expand.grid(
   stringsAsFactors = FALSE,
   model_id = letters[1:4],
   location = c("222", "888"),
@@ -11,7 +11,7 @@ model_outputs <- expand.grid(
   value = NA_real_
 )
 
-model_outputs$value <- c(
+s_ens_model_outputs$value <- c(
   10,
   30,
   15,
@@ -39,14 +39,14 @@ model_outputs$value <- c(
 )
 
 
-# create example weights
-fweights <- expand.grid(
+# create example s_ens_fweights
+s_ens_fweights <- expand.grid(
   stringsAsFactors = FALSE,
   model_id = letters[1:4],
   location = c("222", "888"),
   weight = NA_real_
 )
-fweights$weight <- c(seq(0.1, 0.4, 0.1), seq(0.4, 0.1, -0.1))
+s_ens_fweights$weight <- c(seq(0.1, 0.4, 0.1), seq(0.4, 0.1, -0.1))
 
-save(model_outputs, file = "data/simple_ensemble-example_outputs.rda")
-save(fweights, file = "data/simple_ensemble-example_weights.rda")
+save(s_ens_model_outputs, file = "data/s_ens_model_outputs.rda")
+save(s_ens_fweights, file = "data/s_ens_fweights.rda")

@@ -44,12 +44,12 @@
 #'
 #' @examples
 #' # Calculate a weighted median in two ways
-#' data(model_outputs)
-#' data(fweights)
+#' data(s_ens_model_outputs)
+#' data(s_ens_fweights)
 #'
-#' weighted_median1 <- simple_ensemble(model_outputs, weights = fweights,
+#' weighted_median1 <- simple_ensemble(s_ens_model_outputs, weights = s_ens_fweights,
 #'                                     agg_fun = stats::median)
-#' weighted_median2 <- simple_ensemble(model_outputs, weights = fweights,
+#' weighted_median2 <- simple_ensemble(s_ens_model_outputs, weights = s_ens_fweights,
 #'                                      agg_fun = matrixStats::weightedMedian)
 #' all.equal(weighted_median1, weighted_median2)
 #'
