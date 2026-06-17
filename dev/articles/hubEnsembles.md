@@ -12,6 +12,7 @@ briefly compare them.
 This vignette uses the following R packages:
 
 ``` r
+
 library(dplyr)
 library(ggplot2)
 library(hubUtils)
@@ -50,6 +51,7 @@ combination of the date the forecast was made and the forecast horizon,
 subset of this example model output.
 
 ``` r
+
 otid <- list(
   mean = NA,
   median = NA,
@@ -101,6 +103,7 @@ variables `reference_date` and `horizon` are not relevant for the use
 cases of target time series data and are thus omitted.
 
 ``` r
+
 head(hubExamples::forecast_target_ts, 10)
 #> # A tibble: 10 × 4
 #>    target_end_date target          location observation
@@ -148,6 +151,7 @@ function does not support the sample output type, so we remove the
 sample predictions from the forecast model outputs.
 
 ``` r
+
 mean_ens <- hubExamples::forecast_outputs |>
   dplyr::filter(output_type != "sample") |>
   hubEnsembles::simple_ensemble(
@@ -163,6 +167,7 @@ in the resulting model output; if not specified, the default will be
 “hub-ensemble”. A subset of the predictions is printed below.
 
 ``` r
+
 mean_ens |>
   dplyr::filter(
     output_type_id %in% unlist(otid),
@@ -196,6 +201,7 @@ submitted values for each quantile. We do so by specifying
 `agg_fun = median`.
 
 ``` r
+
 median_ens <- hubExamples::forecast_outputs |>
   dplyr::filter(output_type != "sample") |>
   hubEnsembles::simple_ensemble(
@@ -212,6 +218,7 @@ numeric values to summarize, and if relevant, an argument `w` of numeric
 weights.
 
 ``` r
+
 geometric_mean <- function(x) {
   n <- length(x)
   prod(x)^(1 / n)
@@ -244,6 +251,7 @@ following example, we include the baseline model in the ensemble, but
 give it less weight than the other forecasts.
 
 ``` r
+
 model_weights <- data.frame(
   model_id = c("MOBS-GLEAM_FLUH", "PSI-DICE", "Flusight-baseline"),
   weight = c(0.4, 0.4, 0.2)
@@ -326,6 +334,7 @@ quantiles is estimated using a default of `n_samples = 1e4` quasi-random
 samples drawn from the distribution of each component model.
 
 ``` r
+
 linear_pool_norm <- hubExamples::forecast_outputs |>
   dplyr::filter(output_type != "median") |>
   hubEnsembles::linear_pool(model_id = "linear-pool-normal")
@@ -374,6 +383,7 @@ provided. (Note that we must exclude the sample output type here because
 it is not yet supported for weighted ensembles.)
 
 ``` r
+
 model_weights <- data.frame(
   model_id = c("MOBS-GLEAM_FLUH", "PSI-DICE", "Flusight-baseline"),
   weight = c(0.4, 0.4, 0.2)
@@ -411,6 +421,7 @@ other function options, see the documentation in the [`distfromq`
 package](https://reichlab.io/distfromq/).)
 
 ``` r
+
 linear_pool_lnorm <- hubExamples::forecast_outputs |>
   dplyr::filter(output_type == "quantile") |>
   hubEnsembles::linear_pool(
@@ -462,7 +473,7 @@ independent task ID variables that, together, identify a “compound
 modeling task” corresponding to a single modeled unit with a
 multivariate outcome of interest. Samples summarizing a marginal
 distribution will generally have a compound task ID set composed of all
-the task ID variables[¹](#fn1). On the other hand, samples summarizing a
+the task ID variables[^1]. On the other hand, samples summarizing a
 joint distribution will have a compound task ID set that only contains
 task ID variables for which the joint distribution does not capture
 dependence.
@@ -490,6 +501,7 @@ task `"target_end_date"` is not part of the compound task ID set because
 task ID set.
 
 ``` r
+
 hubExamples::forecast_outputs |>
   dplyr::filter(output_type == "sample") |>
   dplyr::mutate(output_type_id = as.numeric(output_type_id)) |> # make indices numeric for readability
@@ -531,6 +543,4 @@ provided compound task ID set is compatible with the input sample
 predictions to help ensure the resulting (multivariate) ensemble is
 valid.
 
-------------------------------------------------------------------------
-
-1.  Derived task IDs are the one exception to this rule
+[^1]: Derived task IDs are the one exception to this rule

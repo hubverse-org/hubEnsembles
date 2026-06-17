@@ -15,6 +15,7 @@ You can install the released version of `hubEnsembles` from
 [CRAN](https://CRAN.R-project.org) with:
 
 ``` r
+
 install.packages("hubEnsembles")
 ```
 
@@ -25,6 +26,7 @@ you can install the development version of hubEnsembles from
 [GitHub](https://github.com/) with:
 
 ``` r
+
 remotes::install_github("hubverse-org/hubEnsembles")
 ```
 
