@@ -36,7 +36,7 @@ jobs:
 
     steps:
       - id: checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup for Hotfix/Release Testing
         id: release-setup
