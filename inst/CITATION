@@ -1,0 +1,22 @@
+citHeader("To cite the hubEnsembles package or the ensemble methods it implements, please cite:")
+
+bibentry(
+  bibtype  = "Article",
+  title    = "Multi-Model Ensembles in Infectious Disease and Public Health: Methods, Interpretation, and Implementation in R",
+  author   = c(
+    person("Li", "Shandross"),
+    person("Emily", "Howerton"),
+    person("Lucie", "Contamin"),
+    person("Harry", "Hochheiser"),
+    person("Anna", "Krystalli"),
+    person("Consortium of Infectious Disease Modeling Hubs"),
+    person("Nicholas G.", "Reich"),
+    person("Evan L.", "Ray")
+  ),
+  journal  = "Statistics in Medicine",
+  year     = "2026",
+  volume   = "45",
+  number   = "1-2",
+  pages    = "e70333",
+  doi      = "10.1002/sim.70333"
+)

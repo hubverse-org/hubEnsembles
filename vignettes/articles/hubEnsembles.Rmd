@@ -16,6 +16,8 @@ options(width = 200)
 
 The `hubEnsembles` package provides a flexible framework for aggregating model outputs, such as forecasts or projections, that are submitted to a hub by multiple models and combined into ensemble model outputs. The package includes two main functions: `simple_ensemble` and `linear_pool`. We illustrate these functions in this vignette, and briefly compare them.
 
+The ensemble methods implemented in this package, along with guidance on their interpretation and use, are described in more detail in the accompanying paper: Shandross et al. (2026), ["Multi-Model Ensembles in Infectious Disease and Public Health: Methods, Interpretation, and Implementation in R"](https://doi.org/10.1002/sim.70333), *Statistics in Medicine*. If you use `hubEnsembles` in your work, please cite this paper; run `citation("hubEnsembles")` in R for the full citation in plain-text and BibTeX formats.
+
 This vignette uses the following R packages:
 
 ```{r setup, message=FALSE}
