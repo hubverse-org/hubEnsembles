@@ -23,16 +23,22 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/hubverse-org/hubEnsembles/blob/main/DESCRIPTION)
+[`inst/CITATION`](https://github.com/hubverse-org/hubEnsembles/blob/main/inst/CITATION)
 
-Shandross L, Howerton E, Ray E (2026). *hubEnsembles: Ensemble Methods
-for Combining Hub Model Outputs*. R package version 1.0.0.9000,
-<https://github.com/hubverse-org/hubEnsembles>.
+Shandross L, Howerton E, Contamin L, Hochheiser H, Krystalli A,
+Consortium of Infectious Disease Modeling Hubs, Reich N, Ray E (2026).
+“Multi-Model Ensembles in Infectious Disease and Public Health: Methods,
+Interpretation, and Implementation in R.” *Statistics in Medicine*,
+**45**(1-2), e70333.
+[doi:10.1002/sim.70333](https://doi.org/10.1002/sim.70333).
 
-    @Manual{,
-      title = {hubEnsembles: Ensemble Methods for Combining Hub Model Outputs},
-      author = {Li Shandross and Emily Howerton and Evan L Ray},
+    @Article{,
+      title = {Multi-Model Ensembles in Infectious Disease and Public Health: Methods, Interpretation, and Implementation in R},
+      author = {Li Shandross and Emily Howerton and Lucie Contamin and Harry Hochheiser and Anna Krystalli and {Consortium of Infectious Disease Modeling Hubs} and Nicholas G. Reich and Evan L. Ray},
+      journal = {Statistics in Medicine},
       year = {2026},
-      note = {R package version 1.0.0.9000},
-      url = {https://github.com/hubverse-org/hubEnsembles},
+      volume = {45},
+      number = {1-2},
+      pages = {e70333},
+      doi = {10.1002/sim.70333},
     }

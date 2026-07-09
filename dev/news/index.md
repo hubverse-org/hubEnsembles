@@ -2,6 +2,12 @@
 
 ## hubEnsembles (development version)
 
+- Added a citation to the accompanying paper (Shandross et al., 2026,
+  *Statistics in Medicine*, <doi:10.1002/sim.70333>) via a new
+  `inst/CITATION` file, a citation section in the README, and a link in
+  the package vignette
+  ([\#197](https://github.com/hubverse-org/hubEnsembles/issues/197))
+
 ## hubEnsembles 1.0.0
 
 CRAN release: 2025-05-23
