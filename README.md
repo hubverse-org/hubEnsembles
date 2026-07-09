@@ -40,6 +40,21 @@ you can install the development version of hubEnsembles from
 remotes::install_github("hubverse-org/hubEnsembles")
 ```
 
+## Citation
+
+If you use hubEnsembles, please cite the accompanying paper, which
+describes the package and the ensemble methods it implements:
+
+> Shandross L, Howerton E, Contamin L, Hochheiser H, Krystalli A,
+> Consortium of Infectious Disease Modeling Hubs, Reich NG, Ray EL
+> (2026). “Multi-Model Ensembles in Infectious Disease and Public Health:
+> Methods, Interpretation, and Implementation in R.” *Statistics in
+> Medicine*, **45**(1-2), e70333.
+> doi:[10.1002/sim.70333](https://doi.org/10.1002/sim.70333).
+
+You can also run `citation("hubEnsembles")` in R to get the citation in
+plain-text and BibTeX formats.
+
 ------------------------------------------------------------------------
 
 ## Code of Conduct

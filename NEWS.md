@@ -1,5 +1,7 @@
 # hubEnsembles (development version)
 
+* Added a citation to the accompanying paper (Shandross et al., 2026, *Statistics in Medicine*, doi:10.1002/sim.70333) via a new `inst/CITATION` file and a citation section in the README (#197)
+
 # hubEnsembles 1.0.0
 
 * `hubEnsembles.Rmd` article now explains how to ensemble samples using `linear_pool()`
