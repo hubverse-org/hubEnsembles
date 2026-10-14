@@ -68,7 +68,8 @@ jobs:
             echo 'dir=./docs' >> $GITHUB_OUTPUT
           fi
       - name: Deploy PR preview to Netlify
-        if: contains(env.PUBLISH, 'false')
+        # Dependabot PRs cannot read the Netlify secrets
+        if: contains(env.PUBLISH, 'false') && github.event.pull_request.user.login != 'dependabot[bot]'
         id: netlify-deploy
         uses: nwtgck/actions-netlify@d22a32a27c918fe470bbc562e984f80ec48c2668  #v4.0.0
         with:
