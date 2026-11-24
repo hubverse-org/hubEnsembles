@@ -4,7 +4,6 @@ on:
   push:
     branches: [main, master]
   pull_request:
-    branches: [main, master]
 
 name: test-coverage
 
@@ -16,28 +15,51 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+    permissions:
+      contents: read
+      # Codecov authenticates the upload with an OIDC token instead of a
+      # stored Codecov token.
+      id-token: write
 
     steps:
       - uses: actions/checkout@v7
 
-      - uses: r-lib/actions/setup-r@d3c5be51b12e724e68f33216ca3c148b66d5f0b6 #v2.12.1
+      - uses: r-lib/actions/setup-r@f9a764fea8d5c63df6ef9a5c7795bf7deb5d7e05  #v2.14.0
         with:
           use-public-rspm: true
           extra-repositories: https://hubverse-org.r-universe.dev
 
-      - uses: r-lib/actions/setup-r-dependencies@d3c5be51b12e724e68f33216ca3c148b66d5f0b6 #v2.12.1
+      - uses: r-lib/actions/setup-r-dependencies@f9a764fea8d5c63df6ef9a5c7795bf7deb5d7e05  #v2.14.0
         with:
-          extra-packages: any::covr
+          extra-packages: any::covr, any::xml2
           needs: coverage
 
       - name: Test coverage
         run: |
-          covr::codecov(
+          cov <- covr::package_coverage(
             quiet = FALSE,
             clean = FALSE,
             install_path = file.path(normalizePath(Sys.getenv("RUNNER_TEMP"), winslash = "/"), "package")
           )
+          print(cov)
+          covr::to_cobertura(cov)
         shell: Rscript {0}
+
+      - name: Upload coverage to Codecov
+        # GitHub issues no OIDC token to Dependabot PRs, so the upload would
+        # fail. In hubverse repositories, Dependabot PRs only update GitHub
+        # Actions and do not change coverage.
+        if: github.event.pull_request.user.login != 'dependabot[bot]'
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5  #v7.1.1
+        with:
+          use_oidc: true
+          # Note that PRs from forks get no OIDC token either. The action
+          # uploads those without a token, which Codecov may refuse, so a
+          # refused upload fails the job only outside fork PRs.
+          fail_ci_if_error: ${{ github.event.pull_request.head.repo.fork != true }}
+          files: ./cobertura.xml
+          plugins: noop
+          disable_search: true
 
       - name: Show testthat output
         if: always()
